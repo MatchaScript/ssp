@@ -1,0 +1,80 @@
+{
+	"transparent-black-100": {
+		"value": "rgba(0, 0, 0, 0.09)"
+	},
+	"transparent-black-1000": {
+		"value": "rgb(0, 0, 0)"
+	},
+	"transparent-black-200": {
+		"value": "rgba(0, 0, 0, 0.12)"
+	},
+	"transparent-black-25": {
+		"value": "rgba(0, 0, 0, 0)"
+	},
+	"transparent-black-300": {
+		"value": "rgba(0, 0, 0, 0.15)"
+	},
+	"transparent-black-400": {
+		"value": "rgba(0, 0, 0, 0.22)"
+	},
+	"transparent-black-50": {
+		"value": "rgba(0, 0, 0, 0.03)"
+	},
+	"transparent-black-500": {
+		"value": "rgba(0, 0, 0, 0.44)"
+	},
+	"transparent-black-600": {
+		"value": "rgba(0, 0, 0, 0.56)"
+	},
+	"transparent-black-700": {
+		"value": "rgba(0, 0, 0, 0.69)"
+	},
+	"transparent-black-75": {
+		"value": "rgba(0, 0, 0, 0.05)"
+	},
+	"transparent-black-800": {
+		"value": "rgba(0, 0, 0, 0.84)"
+	},
+	"transparent-black-900": {
+		"value": "rgba(0, 0, 0, 0.93)"
+	},
+	"transparent-white-100": {
+		"value": "rgba(255, 255, 255, 0.11)"
+	},
+	"transparent-white-1000": {
+		"value": "rgb(255, 255, 255)"
+	},
+	"transparent-white-200": {
+		"value": "rgba(255, 255, 255, 0.14)"
+	},
+	"transparent-white-25": {
+		"value": "rgba(255, 255, 255, 0)"
+	},
+	"transparent-white-300": {
+		"value": "rgba(255, 255, 255, 0.17)"
+	},
+	"transparent-white-400": {
+		"value": "rgba(255, 255, 255, 0.21)"
+	},
+	"transparent-white-50": {
+		"value": "rgba(255, 255, 255, 0.04)"
+	},
+	"transparent-white-500": {
+		"value": "rgba(255, 255, 255, 0.39)"
+	},
+	"transparent-white-600": {
+		"value": "rgba(255, 255, 255, 0.51)"
+	},
+	"transparent-white-700": {
+		"value": "rgba(255, 255, 255, 0.66)"
+	},
+	"transparent-white-75": {
+		"value": "rgba(255, 255, 255, 0.07)"
+	},
+	"transparent-white-800": {
+		"value": "rgba(255, 255, 255, 0.85)"
+	},
+	"transparent-white-900": {
+		"value": "rgba(255, 255, 255, 0.94)"
+	}
+}

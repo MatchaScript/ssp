@@ -1,0 +1,177 @@
+{
+	"levels": [100, 200, 300, 400, 500, 600, 700, 800, 900, 1000, 1100, 1200, 1300, 1400, 1500, 1600],
+	"grayLevels": [25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000],
+	"accentColor": "blue",
+	"staticLevels": [900, 1000, 1100, 1200],
+	"colorContrastTargets": [
+		1.065, 1.151, 1.33, 1.605, 2.003, 2.609, 3.234, 3.96, 4.81, 6.313, 7.944, 10.047, 12.342,
+		14.852, 17.047, 19.539
+	],
+	"colors": {
+		"blue": {
+			"baseHex": "#3b63fb",
+			"scaleAnchors": {
+				"100": "#f5f9ff",
+				"400": "#accffd",
+				"600": "#729efd",
+				"900": "#3b63fb"
+			}
+		},
+		"red": {
+			"baseHex": "#d73220",
+			"scaleAnchors": {
+				"100": "#fff6f5",
+				"400": "#ffbcb4",
+				"600": "#ff7665",
+				"900": "#d73220"
+			}
+		},
+		"orange": {
+			"baseHex": "#c24e00",
+			"scaleAnchors": {
+				"100": "#fff6e7",
+				"400": "#ffc15e",
+				"600": "#fc7d00",
+				"900": "#c24e00"
+			}
+		},
+		"yellow": {
+			"baseHex": "#9e6600",
+			"scaleAnchors": {
+				"100": "#fff8cc",
+				"400": "#f5c700",
+				"600": "#d29500",
+				"900": "#9e6600"
+			}
+		},
+		"green": {
+			"baseHex": "#05834e",
+			"scaleAnchors": {
+				"100": "#edfcf1",
+				"400": "#6be3a2",
+				"600": "#12b867",
+				"900": "#05834e"
+			}
+		},
+		"celery": {
+			"baseHex": "#408111",
+			"scaleAnchors": {
+				"100": "#ebffdc",
+				"400": "#81e43a",
+				"600": "#5db41f",
+				"900": "#408111"
+			}
+		},
+		"chartreuse": {
+			"baseHex": "#667a00",
+			"scaleAnchors": {
+				"100": "#f6fbde",
+				"400": "#b6db00",
+				"600": "#8fac00",
+				"900": "#667a00"
+			}
+		},
+		"magenta": {
+			"baseHex": "#d92361",
+			"scaleAnchors": {
+				"100": "#fff5f8",
+				"400": "#ffb9d0",
+				"600": "#ff709f",
+				"900": "#d92361"
+			}
+		},
+		"fuchsia": {
+			"baseHex": "#b539c8",
+			"scaleAnchors": {
+				"100": "#fef6ff",
+				"400": "#f7b5ff",
+				"600": "#ec69ff",
+				"900": "#b539c8"
+			}
+		},
+		"purple": {
+			"baseHex": "#9a47e2",
+			"scaleAnchors": {
+				"100": "#fbf7fe",
+				"400": "#ddc1f6",
+				"600": "#bf8aee",
+				"900": "#9a47e2"
+			}
+		},
+		"indigo": {
+			"baseHex": "#7155fa",
+			"scaleAnchors": {
+				"100": "#f7f8ff",
+				"400": "#c0c9ff",
+				"600": "#9197fe",
+				"900": "#7155fa"
+			}
+		},
+		"seafoam": {
+			"baseHex": "#07816d",
+			"scaleAnchors": {
+				"100": "#ebfbf6",
+				"400": "#5ce1c2",
+				"600": "#0db595",
+				"900": "#07816d"
+			}
+		},
+		"cyan": {
+			"baseHex": "#0b78b3",
+			"scaleAnchors": {
+				"100": "#eefafe",
+				"400": "#8ad5ff",
+				"600": "#30a7fe",
+				"900": "#0b78b3"
+			}
+		}
+	},
+	"gray": {
+		"baseHex": "#707070",
+		"contrastTargets": {
+			"light": {
+				"lightness": 100,
+				"ratios": [
+					1.062, 1.11, 1.214, 1.308, 1.398, 1.708, 3.234, 4.881, 8.063, 14.548, 18.58, 21.0
+				]
+			},
+			"dark": {
+				"lightness": 5,
+				"ratios": [
+					1.096, 1.187, 1.352, 1.473, 1.635, 1.939, 3.649, 5.47, 8.609, 13.639, 16.868, 18.883
+				]
+			}
+		}
+	},
+	"themes": {
+		"light": {
+			"lightness": 100
+		},
+		"dark": {
+			"lightness": 5
+		}
+	},
+	"typography": {
+		"fonts": {
+			"sans": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+			"serif": "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
+			"mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+		}
+	},
+	"cssOutputPath": "./src/lib/styles/spectrum.css",
+	"borderWidth": {
+		"100": "1px",
+		"200": "2px",
+		"300": "4px"
+	},
+	"cornerRadius": {
+		"100": "6px",
+		"200": "8px",
+		"300": "10px",
+		"400": "12px",
+		"500": "14px",
+		"600": "16px",
+		"700": "18px",
+		"800": "24px"
+	}
+}

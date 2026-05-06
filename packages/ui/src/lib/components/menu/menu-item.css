@@ -1,0 +1,164 @@
+/* S2 8-column subgrid anatomy:
+     [edge | checkmark | icon | label(1fr) | value | keyboard | descriptor | edge]
+   Row 2 holds the description under the label, only expanded when present.
+
+   Sizing follows S2 controlSize:  S=24  M=32  L=40  XL=48
+   Horizontal edge padding lives in the parent menu's edge columns. */
+
+[data-spectrum-menu-item] {
+	grid-column: 1 / -1;
+	display: grid;
+	grid-template-columns: subgrid;
+	grid-template-areas:
+		'. checkmark icon label       value keyboard descriptor .'
+		'. .         .    description .     .        .          .';
+	grid-template-rows: auto minmax(0, min-content);
+	align-items: center;
+
+	box-sizing: border-box;
+	min-height: var(--spacing-500);
+
+	font-family: inherit;
+	font-size: var(--text-100);
+	font-weight: 500;
+	text-decoration: none;
+	color: var(--neutral-content-color-default);
+
+	border-radius: var(--corner-radius-small-default);
+	cursor: pointer;
+}
+
+[data-spectrum-menu-item]:has(.description-slot) {
+	grid-template-rows: auto auto;
+	row-gap: 1px;
+	padding-block: var(--spacing-100);
+}
+
+[data-spectrum-menu-item]:not([data-disabled]):hover,
+[data-spectrum-menu-item]:not([data-disabled]):focus-visible {
+	background-color: var(--neutral-subtle-background-color-default);
+}
+
+[data-spectrum-menu-item][data-disabled] {
+	color: var(--disabled-content-color);
+	cursor: not-allowed;
+}
+
+/* --- Grid area slots --- */
+
+.checkmark-slot {
+	grid-area: checkmark;
+	display: grid;
+	place-items: center;
+	padding-inline-end: var(--spacing-100);
+	color: var(--accent-visual-color);
+}
+
+/* Multi-select reserves the checkbox box footprint regardless of selection
+   so items don't shift horizontally as the user toggles. */
+.checkmark-slot[data-mode='multiple'] {
+	color: inherit;
+}
+
+.icon-slot {
+	grid-area: icon;
+	display: flex;
+	align-items: center;
+	padding-inline-end: var(--spacing-100);
+}
+
+.label-slot {
+	grid-area: label;
+	white-space: nowrap;
+}
+
+.description-slot {
+	grid-area: description;
+	font-size: var(--text-75);
+	font-weight: 400;
+	color: var(--neutral-subdued-content-color-default);
+	transition: color var(--duration-fast) var(--ease-default);
+}
+
+[data-spectrum-menu-item]:not([data-disabled]):is(:hover, :focus-visible) .description-slot {
+	color: var(--neutral-content-color-default);
+}
+
+/* S2: description shifts neutral-subdued → gray-800 on focus/hover */
+[data-spectrum-menu-item]:not([data-disabled]):is(:hover, :focus-visible) .description-slot {
+	color: var(--neutral-subdued-content-color-hover);
+}
+
+.value-slot {
+	grid-area: value;
+	padding-inline-start: var(--spacing-200);
+	color: var(--neutral-subdued-content-color-default);
+	font-weight: 400;
+}
+
+.keyboard-slot {
+	grid-area: keyboard;
+	display: grid;
+	align-items: center;
+	justify-content: end;
+	font-size: var(--text-75);
+	color: var(--neutral-subdued-content-color-default);
+	padding-inline-start: var(--spacing-200);
+}
+
+.descriptor-slot {
+	grid-area: descriptor;
+	display: grid;
+	place-items: center end;
+	padding-inline-start: var(--spacing-100);
+	color: var(--neutral-subdued-content-color-default);
+}
+
+[data-spectrum-menu-item][data-disabled] :is(
+	.checkmark-slot,
+	.icon-slot,
+	.description-slot,
+	.value-slot,
+	.keyboard-slot,
+	.descriptor-slot
+) {
+	color: var(--disabled-content-color);
+}
+
+/* --- Size variants ---
+   min-height: S2 controlSize (S=24 M=32 L=40 XL=48). */
+
+[data-spectrum-menu-item][data-size='s'] {
+	font-size: var(--text-75);
+	border-radius: var(--corner-radius-small-default);
+	min-height: var(--spacing-400);
+}
+
+[data-spectrum-menu-item][data-size='m'] {
+	border-radius: var(--corner-radius-small-default);
+	min-height: var(--spacing-500);
+}
+
+[data-spectrum-menu-item][data-size='l'] {
+	font-size: var(--text-200);
+	border-radius: var(--corner-radius-medium-default);
+	min-height: var(--spacing-600);
+}
+
+[data-spectrum-menu-item][data-size='xl'] {
+	font-size: var(--text-300);
+	border-radius: var(--corner-radius-large-default);
+	min-height: 48px;
+}
+
+[data-spectrum-menu-item][data-size='s'] .description-slot {
+	font-size: var(--text-50);
+}
+
+[data-spectrum-menu-item][data-size='l'] .description-slot {
+	font-size: var(--text-100);
+}
+
+[data-spectrum-menu-item][data-size='xl'] .description-slot {
+	font-size: var(--text-200);
+}

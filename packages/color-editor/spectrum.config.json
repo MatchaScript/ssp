@@ -1,0 +1,277 @@
+{
+	"levels": [
+		100,
+		200,
+		300,
+		400,
+		500,
+		600,
+		700,
+		800,
+		900,
+		1000,
+		1100,
+		1200,
+		1300,
+		1400,
+		1500,
+		1600
+	],
+	"grayLevelForBase": 50,
+	"colorFormat": "hex",
+	"typography": {
+		"fonts": {
+			"sans": "system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif",
+			"serif": "ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif",
+			"mono": "ui-monospace, SFMono-Regular, Menlo, Consolas, monospace"
+		}
+	},
+	"grayLevels": [
+		25,
+		50,
+		75,
+		100,
+		200,
+		300,
+		400,
+		500,
+		600,
+		700,
+		800,
+		900,
+		1000
+	],
+	"accentColor": "blue",
+	"staticLevels": [
+		900,
+		1000,
+		1100,
+		1200
+	],
+	"colorContrastTargets": [
+		1.065,
+		1.151,
+		1.33,
+		1.605,
+		2.003,
+		2.609,
+		3.234,
+		3.96,
+		4.81,
+		6.313,
+		7.944,
+		10.047,
+		12.342,
+		14.852,
+		17.047,
+		19.539
+	],
+	"colors": {
+		"blue": {
+			"baseHex": "#3b63fb",
+			"scaleAnchors": {
+				"100": "#f5f9ff",
+				"500": "#8eb9fc",
+				"800": "#4b75ff",
+				"1000": "#274dea",
+				"1300": "#10288c",
+				"1600": "#070b1e"
+			}
+		},
+		"red": {
+			"baseHex": "#d73220",
+			"scaleAnchors": {
+				"100": "#fff6f5",
+				"400": "#ffbcb4",
+				"500": "#ff9d91",
+				"700": "#ff513d",
+				"800": "#f03823",
+				"1600": "#1d0502"
+			}
+		},
+		"orange": {
+			"baseHex": "#c24e00",
+			"scaleAnchors": {
+				"100": "#fff6e7",
+				"400": "#ffc15e",
+				"500": "#ffa213",
+				"600": "#fc7d00",
+				"1000": "#a73e00",
+				"1600": "#190800"
+			}
+		},
+		"yellow": {
+			"baseHex": "#9e6600",
+			"scaleAnchors": {
+				"100": "#fff8cc",
+				"200": "#fff197",
+				"300": "#ffde2c",
+				"700": "#c18300",
+				"1000": "#865500",
+				"1600": "#120b00"
+			}
+		},
+		"green": {
+			"baseHex": "#05834e",
+			"scaleAnchors": {
+				"100": "#edfcf1",
+				"400": "#6be3a2",
+				"500": "#2bd17d",
+				"600": "#12b867",
+				"1300": "#003d2c",
+				"1600": "#000f0c"
+			}
+		},
+		"celery": {
+			"baseHex": "#408111",
+			"scaleAnchors": {
+				"100": "#ebffdc",
+				"200": "#c5ff9c",
+				"300": "#9df75c",
+				"400": "#81e43a",
+				"600": "#5db41f",
+				"1600": "#040f00"
+			}
+		},
+		"chartreuse": {
+			"baseHex": "#667a00",
+			"scaleAnchors": {
+				"100": "#f6fbde",
+				"200": "#eaf6ad",
+				"300": "#d0ec46",
+				"400": "#b6db00",
+				"1200": "#3c4700",
+				"1600": "#0b0e00"
+			}
+		},
+		"magenta": {
+			"baseHex": "#d92361",
+			"scaleAnchors": {
+				"100": "#fff5f8",
+				"500": "#ff98bb",
+				"700": "#ff4885",
+				"800": "#f02d6e",
+				"1100": "#a3053e",
+				"1600": "#23000c"
+			}
+		},
+		"fuchsia": {
+			"baseHex": "#b539c8",
+			"scaleAnchors": {
+				"100": "#fef6ff",
+				"600": "#ec69ff",
+				"700": "#df4df5",
+				"1300": "#5c046d",
+				"1400": "#480058",
+				"1600": "#1d0023"
+			}
+		},
+		"purple": {
+			"baseHex": "#9a47e2",
+			"scaleAnchors": {
+				"100": "#fbf7fe",
+				"800": "#a65ce7",
+				"1000": "#8628d9",
+				"1100": "#730dcc",
+				"1200": "#5d00b1",
+				"1600": "#17002d"
+			}
+		},
+		"indigo": {
+			"baseHex": "#7155fa",
+			"scaleAnchors": {
+				"100": "#f7f8ff",
+				"500": "#a7b2ff",
+				"900": "#7155fa",
+				"1000": "#6338ee",
+				"1300": "#3706a0",
+				"1600": "#110036"
+			}
+		},
+		"seafoam": {
+			"baseHex": "#07816d",
+			"scaleAnchors": {
+				"100": "#ebfbf6",
+				"300": "#a9edd8",
+				"400": "#5ce1c2",
+				"500": "#10cfa9",
+				"1200": "#014b43",
+				"1600": "#000f0e"
+			}
+		},
+		"cyan": {
+			"baseHex": "#0b78b3",
+			"scaleAnchors": {
+				"100": "#eefafe",
+				"400": "#8ad5ff",
+				"600": "#30a7fe",
+				"700": "#1d95e7",
+				"1100": "#005779",
+				"1600": "#000e14"
+			}
+		}
+	},
+	"gray": {
+		"baseHex": "#707070",
+		"contrastTargets": {
+			"light": {
+				"lightness": 100,
+				"ratios": [
+					1.062,
+					1.11,
+					1.214,
+					1.308,
+					1.398,
+					1.708,
+					3.234,
+					4.881,
+					8.063,
+					14.548,
+					18.58,
+					21
+				]
+			},
+			"dark": {
+				"lightness": 5,
+				"ratios": [
+					1.096,
+					1.187,
+					1.352,
+					1.473,
+					1.635,
+					1.939,
+					3.649,
+					5.47,
+					8.609,
+					13.639,
+					16.868,
+					18.883
+				]
+			}
+		}
+	},
+	"themes": {
+		"light": {
+			"lightness": 100
+		},
+		"dark": {
+			"lightness": 5
+		}
+	},
+	"cssOutputPath": "./src/lib/styles/spectrum.css",
+	"borderWidth": {
+		"100": "1px",
+		"200": "2px",
+		"300": "4px"
+	},
+	"cornerRadius": {
+		"100": "4px",
+		"200": "5px",
+		"300": "6px",
+		"400": "7px",
+		"500": "8px",
+		"600": "9px",
+		"700": "10px",
+		"800": "16px"
+	}
+}

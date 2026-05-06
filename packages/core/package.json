@@ -1,0 +1,30 @@
+{
+	"name": "@ssp/core",
+	"version": "0.0.1",
+	"type": "module",
+	"exports": {
+		".": {
+			"types": "./dist/index.d.ts",
+			"default": "./dist/index.js"
+		}
+	},
+	"files": [
+		"dist",
+		"src/tokens"
+	],
+	"scripts": {
+		"build": "tsdown && node -e \"const fs=require('fs'),p=require('path'),d='dist';fs.readdirSync(d).filter(f=>f.endsWith('.d.ts')&&f!=='index.d.ts').forEach(f=>{if(f.startsWith('index-'))fs.renameSync(p.join(d,f),p.join(d,'index.d.ts'))})\"",
+		"extract-tokens": "node --experimental-strip-types scripts/extract-tokens.ts"
+	},
+	"dependencies": {
+		"@adobe/leonardo-contrast-colors": "^1.1.0",
+		"culori": "^4.0.2"
+	},
+	"peerDependencies": {
+		"vite": ">=5.0.0"
+	},
+	"devDependencies": {
+		"@adobe/spectrum-tokens": "^14.5.0",
+		"tsdown": "^0.12.0"
+	}
+}

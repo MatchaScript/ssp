@@ -1,0 +1,48 @@
+<script lang="ts">
+	import { Toggle } from 'bits-ui';
+	import { actionButtonSnippet } from '../action-button/action-button-base.svelte';
+	import type { ToggleButtonRootProps } from './types.js';
+
+	let {
+		children,
+		icon,
+		disabled = false,
+		isSelected = $bindable(false),
+		isEmphasized = false,
+		size = 'm',
+		isQuiet = false,
+		staticColor,
+		ref = $bindable(null),
+		class: className,
+		onPressedChange,
+		...restProps
+	}: ToggleButtonRootProps = $props();
+
+	let iconOnly = $derived(!!icon && !children);
+
+	function handlePressedChange(pressed: boolean) {
+		isSelected = pressed;
+		onPressedChange?.(pressed);
+	}
+</script>
+
+<Toggle.Root pressed={isSelected} {disabled} onPressedChange={handlePressedChange}>
+	{#snippet child({ props })}
+		{@render actionButtonSnippet({
+			bitsProps: props,
+			restProps,
+			setRef: (el) => (ref = el),
+			type: 'button',
+			disabled,
+			isSelected,
+			isEmphasized,
+			size,
+			isQuiet,
+			staticColor,
+			className,
+			icon,
+			label: children,
+			iconOnly
+		})}
+	{/snippet}
+</Toggle.Root>

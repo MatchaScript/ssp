@@ -1,0 +1,123 @@
+/**
+ * Shared base styles for field-level elements rendered inside <Field>.
+ *
+ * Consumers (textfield, textarea, search-field, number-field) import this
+ * CSS asset directly. Vite bundles it once. These rules sit outside Svelte's
+ * scoping system intentionally — `[data-spectrum-field-input]` and
+ * `[data-spectrum-field-validation-icon]` are unique attribute namespaces
+ * with no collision risk, and the positional :first-child/:last-child rules
+ * below cross the component boundary between <Field> (which renders the
+ * FieldGroup parent) and the consumer (which renders the input/icon
+ * children via <Field>'s `children` snippet), which Svelte's scoped CSS
+ * can't express without :global().
+ *
+ * Per-size spacing is exposed via custom properties set on <Field>:
+ *   --field-pad-inline  (horizontal padding / decorator gap)
+ *   --field-pad-block   (vertical padding)
+ * Descendants reference these via the CSS cascade — no prop plumbing.
+ */
+
+/* ===== Base element ===== */
+[data-spectrum-field-input] {
+	box-sizing: border-box;
+	display: grid;
+	flex: 1;
+	width: 100%;
+	min-width: 0;
+	font: inherit;
+	font-family: var(--font-sans);
+	color: var(--neutral-content-color-default);
+	background-color: transparent;
+	border: none;
+	outline: none;
+	margin: 0;
+	padding-block: var(--field-pad-block);
+	padding-inline: 0;
+}
+
+[data-spectrum-field-input]::placeholder {
+	color: var(--neutral-subdued-content-color-default);
+	font-weight: 400;
+	opacity: 1;
+}
+
+[data-spectrum-field-input]:disabled {
+	color: var(--disabled-content-color);
+	cursor: not-allowed;
+}
+
+[data-spectrum-field-input]:disabled::placeholder {
+	color: var(--disabled-content-color);
+}
+
+[data-spectrum-field-input]:read-only:not(:disabled) {
+	color: var(--neutral-content-color-default);
+}
+
+/* Hide the native search cancel button — applies only to type="search" */
+[data-spectrum-field-input]::-webkit-search-cancel-button,
+[data-spectrum-field-input]::-webkit-search-decoration {
+	-webkit-appearance: none;
+	appearance: none;
+}
+
+/* ===== Single-line positional padding =====
+   Single-line <input> gets leading padding only when it's the first child of
+   FieldGroup, and trailing padding only when it's the last child. Decorator
+   siblings (search icon, stepper, clear button, validation icon) own their
+   own adjacent spacing via padding-inline-start / padding-inline-end. */
+[data-spectrum-field-group] > [data-spectrum-field-input]:not([data-multiline]):first-child {
+	padding-inline-start: var(--field-pad-inline);
+}
+
+[data-spectrum-field-group] > [data-spectrum-field-input]:not([data-multiline]):last-child {
+	padding-inline-end: var(--field-pad-inline);
+}
+
+/* ===== Multiline (textarea) =====
+   Textarea always gets symmetric inline padding — absolutely-positioned
+   decorators (TextArea validation icon) don't displace flow, so positional
+   :last-child padding isn't meaningful for multiline content. */
+[data-spectrum-field-input][data-multiline] {
+	display: block;
+	line-height: var(--lh-body);
+	resize: vertical;
+	padding-inline: var(--field-pad-inline);
+	min-block-size: calc(
+		var(--textarea-rows, 3) * 1lh + var(--field-pad-block) * 2 + var(--border-width-200) * 2
+	);
+}
+
+[data-spectrum-field-input][data-multiline]:disabled,
+[data-spectrum-field-input][data-multiline]:read-only:not(:disabled) {
+	resize: none;
+}
+
+/* Auto-resize via Chromium's field-sizing: content */
+@supports (field-sizing: content) {
+	[data-spectrum-field-input][data-multiline][data-auto-resize] {
+		field-sizing: content;
+		resize: none;
+		overflow-y: hidden;
+	}
+}
+
+/* Reserve trailing space when an absolutely-positioned validation icon
+   sits on top of the textarea — otherwise text would flow under it. */
+[data-spectrum-field-group]:has(> [data-spectrum-textarea-validation-icon])
+	> [data-spectrum-field-input][data-multiline] {
+	padding-inline-end: calc(var(--field-pad-inline) * 2 + 1lh);
+}
+
+/* ===== Inline validation icon wrapper =====
+   Used by textfield / number-field to place a validation icon as a flex
+   sibling of the input inside FieldGroup. Symmetric inline padding pulls
+   from Field's --field-pad-inline cascade. */
+[data-spectrum-field-validation-icon] {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	flex-shrink: 0;
+	pointer-events: none;
+	padding-inline: var(--field-pad-inline);
+}

@@ -1,0 +1,39 @@
+{
+	"name": "ssp",
+	"version": "0.0.1",
+	"packageManager": "pnpm@10.33.0",
+	"private": true,
+	"type": "module",
+	"license": "MIT",
+	"scripts": {
+		"build": "turbo run build",
+		"dev": "turbo run dev",
+		"check": "turbo run check",
+		"lint": "eslint .",
+		"format": "prettier --write .",
+		"format:check": "prettier --check ."
+	},
+	"devDependencies": {
+		"@eslint/compat": "^2.0.5",
+		"@eslint/js": "^10.0.1",
+		"@sveltejs/kit": "^2.57.0",
+		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@types/culori": "^4.0.1",
+		"eslint": "^10.2.0",
+		"eslint-config-prettier": "^10.1.8",
+		"eslint-plugin-svelte": "^3.17.0",
+		"globals": "^17.4.0",
+		"prettier": "^3.8.2",
+		"prettier-plugin-svelte": "^3.5.1",
+		"svelte": "^5.55.2",
+		"turbo": "^2.9.6",
+		"typescript": "^5.7.3",
+		"typescript-eslint": "^8.58.1",
+		"vite": "^7.3.1"
+	},
+	"pnpm": {
+		"onlyBuiltDependencies": [
+			"esbuild"
+		]
+	}
+}

@@ -1,0 +1,31 @@
+{
+	"name": "@ssp/color-editor",
+	"private": true,
+	"version": "0.0.1",
+	"type": "module",
+	"scripts": {
+		"dev": "vite dev",
+		"build": "vite build",
+		"preview": "vite preview",
+		"prepare": "svelte-kit sync || echo ''",
+		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+	},
+	"dependencies": {
+		"@adobe/leonardo-contrast-colors": "^1.1.0",
+		"@ssp/ui": "workspace:*",
+		"culori": "^4.0.2",
+		"d3-scale": "^4.0.2",
+		"d3-shape": "^3.2.0",
+		"helmlab": "^0.11.9",
+		"monaco-editor": "^0.55.1"
+	},
+	"devDependencies": {
+		"@ssp/core": "workspace:*",
+		"@inlang/paraglide-js": "^2.15.2",
+		"@sveltejs/adapter-static": "^3.0.10",
+		"@types/d3-scale": "^4.0.9",
+		"@types/d3-shape": "^3.1.8",
+		"svelte-check": "^4.4.6"
+	}
+}

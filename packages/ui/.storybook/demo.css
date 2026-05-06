@@ -1,0 +1,4 @@
+:root {
+	--static-white-sample: linear-gradient(to right, rgb(15, 23, 42), rgb(51, 65, 85));
+	--static-black-sample: linear-gradient(to right, rgb(221, 214, 254), rgb(251, 207, 232));
+}
