@@ -24,7 +24,7 @@
 		"vite": ">=5.0.0"
 	},
 	"devDependencies": {
-		"@adobe/spectrum-tokens": "^14.5.0",
+		"@adobe/spectrum-tokens": "^14.6.0",
 		"tsdown": "^0.12.0"
 	}
 }
