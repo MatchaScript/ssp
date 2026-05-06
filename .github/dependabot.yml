@@ -1,0 +1,35 @@
+version: 2
+updates:
+  - package-ecosystem: 'npm'
+    directory: '/'
+    schedule:
+      interval: 'weekly'
+      day: 'monday'
+      time: '09:00'
+      timezone: 'Asia/Tokyo'
+    open-pull-requests-limit: 10
+    groups:
+      svelte:
+        patterns:
+          - 'svelte'
+          - '@sveltejs/*'
+          - '*-svelte'
+          - 'svelte-*'
+      eslint:
+        patterns:
+          - 'eslint'
+          - '@eslint/*'
+          - 'eslint-*'
+          - 'typescript-eslint'
+      prettier:
+        patterns:
+          - 'prettier'
+          - 'prettier-*'
+      types:
+        patterns:
+          - '@types/*'
+      dev-minor:
+        dependency-type: 'development'
+        update-types:
+          - 'minor'
+          - 'patch'
