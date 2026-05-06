@@ -22,10 +22,10 @@
 	},
 	"devDependencies": {
 		"@matchalatte/ssp-core": "workspace:*",
-		"@inlang/paraglide-js": "^2.15.2",
+		"@inlang/paraglide-js": "^2.18.0",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@types/d3-scale": "^4.0.9",
 		"@types/d3-shape": "^3.1.8",
-		"svelte-check": "^4.4.6"
+		"svelte-check": "^4.4.8"
 	}
 }
