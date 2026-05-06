@@ -39,7 +39,7 @@
 		"@adobe/spectrum-tokens": "^14.5.0",
 		"bits-ui": "^2.17.3",
 		"culori": "^4.0.2",
-		"lucide": "^1.8.0"
+		"lucide": "^1.14.0"
 	},
 	"devDependencies": {
 		"@storybook/addon-svelte-csf": "^5.1.2",
