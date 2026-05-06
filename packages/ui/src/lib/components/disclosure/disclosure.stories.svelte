@@ -67,8 +67,8 @@
 		<Disclosure.Root>
 			<Disclosure.Trigger>How do I install it?</Disclosure.Trigger>
 			<Disclosure.Content>
-				Run <code>npm install @ssp/ui</code> and import components from
-				<code>@ssp/ui/components/*</code>.
+				Run <code>npm install @matchalatte/ssp-ui</code> and import components from
+				<code>@matchalatte/ssp-ui/components/*</code>.
 			</Disclosure.Content>
 		</Disclosure.Root>
 		<Disclosure.Root>

@@ -1,5 +1,5 @@
 import type { StorybookConfig } from '@storybook/sveltekit';
-import { spectrumThemePlugin } from '@ssp/core';
+import { spectrumThemePlugin } from '@matchalatte/ssp-core';
 import { mergeConfig } from 'vite';
 
 const config: StorybookConfig = {

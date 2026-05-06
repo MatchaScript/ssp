@@ -1,5 +1,5 @@
 {
-	"name": "@ssp/ui",
+	"name": "@matchalatte/ssp-ui",
 	"version": "0.0.1",
 	"type": "module",
 	"svelte": "./dist/index.js",
@@ -46,7 +46,7 @@
 		"@storybook/sveltekit": "^10.3.5",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/package": "^2.3.0",
-		"@ssp/core": "workspace:*",
+		"@matchalatte/ssp-core": "workspace:*",
 		"storybook": "^10.3.5",
 		"svelte-check": "^4.4.6"
 	}

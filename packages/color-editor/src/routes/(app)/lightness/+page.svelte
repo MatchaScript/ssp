@@ -2,10 +2,10 @@
 	import { converter } from 'culori';
 	import { configState } from '$lib/stores/config.svelte';
 	import { themeColorsState } from '$lib/stores/theme-colors.svelte';
-	import { NumberField } from '@ssp/ui/components/number-field';
-	import { ActionButton } from '@ssp/ui';
-	import { Icon, Trash2, Plus } from '@ssp/ui/components/icon';
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@ssp/ui/components/picker';
+	import { NumberField } from '@matchalatte/ssp-ui/components/number-field';
+	import { ActionButton } from '@matchalatte/ssp-ui';
+	import { Icon, Trash2, Plus } from '@matchalatte/ssp-ui/components/icon';
+	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
 	import { LineChart } from '$lib/components/features/line-chart';
 	import { m } from '$lib/paraglide/messages';
 

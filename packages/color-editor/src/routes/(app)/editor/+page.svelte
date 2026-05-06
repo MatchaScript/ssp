@@ -1,9 +1,9 @@
 <script lang="ts">
 	import { JsonEditor } from '$lib/components/features/json-editor';
 	import { configState } from '$lib/stores/config.svelte';
-	import { ActionButton } from '@ssp/ui';
-	import { Icon } from '@ssp/ui';
-	import { Copy, Check } from '@ssp/ui/components/icon';
+	import { ActionButton } from '@matchalatte/ssp-ui';
+	import { Icon } from '@matchalatte/ssp-ui';
+	import { Copy, Check } from '@matchalatte/ssp-ui/components/icon';
 	import { m } from '$lib/paraglide/messages';
 
 	let editorRef: ReturnType<typeof JsonEditor> | undefined = $state();

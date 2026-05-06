@@ -62,7 +62,7 @@ importers:
       '@adobe/leonardo-contrast-colors':
         specifier: ^1.1.0
         version: 1.1.0
-      '@ssp/ui':
+      '@matchalatte/ssp-ui':
         specifier: workspace:*
         version: link:../ui
       culori:
@@ -84,7 +84,7 @@ importers:
       '@inlang/paraglide-js':
         specifier: ^2.15.2
         version: 2.16.1
-      '@ssp/core':
+      '@matchalatte/ssp-core':
         specifier: workspace:*
         version: link:../core
       '@sveltejs/adapter-static':
@@ -143,7 +143,7 @@ importers:
         specifier: ^5.0.0
         version: 5.55.5(@typescript-eslint/types@8.59.2)
     devDependencies:
-      '@ssp/core':
+      '@matchalatte/ssp-core':
         specifier: workspace:*
         version: link:../core
       '@storybook/addon-svelte-csf':

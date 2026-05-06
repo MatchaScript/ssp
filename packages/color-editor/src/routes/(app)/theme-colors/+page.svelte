@@ -2,11 +2,11 @@
 	import { themeColorsState } from '$lib/stores/theme-colors.svelte';
 	import { configState } from '$lib/stores/config.svelte';
 	import { ThemeColorSwatches } from '$lib/components/features/theme-colors';
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@ssp/ui/components/picker';
-	import { Slider } from '@ssp/ui/components/slider';
-	import { ActionButton } from '@ssp/ui';
-	import { Icon } from '@ssp/ui/components/icon';
-	import { Settings } from '@ssp/ui/components/icon';
+	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
+	import { Slider } from '@matchalatte/ssp-ui/components/slider';
+	import { ActionButton } from '@matchalatte/ssp-ui';
+	import { Icon } from '@matchalatte/ssp-ui/components/icon';
+	import { Settings } from '@matchalatte/ssp-ui/components/icon';
 	import { m } from '$lib/paraglide/messages';
 
 	let settingsOpen = $state(false);

@@ -1,6 +1,6 @@
 import { paraglideVitePlugin } from '@inlang/paraglide-js';
 import { sveltekit } from '@sveltejs/kit/vite';
-import { spectrumThemePlugin } from '@ssp/core';
+import { spectrumThemePlugin } from '@matchalatte/ssp-core';
 import { defineConfig } from 'vite';
 
 export default defineConfig({

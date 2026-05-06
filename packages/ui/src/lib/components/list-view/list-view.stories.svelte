@@ -57,7 +57,7 @@
 				<ListView.Item key="2" description="Product sync">Meeting notes.txt</ListView.Item>
 				<ListView.Item key="3" description="Q4 projections">Budget report.xlsx</ListView.Item>
 				<ListView.Item key="4" description="Phase 2">Project timeline.pptx</ListView.Item>
-				<ListView.Item key="5" description="@ssp/ui">Source code.zip</ListView.Item>
+				<ListView.Item key="5" description="@matchalatte/ssp-ui">Source code.zip</ListView.Item>
 			</ListView.Root>
 		</div>
 	{/snippet}

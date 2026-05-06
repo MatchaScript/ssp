@@ -1,5 +1,5 @@
 {
-	"name": "@ssp/color-editor",
+	"name": "@matchalatte/ssp-color-editor",
 	"private": true,
 	"version": "0.0.1",
 	"type": "module",
@@ -13,7 +13,7 @@
 	},
 	"dependencies": {
 		"@adobe/leonardo-contrast-colors": "^1.1.0",
-		"@ssp/ui": "workspace:*",
+		"@matchalatte/ssp-ui": "workspace:*",
 		"culori": "^4.0.2",
 		"d3-scale": "^4.0.2",
 		"d3-shape": "^3.2.0",
@@ -21,7 +21,7 @@
 		"monaco-editor": "^0.55.1"
 	},
 	"devDependencies": {
-		"@ssp/core": "workspace:*",
+		"@matchalatte/ssp-core": "workspace:*",
 		"@inlang/paraglide-js": "^2.15.2",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@types/d3-scale": "^4.0.9",

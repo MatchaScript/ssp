@@ -49,8 +49,8 @@
 						><Accordion.Trigger>How do I install it?</Accordion.Trigger></Accordion.Header
 					>
 					<Accordion.Content>
-						Run <code>npm install @ssp/ui</code> and import components from
-						<code>@ssp/ui/components/*</code>.
+						Run <code>npm install @matchalatte/ssp-ui</code> and import components from
+						<code>@matchalatte/ssp-ui/components/*</code>.
 					</Accordion.Content>
 				</Accordion.Item>
 				<Accordion.Item value="faq-3">

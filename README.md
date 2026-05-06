@@ -18,8 +18,8 @@ SSP ships three packages that work together:
 
 | Package          | What it is                                                         |
 | ---------------- | ------------------------------------------------------------------ |
-| **`@ssp/ui`**    | A Svelte 5 component library with a Spectrum-flavored API          |
-| **`@ssp/core`**  | A Vite plugin that turns `spectrum.config.json` into CSS variables |
+| **`@matchalatte/ssp-ui`**    | A Svelte 5 component library with a Spectrum-flavored API          |
+| **`@matchalatte/ssp-core`**  | A Vite plugin that turns `spectrum.config.json` into CSS variables |
 | **color-editor** | An interactive `npx` tool for authoring `spectrum.config.json`     |
 
 The intended workflow:
@@ -28,11 +28,11 @@ The intended workflow:
 npx color-editor       → tweak colors in the browser
                         → export spectrum.config.json
                         ↓
-@ssp/core              → reads the config, generates an OKLCH palette via Leonardo,
+@matchalatte/ssp-core              → reads the config, generates an OKLCH palette via Leonardo,
                         → resolves semantic tokens from @adobe/spectrum-tokens,
                         → injects everything as `virtual:ssp/theme.css`
                         ↓
-@ssp/ui                → components reference semantic CSS variables
+@matchalatte/ssp-ui                → components reference semantic CSS variables
                         → (a default theme is bundled, so the plugin is optional)
 ```
 
@@ -46,13 +46,13 @@ npx color-editor       → tweak colors in the browser
 > package layout is:
 
 ```sh
-pnpm add @ssp/ui            # component library
-pnpm add -D @ssp/core       # Vite plugin (optional — for custom themes)
+pnpm add @matchalatte/ssp-ui            # component library
+pnpm add -D @matchalatte/ssp-core       # Vite plugin (optional — for custom themes)
 ```
 
 ```svelte
 <script>
-	import { Button } from '@ssp/ui/components/button';
+	import { Button } from '@matchalatte/ssp-ui/components/button';
 </script>
 
 <Button variant="accent">Hello Spectrum</Button>
@@ -61,7 +61,7 @@ pnpm add -D @ssp/core       # Vite plugin (optional — for custom themes)
 To try the color-editor without installing:
 
 ```sh
-npx @ssp/color-editor
+npx @matchalatte/ssp-color-editor
 ```
 
 ## Built on

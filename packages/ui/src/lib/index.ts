@@ -38,7 +38,7 @@ export * from './components/time-field/index.js';
 export * from './components/toggle-button/index.js';
 
 // Selective re-exports — drop Root / short aliases (Props, Variant, Size) to avoid collisions
-// Per-component imports (e.g. '@ssp/ui/components/button') still expose all aliases.
+// Per-component imports (e.g. '@matchalatte/ssp-ui/components/button') still expose all aliases.
 export {
 	Button,
 	type ButtonRootProps,
@@ -76,7 +76,7 @@ export {
 	type FieldLabelState
 } from './components/field/index.js';
 
-// Icon — export component + types only; lucide icons available via '@ssp/ui/components/icon'
+// Icon — export component + types only; lucide icons available via '@matchalatte/ssp-ui/components/icon'
 export {
 	Icon,
 	type IconProps,

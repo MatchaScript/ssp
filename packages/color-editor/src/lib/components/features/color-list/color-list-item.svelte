@@ -2,7 +2,7 @@
 	import type { ColorEntry } from '$lib/types/spectrum-config';
 	import { page } from '$app/state';
 	import { resolve } from '$app/paths';
-	import { Badge } from '@ssp/ui';
+	import { Badge } from '@matchalatte/ssp-ui';
 	import { m } from '$lib/paraglide/messages';
 
 	type Props = {
