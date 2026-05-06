@@ -17,11 +17,11 @@ A Spectrum-inspired design system toolkit for Svelte 5.
 SSP is published as three packages. Only `ssp-ui` is required at runtime; the
 other two support custom theming workflows.
 
-| Package                     | Role                                                                                | Required? |
-| --------------------------- | ----------------------------------------------------------------------------------- | --------- |
-| **`@matchalatte/ssp-ui`**   | Svelte 5 component library with a Spectrum-flavored API                             | ✅ yes     |
-| **`@matchalatte/ssp-core`** | Vite plugin that exposes a generated theme as a virtual module for live reloading   | optional  |
-| **color-editor**            | Interactive `npx` tool for authoring `spectrum.config.json`                         | optional  |
+| Package                     | Role                                                                              | Required? |
+| --------------------------- | --------------------------------------------------------------------------------- | --------- |
+| **`@matchalatte/ssp-ui`**   | Svelte 5 component library with a Spectrum-flavored API                           | ✅ yes    |
+| **`@matchalatte/ssp-core`** | Vite plugin that exposes a generated theme as a virtual module for live reloading | optional  |
+| **color-editor**            | Interactive `npx` tool for authoring `spectrum.config.json`                       | optional  |
 
 `ssp-ui` includes a default theme stylesheet, so importing the components and
 the theme CSS is enough to get started. To use a custom palette, author one
