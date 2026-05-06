@@ -27,7 +27,9 @@
 
 <Story name="Example">
 	{#snippet template(args)}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 320px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 320px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Open menu</Button>
@@ -68,7 +70,9 @@
 
 <Story name="Basic">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Open Menu</Button>
@@ -87,7 +91,9 @@
 
 <Story name="With icons and shortcuts">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>File</Button>
@@ -118,7 +124,9 @@
 
 <Story name="With description">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Export</Button>
@@ -132,10 +140,7 @@
 						{#snippet icon()}<Icon icon={Save} size="m" />{/snippet}
 						JPEG
 					</M.MenuItem>
-					<M.MenuItem
-						id="open-site"
-						description="Opens documentation in a new tab"
-					>
+					<M.MenuItem id="open-site" description="Opens documentation in a new tab">
 						{#snippet icon()}<Icon icon={ExternalLink} size="m" />{/snippet}
 						Open docs
 					</M.MenuItem>
@@ -147,7 +152,9 @@
 
 <Story name="With value">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Preferences</Button>
@@ -173,7 +180,9 @@
 
 <Story name="Sections">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 320px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 320px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Actions</Button>
@@ -205,7 +214,9 @@
 
 <Story name="Selection — single">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Sort by</Button>
@@ -226,7 +237,9 @@
 
 <Story name="Selection — multiple">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Columns</Button>
@@ -248,7 +261,9 @@
 
 <Story name="Links">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 240px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Help</Button>
@@ -258,15 +273,11 @@
 						{#snippet icon()}<Icon icon={ExternalLink} size="m" />{/snippet}
 						Svelte docs
 					</M.MenuItem>
-					<M.MenuItem id="home" href="/">
-						Back to home
-					</M.MenuItem>
+					<M.MenuItem id="home" href="/">Back to home</M.MenuItem>
 					<M.MenuItem id="issues" href="https://github.com" target="_blank" hideLinkOutIcon>
 						GitHub (no auto icon)
 					</M.MenuItem>
-					<M.MenuItem id="blocked" href="https://example.com" isDisabled>
-						Disabled link
-					</M.MenuItem>
+					<M.MenuItem id="blocked" href="https://example.com" isDisabled>Disabled link</M.MenuItem>
 				</M.Menu>
 			</M.MenuTrigger>
 		</div>
@@ -275,7 +286,9 @@
 
 <Story name="Submenu">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 320px;">
+		<div
+			style="display: flex; flex-direction: column; align-items: start; gap: 8px; padding-bottom: 320px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Edit</Button>
@@ -319,7 +332,7 @@
 <Story name="Sizes">
 	{#snippet template()}
 		<div style="display: flex; gap: 16px; padding-bottom: 240px;">
-			{#each ['s', 'm', 'l', 'xl'] as const as size}
+			{#each ['s', 'm', 'l', 'xl'] as const as size (size)}
 				<M.MenuTrigger>
 					{#snippet trigger({ triggerProps })}
 						<Button {...triggerProps}>Size {size}</Button>

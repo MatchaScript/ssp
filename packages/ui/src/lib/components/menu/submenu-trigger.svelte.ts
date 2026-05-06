@@ -1,8 +1,4 @@
-import type {
-	MenuTriggerContext,
-	SubmenuTriggerContext,
-	PendingMenuFocus
-} from './menu.svelte.js';
+import type { MenuTriggerContext, SubmenuTriggerContext, PendingMenuFocus } from './menu.svelte.js';
 
 const HOVER_OPEN_DELAY_MS = 200;
 const HOVER_CLOSE_DELAY_MS = 200;

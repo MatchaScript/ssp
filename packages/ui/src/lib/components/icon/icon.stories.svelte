@@ -105,10 +105,12 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 16px; align-items: center;">
-		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size}
+		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size (size)}
 			<div style="display: grid; place-items: center; gap: 4px;">
 				<Icon icon={Search} {size} />
-				<span style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+				<span
+					style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+				>
 					{size}
 				</span>
 			</div>
@@ -118,10 +120,12 @@
 
 <Story name="Semantic colors" asChild>
 	<div style="display: flex; gap: 16px; align-items: center;">
-		{#each ['default', 'accent', 'informative', 'positive', 'notice', 'negative', 'gray'] as const as color}
+		{#each ['default', 'accent', 'informative', 'positive', 'notice', 'negative', 'gray'] as const as color (color)}
 			<div style="display: grid; place-items: center; gap: 4px;">
 				<Icon icon={AlertCircle} size="l" {color} />
-				<span style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+				<span
+					style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+				>
 					{color}
 				</span>
 			</div>
@@ -131,7 +135,7 @@
 
 <Story name="Bold (stroke-width 3)" asChild>
 	<div style="display: flex; gap: 24px; align-items: center;">
-		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size}
+		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size (size)}
 			<div style="display: flex; gap: 6px; align-items: center;">
 				<Icon icon={Plus} {size} />
 				<Icon icon={Plus} {size} bold />
@@ -141,10 +145,8 @@
 </Story>
 
 <Story name="Gallery" asChild>
-	<div
-		style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; width: 720px;"
-	>
-		{#each GALLERY as [name, icon]}
+	<div style="display: grid; grid-template-columns: repeat(8, 1fr); gap: 12px; width: 720px;">
+		{#each GALLERY as [name, icon] (name)}
 			<div
 				style="display: grid; place-items: center; gap: 4px; padding: 12px 4px; border: 1px solid var(--neutral-border-color-default); border-radius: 6px;"
 			>

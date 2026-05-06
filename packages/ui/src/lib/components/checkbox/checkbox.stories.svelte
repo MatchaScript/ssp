@@ -65,20 +65,22 @@
 <Story name="Long label (alignment)">
 	{#snippet template()}
 		<div style="display: flex; flex-direction: column; gap: 16px; max-width: 320px;">
-			<p style="margin: 0; color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);">
+			<p
+				style="margin: 0; color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);"
+			>
 				ボックスはラベル1行目のテキストと整列するべき。複数行になったときに視覚的にずれないか確認する。
 			</p>
 			<Checkbox>
-				Subscribe to product updates, release notes, and occasional design system
-				announcements delivered weekly.
+				Subscribe to product updates, release notes, and occasional design system announcements
+				delivered weekly.
 			</Checkbox>
 			<Checkbox checked isEmphasized>
-				I have read and agree to the terms of service, privacy policy, and the
-				updated cookie usage notice.
+				I have read and agree to the terms of service, privacy policy, and the updated cookie usage
+				notice.
 			</Checkbox>
 			<Checkbox isError>
-				This option requires acceptance before continuing — please review the
-				attached document carefully.
+				This option requires acceptance before continuing — please review the attached document
+				carefully.
 			</Checkbox>
 		</div>
 	{/snippet}

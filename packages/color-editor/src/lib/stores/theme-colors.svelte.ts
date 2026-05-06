@@ -55,9 +55,7 @@ class ThemeColorsState {
 				? grayBgColor
 				: // If backgroundColorName matches a chromatic color, build a BackgroundColor for it
 					(() => {
-						const entry = configState.colors.find(
-							(c) => c.name === this.backgroundColorName
-						);
+						const entry = configState.colors.find((c) => c.name === this.backgroundColorName);
 						if (!entry) return grayBgColor;
 						return new Leo.BackgroundColor({
 							name: entry.name,

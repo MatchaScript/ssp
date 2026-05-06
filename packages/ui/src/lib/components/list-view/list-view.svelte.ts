@@ -82,10 +82,7 @@ export class ListViewState {
 		return this.#collection.registerItem(reg);
 	}
 
-	updateItem(
-		domId: string,
-		updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>
-	) {
+	updateItem(domId: string, updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>) {
 		this.#collection.updateItem(domId, updates);
 	}
 

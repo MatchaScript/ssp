@@ -77,7 +77,12 @@
 </Story>
 
 <Story name="Error state" asChild>
-	<RadioGroup label="Payment method" isError errorMessage="Please choose a payment method." isRequired>
+	<RadioGroup
+		label="Payment method"
+		isError
+		errorMessage="Please choose a payment method."
+		isRequired
+	>
 		<Radio value="card">Credit card</Radio>
 		<Radio value="paypal">PayPal</Radio>
 		<Radio value="bank">Bank transfer</Radio>

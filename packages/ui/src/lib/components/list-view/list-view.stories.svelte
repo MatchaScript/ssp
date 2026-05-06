@@ -36,7 +36,7 @@
 </script>
 
 <script lang="ts">
-	let selected = $state<Set<string>>(new SvelteSet(['2']));
+	let selected = $state<Set<string>>(new Set(['2']));
 </script>
 
 <Story name="Example">
@@ -141,9 +141,11 @@
 
 <Story name="Densities" asChild>
 	<div style="display: flex; gap: 16px; align-items: flex-start;">
-		{#each ['compact', 'regular', 'spacious'] as const as density}
+		{#each ['compact', 'regular', 'spacious'] as const as density (density)}
 			<div style="width: 220px;">
-				<p style="margin: 0 0 6px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+				<p
+					style="margin: 0 0 6px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+				>
 					{density}
 				</p>
 				<ListView.Root aria-label="Density {density}" {density}>

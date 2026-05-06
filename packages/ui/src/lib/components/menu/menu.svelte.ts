@@ -62,10 +62,7 @@ export class MenuState {
 		return this.#collection.registerItem(reg);
 	}
 
-	updateItem(
-		domId: string,
-		updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>
-	) {
+	updateItem(domId: string, updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>) {
 		this.#collection.updateItem(domId, updates);
 	}
 
@@ -179,9 +176,8 @@ export function setMenuTriggerContext(ctx: MenuTriggerContext) {
 
 /**
  * Get the MenuTriggerContext. Returns `null` when not inside a MenuTrigger/SubmenuTrigger.
- * Pass `false` to make it explicitly optional (no error).
  */
-export function getMenuTriggerContext(required?: false): MenuTriggerContext | null {
+export function getMenuTriggerContext(): MenuTriggerContext | null {
 	if (!hasContext(MENU_TRIGGER_CTX)) return null;
 	return getContext<MenuTriggerContext>(MENU_TRIGGER_CTX);
 }
@@ -199,7 +195,7 @@ export function clearSubmenuTriggerContext() {
 	setContext(SUBMENU_TRIGGER_CTX, null);
 }
 
-export function getSubmenuTriggerContext(required?: false): SubmenuTriggerContext | null {
+export function getSubmenuTriggerContext(): SubmenuTriggerContext | null {
 	if (!hasContext(SUBMENU_TRIGGER_CTX)) return null;
 	const ctx = getContext<SubmenuTriggerContext | null>(SUBMENU_TRIGGER_CTX);
 	return ctx ?? null;

@@ -133,9 +133,7 @@
 			<Button staticColor="white" treatment="fill">Fill</Button>
 			<Button staticColor="white" treatment="outline">Outline</Button>
 		</div>
-		<div
-			style="display: flex; gap: 8px; padding: 12px; background: #fff; border-radius: 6px;"
-		>
+		<div style="display: flex; gap: 8px; padding: 12px; background: #fff; border-radius: 6px;">
 			<Button staticColor="black" treatment="fill">Fill</Button>
 			<Button staticColor="black" treatment="outline">Outline</Button>
 		</div>

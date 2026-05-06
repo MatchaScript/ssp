@@ -95,12 +95,7 @@
 <Story name="Disabled" asChild>
 	<div style="display: flex; flex-direction: column; gap: 16px; width: 320px;">
 		<RangeSlider label="Locked" value={{ start: 30, end: 70 }} isDisabled />
-		<RangeSlider
-			label="Locked emphasized"
-			value={{ start: 30, end: 70 }}
-			isEmphasized
-			isDisabled
-		/>
+		<RangeSlider label="Locked emphasized" value={{ start: 30, end: 70 }} isEmphasized isDisabled />
 	</div>
 </Story>
 

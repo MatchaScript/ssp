@@ -27,7 +27,8 @@
 	}
 
 	/* Non-SideNavItem children (Picker, ActionButton, etc.) default to icon+label columns */
-	[data-spectrum-sidenav-section] > :global(:not([data-spectrum-sidenav-item]):not([data-spectrum-sidenav-heading])) {
+	[data-spectrum-sidenav-section]
+		> :global(:not([data-spectrum-sidenav-item]):not([data-spectrum-sidenav-heading])) {
 		grid-column: 2 / -1;
 		padding-inline-end: var(--space-3);
 	}

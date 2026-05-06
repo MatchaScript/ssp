@@ -70,7 +70,11 @@
 
 				{#if settingsOpen}
 					<!-- svelte-ignore a11y_no_static_element_interactions -->
-					<div class="settings-backdrop" onclick={() => (settingsOpen = false)} onkeydown={() => {}}></div>
+					<div
+						class="settings-backdrop"
+						onclick={() => (settingsOpen = false)}
+						onkeydown={() => {}}
+					></div>
 					<div class="settings-panel">
 						<h3 class="settings-heading">{m.theme_colors_settings()}</h3>
 						<div class="settings-fields">
@@ -114,10 +118,7 @@
 		</div>
 	</div>
 
-	<div
-		class="swatches-area"
-		style:background-color={themeColorsState.output.background}
-	>
+	<div class="swatches-area" style:background-color={themeColorsState.output.background}>
 		{#each themeColorsState.output.colorScales as scale (scale.name)}
 			<ThemeColorSwatches
 				name={scale.name}

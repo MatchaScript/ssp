@@ -56,10 +56,10 @@
 		<svg width={containerWidth} {height}>
 			<g transform="translate({margin.left},{margin.top})">
 				<!-- Grid -->
-				{#each yTicks as tick}
+				{#each yTicks as tick (tick)}
 					<line class="grid-line" x1={0} y1={yScale(tick)} x2={innerWidth} y2={yScale(tick)} />
 				{/each}
-				{#each xTicks as tick}
+				{#each xTicks as tick (tick)}
 					<line class="grid-line" x1={xScale(tick)} y1={0} x2={xScale(tick)} y2={innerHeight} />
 				{/each}
 
@@ -67,14 +67,14 @@
 				<line class="axis-x" x1={0} y1={innerHeight} x2={innerWidth} y2={innerHeight} />
 
 				<!-- Y tick labels -->
-				{#each yTicks as tick}
+				{#each yTicks as tick (tick)}
 					<text
 						class="tick-label"
 						x={-8}
 						y={yScale(tick)}
 						text-anchor="end"
-						dominant-baseline="central"
-					>{yFormat(tick)}</text>
+						dominant-baseline="central">{yFormat(tick)}</text
+					>
 				{/each}
 
 				<!-- Data lines -->
@@ -83,7 +83,11 @@
 					<path
 						class="data-line"
 						d={lineGenerator(s.points) ?? ''}
-						stroke={ref ? (s.variant === 'adobe' ? 'rgba(220, 80, 70, 0.85)' : 'var(--gray-600)') : s.color}
+						stroke={ref
+							? s.variant === 'adobe'
+								? 'rgba(220, 80, 70, 0.85)'
+								: 'var(--gray-600)'
+							: s.color}
 						stroke-dasharray={ref ? '6 4' : undefined}
 					/>
 				{/each}

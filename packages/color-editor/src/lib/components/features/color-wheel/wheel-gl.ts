@@ -454,11 +454,7 @@ export class WheelGLRenderer {
 		gl.bindVertexArray(vao);
 		this.vbo = gl.createBuffer()!;
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.vbo);
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
-			gl.STATIC_DRAW
-		);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 		const loc = gl.getAttribLocation(program, 'a_position');
 		gl.enableVertexAttribArray(loc);
 		gl.vertexAttribPointer(loc, 2, gl.FLOAT, false, 0, 0);
@@ -480,11 +476,7 @@ export class WheelGLRenderer {
 
 		this.dotQuadBuf = gl.createBuffer()!;
 		gl.bindBuffer(gl.ARRAY_BUFFER, this.dotQuadBuf);
-		gl.bufferData(
-			gl.ARRAY_BUFFER,
-			new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]),
-			gl.STATIC_DRAW
-		);
+		gl.bufferData(gl.ARRAY_BUFFER, new Float32Array([-1, -1, 1, -1, -1, 1, 1, 1]), gl.STATIC_DRAW);
 		const aQuad = gl.getAttribLocation(this.dotProgram, 'a_quad');
 		gl.enableVertexAttribArray(aQuad);
 		gl.vertexAttribPointer(aQuad, 2, gl.FLOAT, false, 0, 0);
@@ -552,7 +544,12 @@ export class WheelGLRenderer {
 		return program;
 	}
 
-	render(colorSpace: ColorSpaceId, lightness: number, outputGamut: 'srgb' | 'display-p3' = 'srgb', showGamutBoundary = false) {
+	render(
+		colorSpace: ColorSpaceId,
+		lightness: number,
+		outputGamut: 'srgb' | 'display-p3' = 'srgb',
+		showGamutBoundary = false
+	) {
 		const gl = this.gl;
 		const wheelId = getWheelSpaceId(colorSpace);
 		const space = COLOR_SPACE_MAP[wheelId];
@@ -595,9 +592,7 @@ export class WheelGLRenderer {
 			gl.bindVertexArray(this.lineVao);
 			for (const line of lines) {
 				const scaledPoints =
-					dpr === 1
-						? line.points
-						: line.points.map((p) => ({ x: p.x * dpr, y: p.y * dpr }));
+					dpr === 1 ? line.points : line.points.map((p) => ({ x: p.x * dpr, y: p.y * dpr }));
 				const strip = buildLineStrip(scaledPoints, (line.width * dpr) / 2);
 				if (!strip) continue;
 				gl.bindBuffer(gl.ARRAY_BUFFER, this.linePosBuf);
@@ -638,7 +633,6 @@ export class WheelGLRenderer {
 			gl.drawArraysInstanced(gl.TRIANGLE_STRIP, 0, 4, dots.length);
 			gl.bindVertexArray(null);
 		}
-
 	}
 
 	destroy() {

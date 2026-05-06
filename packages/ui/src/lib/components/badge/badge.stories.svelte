@@ -1,7 +1,15 @@
 <script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import Badge from './badge.svelte';
-	import { Icon, Check, AlertTriangle, AlertCircle, CheckCircle, Star, Zap } from '$lib/components/icon';
+	import {
+		Icon,
+		Check,
+		AlertTriangle,
+		AlertCircle,
+		CheckCircle,
+		Star,
+		Zap
+	} from '$lib/components/icon';
 
 	const { Story } = defineMeta({
 		title: 'Components/Badge',

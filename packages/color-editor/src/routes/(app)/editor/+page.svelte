@@ -31,12 +31,7 @@
 <div class="editor-page">
 	<div class="editor-toolbar">
 		<h1 class="editor-title">{m.editor_title()}</h1>
-		<ActionButton
-			size="s"
-			isQuiet
-			onclick={handleCopy}
-			aria-label={m.editor_copy()}
-		>
+		<ActionButton size="s" isQuiet onclick={handleCopy} aria-label={m.editor_copy()}>
 			{#snippet icon()}<Icon icon={copied ? Check : Copy} />{/snippet}
 			{copied ? m.editor_copied() : m.editor_copy()}
 		</ActionButton>

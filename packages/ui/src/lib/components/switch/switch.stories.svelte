@@ -45,7 +45,9 @@
 </Story>
 
 <Story name="States" asChild>
-	<div style="display: grid; grid-template-columns: repeat(2, max-content); gap: var(--space-3) var(--space-6);">
+	<div
+		style="display: grid; grid-template-columns: repeat(2, max-content); gap: var(--space-3) var(--space-6);"
+	>
 		<Switch>Off</Switch>
 		<Switch checked>On</Switch>
 		<Switch isEmphasized>Emphasized · off</Switch>
@@ -77,8 +79,8 @@
 <Story name="Long label (alignment)" asChild>
 	<div style="display: flex; flex-direction: column; gap: var(--space-4); max-width: 360px;">
 		<Switch>
-			Share anonymous usage data with the team to help improve future releases and
-			prioritize bug fixes.
+			Share anonymous usage data with the team to help improve future releases and prioritize bug
+			fixes.
 		</Switch>
 		<Switch checked isEmphasized>
 			Automatically install minor updates when the app is idle overnight.

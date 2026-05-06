@@ -28,7 +28,7 @@
 </script>
 
 <script lang="ts">
-	let selected = $state<Set<string>>(new SvelteSet(['compute']));
+	let selected = $state<Set<string>>(new Set(['compute']));
 </script>
 
 <Story name="Example">

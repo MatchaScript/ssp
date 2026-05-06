@@ -76,10 +76,8 @@
 
 <Story name="Placements">
 	{#snippet template()}
-		<div
-			style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 80px; padding: 120px;"
-		>
-			{#each ['top', 'bottom', 'left', 'right'] as const as placement}
+		<div style="display: grid; grid-template-columns: repeat(2, 1fr); gap: 80px; padding: 120px;">
+			{#each ['top', 'bottom', 'left', 'right'] as const as placement (placement)}
 				<div style="display: flex; justify-content: center;">
 					<Tooltip.Root {placement} delayDuration={200}>
 						<Tooltip.Trigger>

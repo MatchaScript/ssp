@@ -45,14 +45,18 @@
 					</Accordion.Content>
 				</Accordion.Item>
 				<Accordion.Item value="faq-2">
-					<Accordion.Header><Accordion.Trigger>How do I install it?</Accordion.Trigger></Accordion.Header>
+					<Accordion.Header
+						><Accordion.Trigger>How do I install it?</Accordion.Trigger></Accordion.Header
+					>
 					<Accordion.Content>
 						Run <code>npm install @ssp/ui</code> and import components from
 						<code>@ssp/ui/components/*</code>.
 					</Accordion.Content>
 				</Accordion.Item>
 				<Accordion.Item value="faq-3">
-					<Accordion.Header><Accordion.Trigger>Does it support dark mode?</Accordion.Trigger></Accordion.Header>
+					<Accordion.Header
+						><Accordion.Trigger>Does it support dark mode?</Accordion.Trigger></Accordion.Header
+					>
 					<Accordion.Content>
 						Yes, via CSS custom properties and the <code>light-dark()</code> function.
 					</Accordion.Content>
@@ -123,7 +127,7 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: grid; gap: 24px; width: 520px;">
-		{#each ['s', 'm', 'l', 'xl'] as const as size}
+		{#each ['s', 'm', 'l', 'xl'] as const as size (size)}
 			<Accordion.Root {size} value="a">
 				<Accordion.Item value="a">
 					<Accordion.Header>
@@ -154,8 +158,8 @@
 						exercitation ullamco laboris nisi ut aliquip ex ea commodo consequat.
 					</p>
 					<p>
-						Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu
-						fugiat nulla pariatur. Excepteur sint occaecat cupidatat non proident.
+						Duis aute irure dolor in reprehenderit in voluptate velit esse cillum dolore eu fugiat
+						nulla pariatur. Excepteur sint occaecat cupidatat non proident.
 					</p>
 				</Accordion.Content>
 			</Accordion.Item>
@@ -199,7 +203,9 @@
 	<div style="width: 480px;">
 		<Accordion.Root isDisabled value="a">
 			<Accordion.Item value="a">
-				<Accordion.Header><Accordion.Trigger>Can't open (root disabled)</Accordion.Trigger></Accordion.Header>
+				<Accordion.Header
+					><Accordion.Trigger>Can't open (root disabled)</Accordion.Trigger></Accordion.Header
+				>
 				<Accordion.Content>Hidden.</Accordion.Content>
 			</Accordion.Item>
 			<Accordion.Item value="b">

@@ -5,13 +5,7 @@
 	import type { SideNavItemProps } from './types.js';
 	import { getSideNavContext } from './side-nav-context.svelte.js';
 
-	let {
-		icon,
-		exact = false,
-		href,
-		children,
-		...restProps
-	}: SideNavItemProps = $props();
+	let { icon, exact = false, href, children, ...restProps }: SideNavItemProps = $props();
 
 	const nav = getSideNavContext();
 

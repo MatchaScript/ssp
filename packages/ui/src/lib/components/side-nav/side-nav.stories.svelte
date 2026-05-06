@@ -81,7 +81,7 @@
 				<SideNav.Item href="/quick" icon={Pin}>Quick links</SideNav.Item>
 			</SideNav.Section>
 			<SideNav.Section heading="All projects" grow>
-				{#each Array.from({ length: 14 }, (_, i) => i + 1) as n}
+				{#each Array.from({ length: 14 }, (_, i) => i + 1) as n (n)}
 					<SideNav.Item href="/project-{n}" icon={FolderOpen}>Project {n}</SideNav.Item>
 				{/each}
 			</SideNav.Section>
@@ -133,7 +133,9 @@
 	<div
 		style="display: grid; grid-template-columns: 240px 1fr; width: 760px; height: 480px; border: 1px solid var(--neutral-border-color-default); border-radius: 8px; overflow: hidden;"
 	>
-		<div style="background: var(--background-layer-1-color); border-right: 1px solid var(--neutral-border-color-default);">
+		<div
+			style="background: var(--background-layer-1-color); border-right: 1px solid var(--neutral-border-color-default);"
+		>
 			<SideNav.Root open>
 				<SideNav.Section heading="Workspace">
 					<SideNav.Item href="/" exact icon={LayoutDashboard}>Dashboard</SideNav.Item>

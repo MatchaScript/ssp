@@ -5,7 +5,7 @@ export {
 	type SelectionBehavior,
 	type SelectionInputModifiers,
 	type FocusStrategy,
-	type ItemRegistration,
+	type ItemRegistration
 } from './selectable-collection.svelte.js';
 
 export { Typeahead } from './typeahead.js';

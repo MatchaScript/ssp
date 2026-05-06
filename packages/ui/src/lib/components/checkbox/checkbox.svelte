@@ -124,7 +124,10 @@
 			background-color: var(--negative-background-color-hover);
 		}
 
-		[data-spectrum-checkbox] input:focus-visible ~ [data-spectrum-checkbox-box-wrapper] > [data-spectrum-checkbox-box] {
+		[data-spectrum-checkbox]
+			input:focus-visible
+			~ [data-spectrum-checkbox-box-wrapper]
+			> [data-spectrum-checkbox-box] {
 			outline: var(--focus-indicator-thickness) solid var(--focus-indicator-color);
 			outline-offset: var(--focus-indicator-gap);
 		}

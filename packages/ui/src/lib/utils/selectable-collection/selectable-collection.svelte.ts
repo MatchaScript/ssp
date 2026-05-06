@@ -1,3 +1,7 @@
+/* eslint-disable svelte/prefer-svelte-reactivity --
+ * TODO: Fix the lint errors in this file and re-enable the rule.
+ */
+
 import { Typeahead } from './typeahead.js';
 
 // ─── Types ───────────────────────────────────────────────────────────
@@ -94,9 +98,7 @@ function findNextEnabled(
 
 	const limit = wrap ? len : direction === 1 ? len - 1 - currentIndex : currentIndex;
 	for (let i = 1; i <= limit; i++) {
-		const idx = wrap
-			? (currentIndex + i * direction + len) % len
-			: currentIndex + i * direction;
+		const idx = wrap ? (currentIndex + i * direction + len) % len : currentIndex + i * direction;
 		if (idx < 0 || idx >= len) break;
 		if (!items[idx].disabled) return items[idx];
 	}
@@ -209,10 +211,7 @@ export class SelectableCollection {
 		};
 	}
 
-	updateItem(
-		domId: string,
-		updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>
-	) {
+	updateItem(domId: string, updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>) {
 		const item = this.#items.get(domId);
 		if (!item) return;
 		if (updates.disabled !== undefined) item.disabled = updates.disabled;

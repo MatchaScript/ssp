@@ -1,6 +1,7 @@
 <script lang="ts">
 	import type { ColorEntry } from '$lib/types/spectrum-config';
 	import { page } from '$app/state';
+	import { resolve } from '$app/paths';
 	import { Badge } from '@ssp/ui';
 	import { m } from '$lib/paraglide/messages';
 
@@ -11,7 +12,7 @@
 
 	let { color, isAccent = false }: Props = $props();
 
-	const href = $derived(`/create/${color.name}`);
+	const href = $derived(resolve('/(app)/create/[color]', { color: color.name }));
 	const isActive = $derived(
 		page.url?.pathname === href || page.url?.pathname.startsWith(href + '/') || false
 	);
@@ -34,10 +35,7 @@
 		<span class="color-meta">
 			<span class="color-anchors">
 				{#each anchors as [level, hex] (level)}
-					<span
-						class="color-anchor-swatch"
-						style="background-color: {hex}"
-						title="{level}: {hex}"
+					<span class="color-anchor-swatch" style="background-color: {hex}" title="{level}: {hex}"
 					></span>
 				{/each}
 			</span>

@@ -42,8 +42,12 @@
 
 	let wheelLightness = $state(70);
 	let showPaths = $state(typeof saved.showPaths === 'boolean' ? saved.showPaths : true);
-	let showHarmonyLines = $state(typeof saved.showHarmonyLines === 'boolean' ? saved.showHarmonyLines : false);
-	let showGamutBoundary = $state(typeof saved.showGamutBoundary === 'boolean' ? saved.showGamutBoundary : false);
+	let showHarmonyLines = $state(
+		typeof saved.showHarmonyLines === 'boolean' ? saved.showHarmonyLines : false
+	);
+	let showGamutBoundary = $state(
+		typeof saved.showGamutBoundary === 'boolean' ? saved.showGamutBoundary : false
+	);
 	let snapLightness = $state(typeof saved.snapLightness === 'boolean' ? saved.snapLightness : true);
 	let dotMode = $state<DotMode>(saved.dotMode === 'crossSection' ? 'crossSection' : 'keyColors');
 
@@ -165,9 +169,7 @@
 
 	// ── Color wheel interpolation paths ──
 
-	const wheelPaths = $derived(
-		scales.map((s) => ({ name: s.name, swatches: s.swatches }))
-	);
+	const wheelPaths = $derived(scales.map((s) => ({ name: s.name, swatches: s.swatches })));
 
 	// ── Interpolation chart data ──
 	// Each chart (channel) gets its own array of series with {index, value} points
@@ -230,11 +232,7 @@
 				{showGamutBoundary}
 			/>
 			<div class="wheel-controls">
-				<Picker
-					bind:selectedKey={dotMode}
-					label={dotModeLabel}
-					selectionMode="single"
-				>
+				<Picker bind:selectedKey={dotMode} label={dotModeLabel} selectionMode="single">
 					<PickerTrigger />
 					<PickerContent>
 						<PickerItem value="keyColors" label={m.chromaticity_dots_keys()} />
@@ -304,7 +302,7 @@
 		margin: 0;
 	}
 
-.chromaticity-body {
+	.chromaticity-body {
 		display: grid;
 		grid-template-columns: auto 1fr;
 		gap: var(--spacing-400);

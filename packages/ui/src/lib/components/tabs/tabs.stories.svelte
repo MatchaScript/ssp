@@ -102,10 +102,7 @@
 			<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
 				Active: <code>{controlledKey}</code>
 			</div>
-			<Tabs.Root
-				selectedKey={controlledKey}
-				onSelectionChange={(k) => (controlledKey = k)}
-			>
+			<Tabs.Root selectedKey={controlledKey} onSelectionChange={(k) => (controlledKey = k)}>
 				<Tabs.List aria-label="Controlled tabs">
 					<Tabs.Trigger value="home">Home</Tabs.Trigger>
 					<Tabs.Trigger value="files">Files</Tabs.Trigger>

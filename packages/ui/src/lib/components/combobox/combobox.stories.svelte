@@ -126,7 +126,9 @@
 </Story>
 
 <Story name="Sizes" asChild>
-	<div style="display: flex; flex-direction: column; gap: var(--space-4); width: 260px; padding-bottom: 340px;">
+	<div
+		style="display: flex; flex-direction: column; gap: var(--space-4); width: 260px; padding-bottom: 340px;"
+	>
 		{#each ['s', 'm', 'l', 'xl'] as const as size (size)}
 			<C.Root {size}>
 				<C.Input placeholder={`Size ${size}`} />
@@ -155,7 +157,9 @@
 
 <Story name="Controlled">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; gap: var(--space-3); width: 260px; padding-bottom: 260px;">
+		<div
+			style="display: flex; flex-direction: column; gap: var(--space-3); width: 260px; padding-bottom: 260px;"
+		>
 			<C.Root bind:selectedKey={selected} onSelectionChange={(v) => console.log('changed:', v)}>
 				<C.Input placeholder="Pick a fruit" />
 				<C.Content>

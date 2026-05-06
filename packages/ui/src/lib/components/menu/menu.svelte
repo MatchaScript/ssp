@@ -112,7 +112,6 @@
 {#if isTriggered && !triggerCtx.open}
 	<!-- Menu is closed — don't render -->
 {:else}
-	<!-- svelte-ignore a11y_no_noninteractive_element_interactions -->
 	<div
 		bind:this={ref}
 		role="menu"
@@ -142,8 +141,7 @@
 	[data-spectrum-menu] {
 		gap: 0;
 		display: grid;
-		grid-template-columns:
-			var(--edge) auto auto minmax(0, 1fr) auto auto auto var(--edge);
+		grid-template-columns: var(--edge) auto auto minmax(0, 1fr) auto auto auto var(--edge);
 		grid-auto-rows: min-content;
 		outline: none;
 		padding: var(--spacing-100);

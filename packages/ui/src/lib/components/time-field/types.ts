@@ -1,11 +1,10 @@
 import type { HTMLInputAttributes } from 'svelte/elements';
 import type { FieldSize, FieldLabelPosition, NecessityIndicator } from '../field/types.js';
 
-export interface TimeFieldProps
-	extends Omit<
-		HTMLInputAttributes,
-		'size' | 'class' | 'id' | 'type' | 'disabled' | 'readonly' | 'required' | 'value'
-	> {
+export interface TimeFieldProps extends Omit<
+	HTMLInputAttributes,
+	'size' | 'class' | 'id' | 'type' | 'disabled' | 'readonly' | 'required' | 'value'
+> {
 	/** The current value as a 24-hour time string (`HH:MM` or `HH:MM:SS`). */
 	value?: string;
 

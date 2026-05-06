@@ -61,7 +61,11 @@
 
 <Story name="With help text" asChild>
 	<div style="width: 320px;">
-		<TextField label="Username" helpText="3–20 characters, letters and numbers only." placeholder="jane_doe" />
+		<TextField
+			label="Username"
+			helpText="3–20 characters, letters and numbers only."
+			placeholder="jane_doe"
+		/>
 	</div>
 </Story>
 

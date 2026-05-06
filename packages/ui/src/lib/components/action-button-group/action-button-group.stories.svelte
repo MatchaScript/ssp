@@ -148,7 +148,7 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; flex-direction: column; gap: 12px; align-items: start;">
-		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size}
+		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size (size)}
 			<ActionButtonGroup {size} density="compact" aria-label={`Size ${size}`}>
 				<ActionButtonGroupItem aria-label="Left">
 					{#snippet icon()}<Icon icon={AlignLeft} {size} />{/snippet}

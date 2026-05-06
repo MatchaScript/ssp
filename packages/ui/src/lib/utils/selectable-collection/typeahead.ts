@@ -8,10 +8,7 @@ export class Typeahead {
 	#getItems: () => ItemRegistration[];
 	#onMatch: (domId: string) => void;
 
-	constructor(
-		getItems: () => ItemRegistration[],
-		onMatch: (domId: string) => void
-	) {
+	constructor(getItems: () => ItemRegistration[], onMatch: (domId: string) => void) {
 		this.#getItems = getItems;
 		this.#onMatch = onMatch;
 	}

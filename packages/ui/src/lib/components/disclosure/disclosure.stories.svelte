@@ -60,8 +60,8 @@
 		<Disclosure.Root>
 			<Disclosure.Trigger>What is SSP?</Disclosure.Trigger>
 			<Disclosure.Content>
-				A Spectrum-inspired design system toolkit for Svelte 5 — UI library, token
-				generator, and palette editor.
+				A Spectrum-inspired design system toolkit for Svelte 5 — UI library, token generator, and
+				palette editor.
 			</Disclosure.Content>
 		</Disclosure.Root>
 		<Disclosure.Root>
@@ -81,8 +81,8 @@
 		<Disclosure.Root>
 			<Disclosure.Trigger>Can I customize components?</Disclosure.Trigger>
 			<Disclosure.Content>
-				Override the CSS custom properties exposed by each component to restyle them
-				without forking the source.
+				Override the CSS custom properties exposed by each component to restyle them without forking
+				the source.
 			</Disclosure.Content>
 		</Disclosure.Root>
 	</div>
@@ -93,8 +93,8 @@
 		<Disclosure.Root isQuiet>
 			<Disclosure.Trigger>No trailing divider</Disclosure.Trigger>
 			<Disclosure.Content>
-				Useful when the disclosure is embedded in a container that already has its own
-				chrome, such as a card.
+				Useful when the disclosure is embedded in a container that already has its own chrome, such
+				as a card.
 			</Disclosure.Content>
 		</Disclosure.Root>
 		<Disclosure.Root isQuiet>
@@ -106,7 +106,7 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: grid; gap: 16px; width: 560px;">
-		{#each ['s', 'm', 'l', 'xl'] as const as size}
+		{#each ['s', 'm', 'l', 'xl'] as const as size (size)}
 			<Disclosure.Root {size}>
 				<Disclosure.Trigger>Size {size}</Disclosure.Trigger>
 				<Disclosure.Content>Content rendered at size {size}.</Disclosure.Content>

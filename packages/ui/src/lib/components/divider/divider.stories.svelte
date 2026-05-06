@@ -2,7 +2,15 @@
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { Divider } from './index.js';
 	import ActionButton from '$lib/components/action-button/action-button.svelte';
-	import { Icon, AlignLeft, AlignCenter, AlignRight, Copy, Trash2, Edit } from '$lib/components/icon';
+	import {
+		Icon,
+		AlignLeft,
+		AlignCenter,
+		AlignRight,
+		Copy,
+		Trash2,
+		Edit
+	} from '$lib/components/icon';
 
 	const { Story } = defineMeta({
 		title: 'Components/Divider',
@@ -37,19 +45,25 @@
 <Story name="Sizes (horizontal)" asChild>
 	<div style="display: grid; gap: 24px; width: 360px;">
 		<div>
-			<p style="margin: 0 0 8px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+			<p
+				style="margin: 0 0 8px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+			>
 				Small
 			</p>
 			<Divider size="s" />
 		</div>
 		<div>
-			<p style="margin: 0 0 8px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+			<p
+				style="margin: 0 0 8px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+			>
 				Medium (default)
 			</p>
 			<Divider size="m" />
 		</div>
 		<div>
-			<p style="margin: 0 0 8px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+			<p
+				style="margin: 0 0 8px; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+			>
 				Large
 			</p>
 			<Divider size="l" />

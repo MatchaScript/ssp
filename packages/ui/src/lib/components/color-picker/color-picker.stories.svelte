@@ -44,7 +44,7 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 24px; align-items: center;">
-		{#each ['s', 'm', 'l', 'xl'] as const as size}
+		{#each ['s', 'm', 'l', 'xl'] as const as size (size)}
 			<ColorPicker {size} label={size.toUpperCase()} value="#4a3aff" />
 		{/each}
 	</div>

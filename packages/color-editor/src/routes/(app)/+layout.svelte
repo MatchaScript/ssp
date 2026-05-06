@@ -96,20 +96,11 @@
 		<header class="app-header">
 			<a href={resolve('/')} class="header-logo">Color Editor</a>
 			<div class="header-actions">
-				<ActionButton
-					size="s"
-					onclick={handleSave}
-					aria-label={m.header_save()}
-				>
+				<ActionButton size="s" onclick={handleSave} aria-label={m.header_save()}>
 					{#snippet icon()}<Icon icon={Save} />{/snippet}
 					{m.header_save()}
 				</ActionButton>
-				<ActionButton
-					size="s"
-					isQuiet
-					onclick={handleReset}
-					aria-label={m.header_reset()}
-				>
+				<ActionButton size="s" isQuiet onclick={handleReset} aria-label={m.header_reset()}>
 					{m.header_reset()}
 				</ActionButton>
 			</div>
@@ -130,7 +121,7 @@
 				</Picker>
 			</div>
 		</header>
-		<Divider size=s />
+		<Divider size="s" />
 		<main class="app-main">
 			{@render children()}
 		</main>

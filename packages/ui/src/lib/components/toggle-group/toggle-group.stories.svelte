@@ -42,7 +42,16 @@
 </script>
 
 <script lang="ts">
-	import { Icon, AlignCenter, AlignLeft, AlignRight, Edit, Star, Bookmark, Pin } from '$lib/components/icon';
+	import {
+		Icon,
+		AlignCenter,
+		AlignLeft,
+		AlignRight,
+		Edit,
+		Star,
+		Bookmark,
+		Pin
+	} from '$lib/components/icon';
 
 	let alignment = $state<string[]>(['center']);
 	let formatting = $state<string[]>(['bold']);
@@ -165,7 +174,7 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; flex-direction: column; gap: 12px; align-items: start;">
-		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size}
+		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size (size)}
 			<ToggleGroup selectionMode="single" {size} value={['center']} aria-label={`Size ${size}`}>
 				<ToggleGroupItem value="left" aria-label="Left">
 					{#snippet icon()}<Icon icon={AlignLeft} {size} />{/snippet}

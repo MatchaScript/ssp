@@ -1,6 +1,7 @@
 <script lang="ts">
 	import { page } from '$app/state';
 	import { goto } from '$app/navigation';
+	import { resolve } from '$app/paths';
 	import { configState } from '$lib/stores/config.svelte';
 	import { colorSpaceState } from '$lib/stores/color-space.svelte';
 	import { Theme, Color, BackgroundColor } from '@adobe/leonardo-contrast-colors';
@@ -10,12 +11,7 @@
 	import { ActionButton } from '@ssp/ui';
 	import { Icon } from '@ssp/ui/components/icon';
 	import { Trash2 } from '@ssp/ui/components/icon';
-	import {
-		Picker,
-		PickerTrigger,
-		PickerContent,
-		PickerItem
-	} from '@ssp/ui/components/picker';
+	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@ssp/ui/components/picker';
 	import { Switch } from '@ssp/ui/components/switch';
 	import { Helmlab } from 'helmlab';
 	import { m } from '$lib/paraglide/messages';
@@ -46,9 +42,7 @@
 
 	const sortedAnchors = $derived.by(() => {
 		if (!colorData) return [];
-		return Object.entries(colorData.scaleAnchors).sort(
-			([a], [b]) => Number(a) - Number(b)
-		);
+		return Object.entries(colorData.scaleAnchors).sort(([a], [b]) => Number(a) - Number(b));
 	});
 
 	const usedLevels = $derived(new Set(sortedAnchors.map(([level]) => level)));
@@ -82,9 +76,7 @@
 	});
 
 	const gradientCss = $derived(
-		previewSwatches.length > 0
-			? `linear-gradient(to right, ${previewSwatches.join(', ')})`
-			: 'none'
+		previewSwatches.length > 0 ? `linear-gradient(to right, ${previewSwatches.join(', ')})` : 'none'
 	);
 
 	// ── Scale visibility toggles ──
@@ -138,7 +130,11 @@
 	});
 
 	const wheelPaths = $derived.by(() => {
-		const result: { name: string; swatches: string[]; variant?: 'default' | 'adobe' | 'helmlab' }[] = [];
+		const result: {
+			name: string;
+			swatches: string[];
+			variant?: 'default' | 'adobe' | 'helmlab';
+		}[] = [];
 		if (showOwn && previewSwatches.length > 0) {
 			result.push({ name: colorName, swatches: previewSwatches });
 		}
@@ -189,32 +185,33 @@
 
 		if (showOwn && previewSwatches.length > 0) {
 			const s = extractChannelSeries(previewSwatches, colorName, baseHex);
-			ch[0].push(s[0]); ch[1].push(s[1]); ch[2].push(s[2]);
+			ch[0].push(s[0]);
+			ch[1].push(s[1]);
+			ch[2].push(s[2]);
 		}
 		if (showAdobe && adobeSwatches.length > 0) {
-			const s = extractChannelSeries(
-				adobeSwatches, `${adobeRefColor} (Adobe)`, baseHex,
-				{ variant: 'adobe', indexCount: levelCount }
-			);
-			ch[0].push(s[0]); ch[1].push(s[1]); ch[2].push(s[2]);
+			const s = extractChannelSeries(adobeSwatches, `${adobeRefColor} (Adobe)`, baseHex, {
+				variant: 'adobe',
+				indexCount: levelCount
+			});
+			ch[0].push(s[0]);
+			ch[1].push(s[1]);
+			ch[2].push(s[2]);
 		}
 		if (showHelmlab && helmlabSwatches.length > 0) {
-			const s = extractChannelSeries(
-				helmlabSwatches, `${colorName} (Helmlab)`, baseHex,
-				{ variant: 'helmlab' }
-			);
-			ch[0].push(s[0]); ch[1].push(s[1]); ch[2].push(s[2]);
+			const s = extractChannelSeries(helmlabSwatches, `${colorName} (Helmlab)`, baseHex, {
+				variant: 'helmlab'
+			});
+			ch[0].push(s[0]);
+			ch[1].push(s[1]);
+			ch[2].push(s[2]);
 		}
 		return ch;
 	});
 
 	// ── Name editing ──
 
-	let editingName = $state(page.params.color ?? '');
-
-	$effect(() => {
-		editingName = page.params.color ?? '';
-	});
+	let editingName = $derived(page.params.color ?? '');
 
 	function commitRename() {
 		const trimmed = editingName.trim();
@@ -223,7 +220,7 @@
 			return;
 		}
 		configState.renameColor(colorName, trimmed);
-		goto(`/create/${trimmed}`, { replaceState: true });
+		goto(resolve('/(app)/create/[color]', { color: trimmed }), { replaceState: true });
 	}
 
 	function handleNameKeydown(e: KeyboardEvent) {
@@ -268,28 +265,61 @@
 
 	// ── Tab navigation ──
 
-	const basePath = $derived(`/create/${colorName}`);
+	const detailHref = $derived(resolve('/(app)/create/[color]', { color: colorName }));
+	const summaryHref = $derived(resolve('/(app)/create/[color]/summary', { color: colorName }));
 	const isOnSummary = $derived(page.url.pathname.endsWith('/summary'));
 
 	// ── Context ──
 
 	setColorEditorContext({
-		get colorName() { return colorName; },
-		get sortedAnchors() { return sortedAnchors; },
-		get previewSwatches() { return previewSwatches; },
-		get adobeSwatches() { return adobeSwatches; },
-		get helmlabSwatches() { return helmlabSwatches; },
-		get showOwn() { return showOwn; },
-		get showAdobe() { return showAdobe; },
-		get showHelmlab() { return showHelmlab; },
-		get adobeRefColor() { return adobeRefColor; },
-		get gradientCss() { return gradientCss; },
-		get wheelDots() { return wheelDots; },
-		get wheelPaths() { return wheelPaths; },
-		get channelData() { return channelData; },
-		get channels() { return channels; },
-		get levelCount() { return levelCount; },
-		get colorSpaceLabel() { return colorSpaceLabel; }
+		get colorName() {
+			return colorName;
+		},
+		get sortedAnchors() {
+			return sortedAnchors;
+		},
+		get previewSwatches() {
+			return previewSwatches;
+		},
+		get adobeSwatches() {
+			return adobeSwatches;
+		},
+		get helmlabSwatches() {
+			return helmlabSwatches;
+		},
+		get showOwn() {
+			return showOwn;
+		},
+		get showAdobe() {
+			return showAdobe;
+		},
+		get showHelmlab() {
+			return showHelmlab;
+		},
+		get adobeRefColor() {
+			return adobeRefColor;
+		},
+		get gradientCss() {
+			return gradientCss;
+		},
+		get wheelDots() {
+			return wheelDots;
+		},
+		get wheelPaths() {
+			return wheelPaths;
+		},
+		get channelData() {
+			return channelData;
+		},
+		get channels() {
+			return channels;
+		},
+		get levelCount() {
+			return levelCount;
+		},
+		get colorSpaceLabel() {
+			return colorSpaceLabel;
+		}
 	});
 </script>
 
@@ -330,11 +360,7 @@
 				<div class="ref-row">
 					<Switch bind:checked={showAdobe} size="s">Adobe</Switch>
 					{#if showAdobe}
-						<Picker
-							bind:selectedKey={adobeRefColor}
-							selectionMode="single"
-							size="s"
-						>
+						<Picker bind:selectedKey={adobeRefColor} selectionMode="single" size="s">
 							<PickerTrigger placeholder={m.create_reference_color()} />
 							<PickerContent>
 								{#each adobeColors as name (name)}
@@ -369,18 +395,14 @@
 				<div class="anchor-list">
 					{#each sortedAnchors as [level, hex] (level)}
 						<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
-						<div
-							class="anchor-row"
-							onclick={() => handleAnchorClick(hex)}
-						>
+						<div class="anchor-row" onclick={() => handleAnchorClick(hex)}>
 							<span class="anchor-level">{level}</span>
 							<!-- svelte-ignore a11y_click_events_have_key_events a11y_no_static_element_interactions -->
 							<div onclick={(e: MouseEvent) => e.stopPropagation()}>
 								<ColorPicker
 									value={hex}
 									size="m"
-									onInput={(newHex) =>
-										configState.updateColorAnchor(colorName, level, newHex)}
+									onInput={(newHex) => configState.updateColorAnchor(colorName, level, newHex)}
 								/>
 							</div>
 							<span class="hex-label">{hex}</span>
@@ -406,18 +428,10 @@
 		<!-- Right: Tab nav + content -->
 		<div class="content-panel">
 			<nav class="tab-nav">
-				<a
-					class="tab-link"
-					href={basePath}
-					data-active={!isOnSummary || undefined}
-				>
+				<a class="tab-link" href={detailHref} data-active={!isOnSummary || undefined}>
 					{m.create_tab_detail()}
 				</a>
-				<a
-					class="tab-link"
-					href="{basePath}/summary"
-					data-active={isOnSummary || undefined}
-				>
+				<a class="tab-link" href={summaryHref} data-active={isOnSummary || undefined}>
 					{m.create_tab_summary()}
 				</a>
 			</nav>

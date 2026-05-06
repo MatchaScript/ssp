@@ -1,11 +1,10 @@
 import type { HTMLInputAttributes } from 'svelte/elements';
 import type { FieldSize, FieldLabelPosition, NecessityIndicator } from '../field/types.js';
 
-export interface DateFieldProps
-	extends Omit<
-		HTMLInputAttributes,
-		'size' | 'class' | 'id' | 'type' | 'disabled' | 'readonly' | 'required' | 'value'
-	> {
+export interface DateFieldProps extends Omit<
+	HTMLInputAttributes,
+	'size' | 'class' | 'id' | 'type' | 'disabled' | 'readonly' | 'required' | 'value'
+> {
 	/** The current value as an ISO date string (`YYYY-MM-DD`). */
 	value?: string;
 

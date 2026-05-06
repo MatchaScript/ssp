@@ -38,9 +38,7 @@
 	let showGamutBoundary = $state(
 		typeof saved.showGamutBoundary === 'boolean' ? saved.showGamutBoundary : false
 	);
-	let snapLightness = $state(
-		typeof saved.snapLightness === 'boolean' ? saved.snapLightness : true
-	);
+	let snapLightness = $state(typeof saved.snapLightness === 'boolean' ? saved.snapLightness : true);
 	let dotMode = $state<DotMode>(saved.dotMode === 'crossSection' ? 'crossSection' : 'keyColors');
 
 	$effect(() => {
@@ -53,9 +51,7 @@
 	const spaceConfig = $derived(COLOR_SPACES[colorSpaceState.id]);
 
 	// Own-palette scales only (exclude adobe/helmlab reference scales)
-	const ownScales = $derived(
-		ctx.wheelPaths.filter((p) => !p.variant || p.variant === 'default')
-	);
+	const ownScales = $derived(ctx.wheelPaths.filter((p) => !p.variant || p.variant === 'default'));
 
 	// Tick positions (0–100): per-level actual L in the display color space,
 	// averaged across own scales. Non-uniform because Leonardo picks per-hue L.
@@ -161,11 +157,7 @@
 				<h2 class="section-heading">{m.create_preview()}</h2>
 				<div class="preview-swatches">
 					{#each ctx.previewSwatches as swatch, i (i)}
-						<div
-							class="preview-swatch"
-							style:background-color={swatch}
-							title={swatch}
-						></div>
+						<div class="preview-swatch" style:background-color={swatch} title={swatch}></div>
 					{/each}
 				</div>
 			</div>

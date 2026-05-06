@@ -28,7 +28,7 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 12px; align-items: center;">
-		{#each [16, 24, 32, 48, 64, 80, 96] as size}
+		{#each [16, 24, 32, 48, 64, 80, 96] as size (size)}
 			<Avatar.Root {size}>
 				<Avatar.Image src="https://i.pravatar.cc/150?u={size}" alt="User {size}" />
 				<Avatar.Fallback>U</Avatar.Fallback>
@@ -60,7 +60,7 @@
 
 <Story name="Stacked group" asChild>
 	<div style="display: flex; align-items: center;">
-		{#each ['a', 'b', 'c', 'd'] as seed, i}
+		{#each ['a', 'b', 'c', 'd'] as seed, i (seed)}
 			<div style="margin-inline-start: {i === 0 ? 0 : -10}px;">
 				<Avatar.Root size={36} isOverBackground>
 					<Avatar.Image src="https://i.pravatar.cc/150?u={seed}" alt="User {seed}" />
@@ -132,7 +132,7 @@
 
 <Story name="In a user row" asChild>
 	<div style="display: grid; gap: 8px; width: 320px;">
-		{#each [{ name: 'Ada Lovelace', role: 'Owner', seed: 'ada' }, { name: 'Grace Hopper', role: 'Admin', seed: 'grace' }, { name: 'Linus Torvalds', role: 'Member', seed: 'linus' }] as user}
+		{#each [{ name: 'Ada Lovelace', role: 'Owner', seed: 'ada' }, { name: 'Grace Hopper', role: 'Admin', seed: 'grace' }, { name: 'Linus Torvalds', role: 'Member', seed: 'linus' }] as user (user.seed)}
 			<div style="display: flex; align-items: center; gap: 12px;">
 				<Avatar.Root size={40}>
 					<Avatar.Image src="https://i.pravatar.cc/150?u={user.seed}" alt={user.name} />
@@ -140,7 +140,9 @@
 				</Avatar.Root>
 				<div style="display: grid;">
 					<span>{user.name}</span>
-					<span style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+					<span
+						style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+					>
 						{user.role}
 					</span>
 				</div>

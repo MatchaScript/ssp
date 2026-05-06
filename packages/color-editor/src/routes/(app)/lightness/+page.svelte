@@ -5,12 +5,7 @@
 	import { NumberField } from '@ssp/ui/components/number-field';
 	import { ActionButton } from '@ssp/ui';
 	import { Icon, Trash2, Plus } from '@ssp/ui/components/icon';
-	import {
-		Picker,
-		PickerTrigger,
-		PickerContent,
-		PickerItem
-	} from '@ssp/ui/components/picker';
+	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@ssp/ui/components/picker';
 	import { LineChart } from '$lib/components/features/line-chart';
 	import { m } from '$lib/paraglide/messages';
 
@@ -41,9 +36,7 @@
 	}
 
 	const stops = $derived.by<StopData[]>(() => {
-		const scale = themeColorsState.output.colorScales.find(
-			(s) => s.name === previewColorName
-		);
+		const scale = themeColorsState.output.colorScales.find((s) => s.name === previewColorName);
 		return targets.map((ratio, i) => {
 			const generated = scale?.values[i];
 			const hex = generated?.value ?? '#000000';
@@ -93,15 +86,9 @@
 
 	function distributeLightness() {
 		if (stops.length < 2) return;
-		// Compute target lightness values evenly spaced
-		const lightnesses = stops.map((s) => s.lightness);
-		const minL = Math.min(...lightnesses);
-		const maxL = Math.max(...lightnesses);
 
-		// We want lightness evenly distributed. To achieve this, we need to
-		// find contrast ratios that produce those lightness values. We do this
-		// by inverting: sort current stops by lightness, then re-distribute
-		// the contrast ratios linearly between the min and max ratios.
+		// Approximate evenly-distributed lightness by linearly interpolating between
+		// the smallest and largest contrast ratios in the current targets.
 		const sortedRatios = [...targets].sort((a, b) => a - b);
 		const minR = sortedRatios[0];
 		const maxR = sortedRatios[sortedRatios.length - 1];
@@ -151,9 +138,7 @@
 
 	// ── Contrast ratio range for chart ──
 
-	const contrastMax = $derived(
-		Math.max(21, ...targets.map((t) => Math.ceil(t)))
-	);
+	const contrastMax = $derived(Math.max(21, ...targets.map((t) => Math.ceil(t))));
 </script>
 
 <div class="lightness-page">
@@ -205,59 +190,50 @@
 			<div class="stops-body">
 				<div class="gradient-bar" style:background={gradientCss}>
 					{#each stops as stop, i (i)}
-						{@const pct = stops.length > 1
-							? (i / (stops.length - 1)) * 100
-							: 50}
-						<div
-							class="gradient-dot"
-							style:top="{pct}%"
-							title="L* {stop.lightness}"
-						></div>
+						{@const pct = stops.length > 1 ? (i / (stops.length - 1)) * 100 : 50}
+						<div class="gradient-dot" style:top="{pct}%" title="L* {stop.lightness}"></div>
 					{/each}
 				</div>
 
 				<div class="stop-list">
-				<div class="stop-list-header">
-					<span class="col-index">#</span>
-					<span class="col-swatch"></span>
-					<span class="col-ratio">{m.lightness_contrast_ratio()}</span>
-					<span class="col-lightness">{m.lightness_value()}</span>
-					<span class="col-action"></span>
-				</div>
-				{#each stops as stop, i (i)}
-					<div class="stop-row">
-						<span class="col-index stop-index">{i + 1}</span>
-						<div
-							class="col-swatch stop-swatch"
-							style:background-color={stop.hex}
-						></div>
-						<div class="col-ratio">
-							<NumberField
-								bind:value={configState.raw.colorContrastTargets[i]}
-								min={1}
-								max={21}
-								step={0.01}
-								hideStepper
-								hideLabel
-								label={m.lightness_contrast_ratio()}
-								size="s"
-							/>
-						</div>
-						<span class="col-lightness stop-lightness">{stop.lightness}</span>
-						<div class="col-action">
-							<ActionButton
-								isQuiet
-								size="s"
-								disabled={targets.length < 2}
-								aria-label={m.lightness_remove()}
-								title={m.lightness_remove()}
-								onclick={() => removeStop(i)}
-							>
-								{#snippet icon()}<Icon icon={Trash2} />{/snippet}
-							</ActionButton>
-						</div>
+					<div class="stop-list-header">
+						<span class="col-index">#</span>
+						<span class="col-swatch"></span>
+						<span class="col-ratio">{m.lightness_contrast_ratio()}</span>
+						<span class="col-lightness">{m.lightness_value()}</span>
+						<span class="col-action"></span>
 					</div>
-				{/each}
+					{#each stops as stop, i (i)}
+						<div class="stop-row">
+							<span class="col-index stop-index">{i + 1}</span>
+							<div class="col-swatch stop-swatch" style:background-color={stop.hex}></div>
+							<div class="col-ratio">
+								<NumberField
+									bind:value={configState.raw.colorContrastTargets[i]}
+									min={1}
+									max={21}
+									step={0.01}
+									hideStepper
+									hideLabel
+									label={m.lightness_contrast_ratio()}
+									size="s"
+								/>
+							</div>
+							<span class="col-lightness stop-lightness">{stop.lightness}</span>
+							<div class="col-action">
+								<ActionButton
+									isQuiet
+									size="s"
+									disabled={targets.length < 2}
+									aria-label={m.lightness_remove()}
+									title={m.lightness_remove()}
+									onclick={() => removeStop(i)}
+								>
+									{#snippet icon()}<Icon icon={Trash2} />{/snippet}
+								</ActionButton>
+							</div>
+						</div>
+					{/each}
 				</div>
 			</div>
 		</div>

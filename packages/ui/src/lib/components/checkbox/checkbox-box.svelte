@@ -36,7 +36,7 @@
 	<span data-spectrum-checkbox-icon data-visible={checked || indeterminate || undefined}>
 		<span
 			data-spectrum-checkbox-glyph="check"
-			data-active={checked && !indeterminate || undefined}
+			data-active={(checked && !indeterminate) || undefined}
 		>
 			<Icon icon={Check} size="xs" bold />
 		</span>

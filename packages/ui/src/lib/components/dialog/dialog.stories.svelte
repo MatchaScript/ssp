@@ -45,8 +45,8 @@
 					<Dialog.Header>You have 3 unsaved changes in this workspace.</Dialog.Header>
 					<Dialog.Body>
 						<p>
-							Saving will update the configuration for all members. You can continue editing
-							after saving.
+							Saving will update the configuration for all members. You can continue editing after
+							saving.
 						</p>
 					</Dialog.Body>
 					<Dialog.Footer>
@@ -111,8 +111,8 @@
 					<Dialog.Header>This action is permanent and cannot be undone.</Dialog.Header>
 					<Dialog.Body>
 						<p>
-							All projects, environments, and secrets in this workspace will be deleted.
-							Team members will lose access immediately.
+							All projects, environments, and secrets in this workspace will be deleted. Team
+							members will lose access immediately.
 						</p>
 					</Dialog.Body>
 					<Dialog.Footer>
@@ -152,8 +152,7 @@
 					<Dialog.Header>Edit configurations with your teammates in real time.</Dialog.Header>
 					<Dialog.Body>
 						<p>
-							Invite teammates from any workspace. See cursors, presence, and edits as they
-							happen.
+							Invite teammates from any workspace. See cursors, presence, and edits as they happen.
 						</p>
 					</Dialog.Body>
 					<Dialog.Footer>
@@ -187,10 +186,7 @@
 					<Dialog.Heading>Invite a teammate</Dialog.Heading>
 					<Dialog.Header>They will receive an email with a join link.</Dialog.Header>
 					<Dialog.Body>
-						<form
-							style="display: grid; gap: 12px;"
-							onsubmit={(e) => e.preventDefault()}
-						>
+						<form style="display: grid; gap: 12px;" onsubmit={(e) => e.preventDefault()}>
 							<label style="display: grid; gap: 4px;">
 								<span style="font-size: var(--text-75);">Name</span>
 								<input
@@ -231,7 +227,7 @@
 <Story name="Sizes">
 	{#snippet template()}
 		<div style="display: flex; gap: 8px; padding-bottom: 320px;">
-			{#each ['s', 'm', 'l'] as const as size}
+			{#each ['s', 'm', 'l'] as const as size (size)}
 				<Dialog.Root {size}>
 					<Dialog.Trigger>
 						{#snippet child({ props })}
@@ -290,12 +286,10 @@
 			<Dialog.Root open={controlledOpen} onOpenChange={(o) => (controlledOpen = o)}>
 				<Dialog.Content>
 					<Dialog.Heading>
-						{#snippet children()}
-							<span style="display: inline-flex; gap: 8px; align-items: center;">
-								<Icon icon={AlertTriangle} size="m" />
-								Controlled state
-							</span>
-						{/snippet}
+						<span style="display: inline-flex; gap: 8px; align-items: center;">
+							<Icon icon={AlertTriangle} size="m" />
+							Controlled state
+						</span>
 					</Dialog.Heading>
 					<Dialog.Body>
 						<p>Open state is driven by a <code>$state</code> value in the story.</p>

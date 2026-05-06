@@ -114,14 +114,15 @@
 	color: var(--neutral-subdued-content-color-default);
 }
 
-[data-spectrum-menu-item][data-disabled] :is(
-	.checkmark-slot,
-	.icon-slot,
-	.description-slot,
-	.value-slot,
-	.keyboard-slot,
-	.descriptor-slot
-) {
+[data-spectrum-menu-item][data-disabled]
+	:is(
+		.checkmark-slot,
+		.icon-slot,
+		.description-slot,
+		.value-slot,
+		.keyboard-slot,
+		.descriptor-slot
+	) {
 	color: var(--disabled-content-color);
 }
 

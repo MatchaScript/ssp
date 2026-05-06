@@ -1,11 +1,6 @@
 <script lang="ts">
 	import type { Snippet } from 'svelte';
-	import type {
-		FieldSize,
-		FieldLabelPosition,
-		FieldState,
-		FieldLabelState
-	} from './types.js';
+	import type { FieldSize, FieldLabelPosition, FieldState, FieldLabelState } from './types.js';
 	import FieldGroup from './field-group.svelte';
 	import HelpText from './help-text.svelte';
 
@@ -63,14 +58,7 @@
 	<FieldGroup {size} {isError} {isDisabled} {isReadOnly}>
 		{@render children?.({ id, helpTextId })}
 	</FieldGroup>
-	<HelpText
-		{size}
-		{isError}
-		{isDisabled}
-		description={helpText}
-		{errorMessage}
-		id={helpTextId}
-	/>
+	<HelpText {size} {isError} {isDisabled} description={helpText} {errorMessage} id={helpTextId} />
 </div>
 
 <style>

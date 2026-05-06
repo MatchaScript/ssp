@@ -130,7 +130,6 @@
 	}
 </script>
 
-<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <svelte:element
 	this={tag}
 	bind:this={ref}
@@ -163,12 +162,7 @@
 					<div class="radio-dot"></div>
 				{/if}
 			{:else}
-				<CheckboxBox
-					checked={isSelected}
-					isEmphasized
-					isDisabled={isDisabled}
-					size={menuState.size}
-				/>
+				<CheckboxBox checked={isSelected} isEmphasized {isDisabled} size={menuState.size} />
 			{/if}
 		</div>
 	{/if}

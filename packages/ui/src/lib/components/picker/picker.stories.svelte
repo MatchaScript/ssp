@@ -133,7 +133,9 @@
 </Story>
 
 <Story name="Sizes" asChild>
-	<div style="display: flex; flex-direction: column; gap: var(--space-4); width: 240px; padding-bottom: 340px;">
+	<div
+		style="display: flex; flex-direction: column; gap: var(--space-4); width: 240px; padding-bottom: 340px;"
+	>
 		{#each ['s', 'm', 'l', 'xl'] as const as size (size)}
 			<P.Root {size}>
 				<P.Trigger placeholder={`Size ${size}`} aria-label={`Size ${size}`} />
@@ -162,7 +164,9 @@
 
 <Story name="Controlled (single)">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; gap: var(--space-3); width: 240px; padding-bottom: 260px;">
+		<div
+			style="display: flex; flex-direction: column; gap: var(--space-3); width: 240px; padding-bottom: 260px;"
+		>
 			<P.Root bind:selectedKey={single}>
 				<P.Trigger placeholder="Pick one" aria-label="Controlled single" />
 				<P.Content>
@@ -180,8 +184,14 @@
 
 <Story name="Controlled (multiple)">
 	{#snippet template()}
-		<div style="display: flex; flex-direction: column; gap: var(--space-3); width: 260px; padding-bottom: 260px;">
-			<P.Root bind:selectedKey={multi} selectionMode="multiple" label={multi.length ? multi.join(', ') : undefined}>
+		<div
+			style="display: flex; flex-direction: column; gap: var(--space-3); width: 260px; padding-bottom: 260px;"
+		>
+			<P.Root
+				bind:selectedKey={multi}
+				selectionMode="multiple"
+				label={multi.length ? multi.join(', ') : undefined}
+			>
 				<P.Trigger placeholder="Pick several" aria-label="Controlled multiple" />
 				<P.Content>
 					{#each frequencies as freq (freq)}

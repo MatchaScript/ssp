@@ -32,10 +32,27 @@
 	import { Globe } from '$lib/components/icon';
 
 	const allItems = [
-		'Accordion', 'Action Bar', 'Action Button', 'Avatar', 'Badge',
-		'Button', 'Card', 'Checkbox', 'Combobox', 'Dialog', 'Divider',
-		'Icon', 'List View', 'Menu', 'Number Field', 'Picker', 'Radio Group',
-		'Search Field', 'Switch', 'TextArea', 'TextField'
+		'Accordion',
+		'Action Bar',
+		'Action Button',
+		'Avatar',
+		'Badge',
+		'Button',
+		'Card',
+		'Checkbox',
+		'Combobox',
+		'Dialog',
+		'Divider',
+		'Icon',
+		'List View',
+		'Menu',
+		'Number Field',
+		'Picker',
+		'Radio Group',
+		'Search Field',
+		'Switch',
+		'TextArea',
+		'TextField'
 	];
 	let query = $state('');
 	const filtered = $derived(
@@ -62,10 +79,7 @@
 
 <Story name="With help text" asChild>
 	<div style="width: 320px;">
-		<SearchField
-			placeholder="Search docs"
-			helpText="Press Enter to search, Esc to clear."
-		/>
+		<SearchField placeholder="Search docs" helpText="Press Enter to search, Esc to clear." />
 	</div>
 </Story>
 
@@ -99,19 +113,27 @@
 				onSubmit={(v) => (lastSubmit = v)}
 				onClear={() => (lastSubmit = null)}
 			/>
-			<ul style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-1); max-height: 220px; overflow-y: auto;">
+			<ul
+				style="margin: 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: var(--space-1); max-height: 220px; overflow-y: auto;"
+			>
 				{#each filtered as item (item)}
-					<li style="padding: var(--space-2) var(--space-3); border-radius: var(--corner-radius-small-default); background: var(--neutral-subtle-background-color-default); font-size: var(--text-75);">
+					<li
+						style="padding: var(--space-2) var(--space-3); border-radius: var(--corner-radius-small-default); background: var(--neutral-subtle-background-color-default); font-size: var(--text-75);"
+					>
 						{item}
 					</li>
 				{:else}
-					<li style="padding: var(--space-2); color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);">
+					<li
+						style="padding: var(--space-2); color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);"
+					>
 						No matches.
 					</li>
 				{/each}
 			</ul>
 			{#if lastSubmit}
-				<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+				<div
+					style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
+				>
 					Last submitted: "{lastSubmit}"
 				</div>
 			{/if}

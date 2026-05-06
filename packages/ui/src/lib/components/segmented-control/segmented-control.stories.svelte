@@ -42,11 +42,7 @@
 
 <Story name="Controlled view switcher" asChild>
 	<div style="display: flex; flex-direction: column; gap: 8px;">
-		<SegmentedControl
-			aria-label="View"
-			selectedKey={view}
-			onSelectionChange={(id) => (view = id)}
-		>
+		<SegmentedControl aria-label="View" selectedKey={view} onSelectionChange={(id) => (view = id)}>
 			<SegmentedControlItem id="grid">
 				{#snippet icon()}<Icon icon={LayoutDashboard} size="m" />{/snippet}
 				Grid

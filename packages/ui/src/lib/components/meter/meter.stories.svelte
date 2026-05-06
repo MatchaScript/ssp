@@ -61,13 +61,7 @@
 	<div
 		style="display: flex; flex-direction: column; gap: 16px; width: 360px; padding: 16px; background: var(--background-layer-1-color); border-radius: 8px;"
 	>
-		<Meter
-			variant="positive"
-			value={18}
-			max={256}
-			label="Documents"
-			valueLabel="18 GB of 256 GB"
-		/>
+		<Meter variant="positive" value={18} max={256} label="Documents" valueLabel="18 GB of 256 GB" />
 		<Meter
 			variant="informative"
 			value={142}
@@ -76,13 +70,7 @@
 			valueLabel="142 GB of 256 GB"
 		/>
 		<Meter variant="notice" value={212} max={256} label="System" valueLabel="212 GB of 256 GB" />
-		<Meter
-			variant="negative"
-			value={249}
-			max={256}
-			label="Backups"
-			valueLabel="249 GB of 256 GB"
-		/>
+		<Meter variant="negative" value={249} max={256} label="Backups" valueLabel="249 GB of 256 GB" />
 	</div>
 </Story>
 

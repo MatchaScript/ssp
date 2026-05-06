@@ -4,7 +4,6 @@
 	import { m } from '$lib/paraglide/messages';
 	import ColorWheel from '$lib/components/features/color-wheel/color-wheel.svelte';
 	import { LineChart } from '$lib/components/features/line-chart';
-	import { COLOR_SPACES } from '$lib/types/color-space';
 
 	const ctx = getColorEditorContext();
 </script>
@@ -27,11 +26,7 @@
 					<div class="preview-gradient" style:background={ctx.gradientCss}></div>
 					<div class="preview-swatches">
 						{#each ctx.previewSwatches as swatch, i (i)}
-							<div
-								class="preview-swatch"
-								style:background-color={swatch}
-								title={swatch}
-							></div>
+							<div class="preview-swatch" style:background-color={swatch} title={swatch}></div>
 						{/each}
 					</div>
 				{/if}
@@ -39,11 +34,7 @@
 					<h2 class="section-heading">{ctx.adobeRefColor} (Adobe)</h2>
 					<div class="preview-swatches">
 						{#each ctx.adobeSwatches as swatch, i (i)}
-							<div
-								class="preview-swatch"
-								style:background-color={swatch}
-								title={swatch}
-							></div>
+							<div class="preview-swatch" style:background-color={swatch} title={swatch}></div>
 						{/each}
 					</div>
 				{/if}
@@ -51,11 +42,7 @@
 					<h2 class="section-heading">{ctx.colorName} (Helmlab)</h2>
 					<div class="preview-swatches">
 						{#each ctx.helmlabSwatches as swatch, i (i)}
-							<div
-								class="preview-swatch"
-								style:background-color={swatch}
-								title={swatch}
-							></div>
+							<div class="preview-swatch" style:background-color={swatch} title={swatch}></div>
 						{/each}
 					</div>
 				{/if}

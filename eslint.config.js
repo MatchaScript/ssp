@@ -23,8 +23,9 @@ export default defineConfig(
 		}
 	},
 	{
-	        ignores: ['**/.claude/', '**/project.inlang/', '**/src/lib/paraglide/', '**/storybook-static/']
-	},	{
+		ignores: ['**/.claude/', '**/project.inlang/', '**/src/lib/paraglide/', '**/storybook-static/']
+	},
+	{
 		files: ['**/*.svelte', '**/*.svelte.ts', '**/*.svelte.js'],
 		languageOptions: {
 			parserOptions: {
