@@ -33,6 +33,10 @@ export default defineConfig(
 				extraFileExtensions: ['.svelte'],
 				parser: ts.parser
 			}
+		},
+		rules: {
+			// $bindable() への代入を ESLint がフロー解析できず誤検知するため Svelte ファイルでは無効化
+			'no-useless-assignment': 'off'
 		}
 	}
 );
