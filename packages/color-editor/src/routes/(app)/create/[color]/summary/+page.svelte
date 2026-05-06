@@ -6,7 +6,12 @@
 	import ColorWheel from '$lib/components/features/color-wheel/color-wheel.svelte';
 	import { Slider } from '@matchalatte/ssp-ui/components/slider';
 	import { Switch } from '@matchalatte/ssp-ui/components/switch';
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
+	import {
+		Picker,
+		PickerTrigger,
+		PickerContent,
+		PickerItem
+	} from '@matchalatte/ssp-ui/components/picker';
 	import { COLOR_SPACES } from '$lib/types/color-space';
 
 	const ctx = getColorEditorContext();

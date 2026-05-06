@@ -11,7 +11,12 @@
 	import { ActionButton } from '@matchalatte/ssp-ui';
 	import { Icon } from '@matchalatte/ssp-ui/components/icon';
 	import { Trash2 } from '@matchalatte/ssp-ui/components/icon';
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
+	import {
+		Picker,
+		PickerTrigger,
+		PickerContent,
+		PickerItem
+	} from '@matchalatte/ssp-ui/components/picker';
 	import { Switch } from '@matchalatte/ssp-ui/components/switch';
 	import { Helmlab } from 'helmlab';
 	import { m } from '$lib/paraglide/messages';

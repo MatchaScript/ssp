@@ -4,7 +4,12 @@
 	import { Theme, Color, BackgroundColor } from '@adobe/leonardo-contrast-colors';
 	import { buildColorKeys } from '$lib/utils/color-keys';
 	import { LineChart } from '$lib/components/features/line-chart';
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
+	import {
+		Picker,
+		PickerTrigger,
+		PickerContent,
+		PickerItem
+	} from '@matchalatte/ssp-ui/components/picker';
 	import { Slider } from '@matchalatte/ssp-ui/components/slider';
 	import { Switch } from '@matchalatte/ssp-ui/components/switch';
 	import { m } from '$lib/paraglide/messages';

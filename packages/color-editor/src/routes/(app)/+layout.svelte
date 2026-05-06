@@ -12,7 +12,12 @@
 		Save
 	} from '@matchalatte/ssp-ui/components/icon';
 	import { Icon, ActionButton, SideNav, Divider } from '@matchalatte/ssp-ui';
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
+	import {
+		Picker,
+		PickerTrigger,
+		PickerContent,
+		PickerItem
+	} from '@matchalatte/ssp-ui/components/picker';
 	import { m } from '$lib/paraglide/messages';
 	import { themeState } from '$lib/stores/theme.svelte';
 	import { configState } from '$lib/stores/config.svelte';

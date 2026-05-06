@@ -5,7 +5,12 @@
 	import { NumberField } from '@matchalatte/ssp-ui/components/number-field';
 	import { ActionButton } from '@matchalatte/ssp-ui';
 	import { Icon, Trash2, Plus } from '@matchalatte/ssp-ui/components/icon';
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
+	import {
+		Picker,
+		PickerTrigger,
+		PickerContent,
+		PickerItem
+	} from '@matchalatte/ssp-ui/components/picker';
 	import { LineChart } from '$lib/components/features/line-chart';
 	import { m } from '$lib/paraglide/messages';
 

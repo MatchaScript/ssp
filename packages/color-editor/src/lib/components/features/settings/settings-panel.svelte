@@ -1,6 +1,14 @@
 <script lang="ts">
-	import { Picker, PickerTrigger, PickerContent, PickerItem } from '@matchalatte/ssp-ui/components/picker';
-	import { SegmentedControl, SegmentedControlItem } from '@matchalatte/ssp-ui/components/segmented-control';
+	import {
+		Picker,
+		PickerTrigger,
+		PickerContent,
+		PickerItem
+	} from '@matchalatte/ssp-ui/components/picker';
+	import {
+		SegmentedControl,
+		SegmentedControlItem
+	} from '@matchalatte/ssp-ui/components/segmented-control';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import { themeState } from '$lib/stores/theme.svelte';
