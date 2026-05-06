@@ -8,9 +8,7 @@ A Spectrum-inspired design system toolkit for Svelte 5.
 > trademarks of Adobe. This project draws design inspiration from the publicly
 > available Spectrum design system and consumes the Apache-2.0 licensed
 > [`@adobe/spectrum-tokens`][spectrum-tokens] and
-> [`@adobe/leonardo-contrast-colors`][leonardo] packages, but the components,
-> APIs, and code are written from scratch and are independent from any Adobe
-> product or distribution.
+> [`@adobe/leonardo-contrast-colors`][leonardo] packages.
 
 ---
 
@@ -18,10 +16,10 @@ A Spectrum-inspired design system toolkit for Svelte 5.
 
 SSP ships three packages that work together:
 
-| Package           | What it is                                                         |
-| ----------------- | ------------------------------------------------------------------ |
-| **`@ssp/ui`**     | A Svelte 5 component library with a Spectrum-flavored API          |
-| **`@ssp/core`**   | A Vite plugin that turns `spectrum.config.json` into CSS variables |
+| Package          | What it is                                                         |
+| ---------------- | ------------------------------------------------------------------ |
+| **`@ssp/ui`**    | A Svelte 5 component library with a Spectrum-flavored API          |
+| **`@ssp/core`**  | A Vite plugin that turns `spectrum.config.json` into CSS variables |
 | **color-editor** | An interactive `npx` tool for authoring `spectrum.config.json`     |
 
 The intended workflow:
@@ -40,9 +38,7 @@ npx color-editor       → tweak colors in the browser
 
 ## Status
 
-🚧 **Pre-release / experimental.** APIs may still change. Expect rough edges,
-missing components, and gaps in documentation. Feedback and issue reports are
-welcome.
+🚧 **Pre-release / experimental.**
 
 ## Getting started
 
@@ -56,7 +52,7 @@ pnpm add -D @ssp/core       # Vite plugin (optional — for custom themes)
 
 ```svelte
 <script>
-  import { Button } from '@ssp/ui/components/button';
+	import { Button } from '@ssp/ui/components/button';
 </script>
 
 <Button variant="accent">Hello Spectrum</Button>
@@ -93,7 +89,9 @@ Toolchain versions are pinned in `mise.toml` (`mise install` to provision).
 
 [MIT](./LICENSE) © MatchaScript
 
-Spectrum tokens and Leonardo are used under the Apache License 2.0.
+Spectrum tokens and Leonardo are used under the Apache License 2.0. See
+[NOTICE](./NOTICE) for third-party attribution covering the Adobe Spectrum
+token data redistributed under `packages/core/src/tokens/`.
 
 [bits-ui]: https://bits-ui.com/
 [leonardo]: https://github.com/adobe/leonardo

@@ -1,0 +1,28 @@
+SSP (Svelte Spectrum)
+Copyright (c) 2026 MatchaScript
+
+This product is licensed under the MIT License (see LICENSE).
+
+================================================================================
+Third-party content redistributed in this repository
+================================================================================
+
+This repository redistributes design token data extracted from the following
+Adobe project, used and redistributed under the Apache License, Version 2.0.
+
+  Adobe Spectrum Tokens
+    Source:    https://github.com/adobe/spectrum-tokens
+    NPM:       @adobe/spectrum-tokens
+    License:   Apache License, Version 2.0
+               https://www.apache.org/licenses/LICENSE-2.0
+    Copyright: Copyright Adobe Inc. and contributors.
+
+  Files derived from the above:
+    - packages/core/src/tokens/semantic.json
+    - packages/core/src/tokens/palette.json
+
+  These files are produced by `packages/core/scripts/extract-tokens.ts`,
+  which reads the upstream `@adobe/spectrum-tokens` package and emits a
+  filtered/reshaped subset as JSON. The token names and values are derived
+  from the upstream source. See packages/core/src/tokens/NOTICE for the
+  sidecar attribution that travels with those files.
