@@ -12,29 +12,28 @@ A Spectrum-inspired design system toolkit for Svelte 5.
 
 ---
 
-## What's in the box
+## Packages
 
-SSP ships three packages that work together:
+SSP is published as three packages. Only `ssp-ui` is required at runtime; the
+other two support custom theming workflows.
 
-| Package          | What it is                                                         |
-| ---------------- | ------------------------------------------------------------------ |
-| **`@matchalatte/ssp-ui`**    | A Svelte 5 component library with a Spectrum-flavored API          |
-| **`@matchalatte/ssp-core`**  | A Vite plugin that turns `spectrum.config.json` into CSS variables |
-| **color-editor** | An interactive `npx` tool for authoring `spectrum.config.json`     |
+| Package                     | Role                                                                                | Required? |
+| --------------------------- | ----------------------------------------------------------------------------------- | --------- |
+| **`@matchalatte/ssp-ui`**   | Svelte 5 component library with a Spectrum-flavored API                             | ✅ yes     |
+| **`@matchalatte/ssp-core`** | Vite plugin that exposes a generated theme as a virtual module for live reloading   | optional  |
+| **color-editor**            | Interactive `npx` tool for authoring `spectrum.config.json`                         | optional  |
 
-The intended workflow:
+`ssp-ui` includes a default theme stylesheet, so importing the components and
+the theme CSS is enough to get started. To use a custom palette, author one
+with `color-editor` and either:
 
-```
-npx color-editor       → tweak colors in the browser
-                        → export spectrum.config.json
-                        ↓
-@matchalatte/ssp-core              → reads the config, generates an OKLCH palette via Leonardo,
-                        → resolves semantic tokens from @adobe/spectrum-tokens,
-                        → injects everything as `virtual:ssp/theme.css`
-                        ↓
-@matchalatte/ssp-ui                → components reference semantic CSS variables
-                        → (a default theme is bundled, so the plugin is optional)
-```
+- emit the resulting CSS once and ship it as a regular stylesheet, or
+- install `ssp-core` to consume `spectrum.config.json` through the
+  `virtual:ssp/theme.css` Vite virtual module, which adds HMR during
+  development.
+
+In both cases `ssp-core` is a build-time concern — it is never part of the
+runtime dependency graph.
 
 ## Status
 
@@ -46,8 +45,8 @@ npx color-editor       → tweak colors in the browser
 > package layout is:
 
 ```sh
-pnpm add @matchalatte/ssp-ui            # component library
-pnpm add -D @matchalatte/ssp-core       # Vite plugin (optional — for custom themes)
+pnpm add @matchalatte/ssp-ui            # component library — this is all you need
+pnpm add -D @matchalatte/ssp-core       # optional: Vite plugin for live-reloading custom themes
 ```
 
 ```svelte
