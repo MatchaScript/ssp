@@ -1,0 +1,31 @@
+name: pkg.pr.new
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  build:
+    if: github.repository == 'MatchaScript/ssp'
+    name: Publish Preview
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v6
+      - uses: pnpm/action-setup@v6.0.5
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build
+        run: pnpm build
+
+      - name: Publish to pkg.pr.new
+        run: pnpx pkg-pr-new publish './packages/core' './packages/ui' './packages/color-editor'
