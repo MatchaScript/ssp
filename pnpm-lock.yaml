@@ -59,34 +59,22 @@ importers:
 
   packages/color-editor:
     dependencies:
+      sirv:
+        specifier: ^3.0.2
+        version: 3.0.2
+    devDependencies:
       '@adobe/leonardo-contrast-colors':
         specifier: ^1.1.0
         version: 1.1.0
-      '@matchalatte/ssp-ui':
-        specifier: workspace:*
-        version: link:../ui
-      culori:
-        specifier: ^4.0.2
-        version: 4.0.2
-      d3-scale:
-        specifier: ^4.0.2
-        version: 4.0.2
-      d3-shape:
-        specifier: ^3.2.0
-        version: 3.2.0
-      helmlab:
-        specifier: ^0.12.2
-        version: 0.12.2
-      monaco-editor:
-        specifier: ^0.55.1
-        version: 0.55.1
-    devDependencies:
       '@inlang/paraglide-js':
         specifier: ^2.18.0
         version: 2.18.0(typescript@5.9.3)
       '@matchalatte/ssp-core':
         specifier: workspace:*
         version: link:../core
+      '@matchalatte/ssp-ui':
+        specifier: workspace:*
+        version: link:../ui
       '@sveltejs/adapter-static':
         specifier: ^3.0.10
         version: 3.0.10(@sveltejs/kit@2.59.1(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.55.5(@typescript-eslint/types@8.59.2))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)))(svelte@5.55.5(@typescript-eslint/types@8.59.2))(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)))
@@ -96,6 +84,18 @@ importers:
       '@types/d3-shape':
         specifier: ^3.1.8
         version: 3.1.8
+      culori:
+        specifier: ^4.0.2
+        version: 4.0.2
+      d3-scale:
+        specifier: ^4.0.2
+        version: 4.0.2
+      d3-shape:
+        specifier: ^3.2.0
+        version: 3.2.0
+      monaco-editor:
+        specifier: ^0.55.1
+        version: 0.55.1
       svelte-check:
         specifier: ^4.4.8
         version: 4.4.8(picomatch@4.0.4)(svelte@5.55.5(@typescript-eslint/types@8.59.2))(typescript@5.9.3)
@@ -1341,9 +1341,6 @@ packages:
   hasown@2.0.3:
     resolution: {integrity: sha512-ej4AhfhfL2Q2zpMmLo7U1Uv9+PyhIZpgQLGT1F9miIGmiCJIoCgSmczFdrc97mWT4kVY72KA+WnnhJ5pghSvSg==}
     engines: {node: '>= 0.4'}
-
-  helmlab@0.12.2:
-    resolution: {integrity: sha512-PbXwnH7SYaA5VcR0PDG83wnX+IoGbcW4shoBKZ7dcYBdYaS1/o/jzsXecKzFQ2lGyUvEv6G9niBjYXcepGllaA==}
 
   hsluv@1.0.1:
     resolution: {integrity: sha512-zCaFTiDqBLQjCCFBu0qg7z9ASYPd+Bxx2GDCVZJsnehjK80S+jByqhuFz0pCd2Aw3FSKr18AWbRlwnKR0YdizQ==}
@@ -3044,8 +3041,6 @@ snapshots:
   hasown@2.0.3:
     dependencies:
       function-bind: 1.1.2
-
-  helmlab@0.12.2: {}
 
   hsluv@1.0.1: {}
 

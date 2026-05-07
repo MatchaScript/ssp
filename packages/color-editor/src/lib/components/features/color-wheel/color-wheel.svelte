@@ -13,7 +13,7 @@
 	interface ScalePath {
 		name: string;
 		swatches: string[];
-		variant?: 'default' | 'adobe' | 'helmlab';
+		variant?: 'default' | 'adobe';
 	}
 
 	let {
@@ -145,14 +145,6 @@
 					out.push({
 						points: sampled,
 						color: [0.863, 0.314, 0.275, 0.85],
-						width: 1.5,
-						dashOn: 5,
-						dashOff: 3
-					});
-				} else if (variant === 'helmlab') {
-					out.push({
-						points: sampled,
-						color: [0.706, 0.706, 0.706, 0.85],
 						width: 1.5,
 						dashOn: 5,
 						dashOff: 3

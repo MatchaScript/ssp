@@ -9,14 +9,14 @@ export interface ColorDot {
 export interface ScalePathEntry {
 	name: string;
 	swatches: string[];
-	variant?: 'default' | 'adobe' | 'helmlab';
+	variant?: 'default' | 'adobe';
 }
 
 export interface ChannelSeries {
 	name: string;
 	color: string;
 	points: { index: number; value: number }[];
-	variant?: 'default' | 'adobe' | 'helmlab';
+	variant?: 'default' | 'adobe';
 }
 
 export interface ColorEditorContext {
@@ -24,10 +24,8 @@ export interface ColorEditorContext {
 	readonly sortedAnchors: [string, string][];
 	readonly previewSwatches: string[];
 	readonly adobeSwatches: string[];
-	readonly helmlabSwatches: string[];
 	readonly showOwn: boolean;
 	readonly showAdobe: boolean;
-	readonly showHelmlab: boolean;
 	readonly adobeRefColor: string;
 	readonly gradientCss: string;
 	readonly wheelDots: ColorDot[];

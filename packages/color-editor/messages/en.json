@@ -62,6 +62,7 @@
 	"header_save": "Save",
 	"header_saved": "Saved",
 	"header_reset": "Reset",
+	"header_export_css": "Export CSS",
 	"lightness_title": "Lightness",
 	"lightness_color_preview": "Preview color",
 	"lightness_contrast_ratio": "Contrast",

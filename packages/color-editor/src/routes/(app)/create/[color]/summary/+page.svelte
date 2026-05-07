@@ -55,7 +55,7 @@
 
 	const spaceConfig = $derived(COLOR_SPACES[colorSpaceState.id]);
 
-	// Own-palette scales only (exclude adobe/helmlab reference scales)
+	// Own-palette scales only (exclude adobe reference scales)
 	const ownScales = $derived(ctx.wheelPaths.filter((p) => !p.variant || p.variant === 'default'));
 
 	// Tick positions (0–100): per-level actual L in the display color space,

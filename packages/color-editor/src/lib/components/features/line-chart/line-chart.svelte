@@ -11,7 +11,7 @@
 		name: string;
 		color: string;
 		points: Point[];
-		variant?: 'default' | 'adobe' | 'helmlab';
+		variant?: 'default' | 'adobe';
 	}
 
 	let {
@@ -83,11 +83,7 @@
 					<path
 						class="data-line"
 						d={lineGenerator(s.points) ?? ''}
-						stroke={ref
-							? s.variant === 'adobe'
-								? 'rgba(220, 80, 70, 0.85)'
-								: 'var(--gray-600)'
-							: s.color}
+						stroke={ref ? 'rgba(220, 80, 70, 0.85)' : s.color}
 						stroke-dasharray={ref ? '6 4' : undefined}
 					/>
 				{/each}

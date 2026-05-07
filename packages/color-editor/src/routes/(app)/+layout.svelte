@@ -9,7 +9,8 @@
 		Sun,
 		Settings,
 		Menu as MenuIcon,
-		Save
+		Save,
+		Download
 	} from '@matchalatte/ssp-ui/components/icon';
 	import { Icon, ActionButton, SideNav, Divider } from '@matchalatte/ssp-ui';
 	import {
@@ -22,6 +23,7 @@
 	import { themeState } from '$lib/stores/theme.svelte';
 	import { configState } from '$lib/stores/config.svelte';
 	import { colorSpaceState } from '$lib/stores/color-space.svelte';
+	import { downloadSpectrumCss } from '$lib/utils/export-css';
 	import { COLOR_SPACES, COLOR_SPACE_IDS, type ColorSpaceId } from '$lib/types/color-space';
 
 	function handleSave() {
@@ -30,6 +32,10 @@
 
 	function handleReset() {
 		configState.reset();
+	}
+
+	function handleExportCss() {
+		downloadSpectrumCss(configState.raw);
 	}
 
 	let { children } = $props();
@@ -104,6 +110,10 @@
 				<ActionButton size="s" onclick={handleSave} aria-label={m.header_save()}>
 					{#snippet icon()}<Icon icon={Save} />{/snippet}
 					{m.header_save()}
+				</ActionButton>
+				<ActionButton size="s" onclick={handleExportCss} aria-label={m.header_export_css()}>
+					{#snippet icon()}<Icon icon={Download} />{/snippet}
+					{m.header_export_css()}
 				</ActionButton>
 				<ActionButton size="s" isQuiet onclick={handleReset} aria-label={m.header_reset()}>
 					{m.header_reset()}

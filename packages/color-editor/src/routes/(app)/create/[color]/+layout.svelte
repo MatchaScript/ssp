@@ -18,7 +18,6 @@
 		PickerItem
 	} from '@matchalatte/ssp-ui/components/picker';
 	import { Switch } from '@matchalatte/ssp-ui/components/switch';
-	import { Helmlab } from 'helmlab';
 	import { m } from '$lib/paraglide/messages';
 	import adobePalette from '$lib/data/adobe-spectrum-palette.json';
 	import { COLOR_SPACES } from '$lib/types/color-space';
@@ -27,8 +26,6 @@
 	import type { CssColor } from '@adobe/leonardo-contrast-colors';
 
 	let { children } = $props();
-
-	const helmlab = new Helmlab();
 
 	const bg = new BackgroundColor({
 		name: 'bg',
@@ -88,7 +85,6 @@
 
 	let showOwn = $state(true);
 	let showAdobe = $state(false);
-	let showHelmlab = $state(false);
 
 	// ── Adobe reference ──
 
@@ -110,14 +106,7 @@
 			.map((l) => levels[l].light);
 	});
 
-	// ── Helmlab reference ──
-
 	const levelCount = $derived(contrastTargets?.length ?? 16);
-
-	const helmlabSwatches = $derived.by<string[]>(() => {
-		if (!colorData) return [];
-		return helmlab.palette(colorData.baseHex, levelCount);
-	});
 
 	// ── Color wheel + charts ──
 
@@ -138,16 +127,13 @@
 		const result: {
 			name: string;
 			swatches: string[];
-			variant?: 'default' | 'adobe' | 'helmlab';
+			variant?: 'default' | 'adobe';
 		}[] = [];
 		if (showOwn && previewSwatches.length > 0) {
 			result.push({ name: colorName, swatches: previewSwatches });
 		}
 		if (showAdobe && adobeSwatches.length > 0) {
 			result.push({ name: `${adobeRefColor}-adobe`, swatches: adobeSwatches, variant: 'adobe' });
-		}
-		if (showHelmlab && helmlabSwatches.length > 0) {
-			result.push({ name: `${colorName}-helmlab`, swatches: helmlabSwatches, variant: 'helmlab' });
 		}
 		return result;
 	});
@@ -161,7 +147,7 @@
 		swatches: string[],
 		name: string,
 		color: string,
-		opts: { variant?: 'default' | 'adobe' | 'helmlab'; indexCount?: number } = {}
+		opts: { variant?: 'default' | 'adobe'; indexCount?: number } = {}
 	): [ChannelSeries, ChannelSeries, ChannelSeries] {
 		const extract = spaceConfig.extract;
 		const pts0: ValuePoint[] = [];
@@ -198,14 +184,6 @@
 			const s = extractChannelSeries(adobeSwatches, `${adobeRefColor} (Adobe)`, baseHex, {
 				variant: 'adobe',
 				indexCount: levelCount
-			});
-			ch[0].push(s[0]);
-			ch[1].push(s[1]);
-			ch[2].push(s[2]);
-		}
-		if (showHelmlab && helmlabSwatches.length > 0) {
-			const s = extractChannelSeries(helmlabSwatches, `${colorName} (Helmlab)`, baseHex, {
-				variant: 'helmlab'
 			});
 			ch[0].push(s[0]);
 			ch[1].push(s[1]);
@@ -289,17 +267,11 @@
 		get adobeSwatches() {
 			return adobeSwatches;
 		},
-		get helmlabSwatches() {
-			return helmlabSwatches;
-		},
 		get showOwn() {
 			return showOwn;
 		},
 		get showAdobe() {
 			return showAdobe;
-		},
-		get showHelmlab() {
-			return showHelmlab;
 		},
 		get adobeRefColor() {
 			return adobeRefColor;
@@ -375,7 +347,6 @@
 						</Picker>
 					{/if}
 				</div>
-				<Switch bind:checked={showHelmlab} size="s">Helmlab</Switch>
 			</section>
 
 			<!-- Scale Anchors -->

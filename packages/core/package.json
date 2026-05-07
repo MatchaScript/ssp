@@ -6,7 +6,13 @@
 		".": {
 			"types": "./dist/index.d.ts",
 			"default": "./dist/index.js"
-		}
+		},
+		"./generate": {
+			"types": "./dist/generate.d.ts",
+			"default": "./dist/generate.js"
+		},
+		"./tokens/semantic.json": "./src/tokens/semantic.json",
+		"./tokens/palette.json": "./src/tokens/palette.json"
 	},
 	"files": [
 		"dist",

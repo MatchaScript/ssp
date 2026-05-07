@@ -62,6 +62,7 @@
 	"header_save": "保存",
 	"header_saved": "保存済み",
 	"header_reset": "リセット",
+	"header_export_css": "CSS をエクスポート",
 	"lightness_title": "明度",
 	"lightness_color_preview": "プレビューカラー",
 	"lightness_contrast_ratio": "コントラスト",

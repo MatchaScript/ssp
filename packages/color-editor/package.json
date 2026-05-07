@@ -1,31 +1,61 @@
 {
 	"name": "@matchalatte/ssp-color-editor",
-	"private": true,
 	"version": "0.0.1",
+	"description": "ssp color editor — launch with `npx @matchalatte/ssp-color-editor`",
+	"license": "MIT",
+	"author": "MatchaScript",
+	"homepage": "https://github.com/MatchaScript/ssp#readme",
+	"repository": {
+		"type": "git",
+		"url": "git+https://github.com/MatchaScript/ssp.git",
+		"directory": "packages/color-editor"
+	},
+	"bugs": {
+		"url": "https://github.com/MatchaScript/ssp/issues"
+	},
+	"keywords": [
+		"ssp",
+		"color",
+		"editor",
+		"design-tokens",
+		"spectrum"
+	],
 	"type": "module",
+	"bin": {
+		"ssp-color-editor": "bin/cli.js"
+	},
+	"files": [
+		"bin",
+		"build"
+	],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
+		"start": "node bin/cli.js",
 		"preview": "vite preview",
 		"prepare": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide && svelte-kit sync || echo ''",
+		"prepublishOnly": "vite build",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
 		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
 	},
+	"publishConfig": {
+		"access": "public"
+	},
 	"dependencies": {
-		"@adobe/leonardo-contrast-colors": "^1.1.0",
-		"@matchalatte/ssp-ui": "workspace:*",
-		"culori": "^4.0.2",
-		"d3-scale": "^4.0.2",
-		"d3-shape": "^3.2.0",
-		"helmlab": "^0.12.2",
-		"monaco-editor": "^0.55.1"
+		"sirv": "^3.0.2"
 	},
 	"devDependencies": {
-		"@matchalatte/ssp-core": "workspace:*",
+		"@adobe/leonardo-contrast-colors": "^1.1.0",
 		"@inlang/paraglide-js": "^2.18.0",
+		"@matchalatte/ssp-core": "workspace:*",
+		"@matchalatte/ssp-ui": "workspace:*",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@types/d3-scale": "^4.0.9",
 		"@types/d3-shape": "^3.1.8",
+		"culori": "^4.0.2",
+		"d3-scale": "^4.0.2",
+		"d3-shape": "^3.2.0",
+		"monaco-editor": "^0.55.1",
 		"svelte-check": "^4.4.8"
 	}
 }

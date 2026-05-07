@@ -38,14 +38,6 @@
 						{/each}
 					</div>
 				{/if}
-				{#if ctx.showHelmlab && ctx.helmlabSwatches.length > 0}
-					<h2 class="section-heading">{ctx.colorName} (Helmlab)</h2>
-					<div class="preview-swatches">
-						{#each ctx.helmlabSwatches as swatch, i (i)}
-							<div class="preview-swatch" style:background-color={swatch} title={swatch}></div>
-						{/each}
-					</div>
-				{/if}
 			</div>
 		</div>
 	</section>
