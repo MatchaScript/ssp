@@ -1,53 +1,71 @@
-<script module lang="ts">
+<script lang="ts">
 	import type { ActionButtonRenderProps } from './types.js';
-	export { actionButtonSnippet };
+
+	let {
+		bitsProps,
+		restProps,
+		setRef,
+		href,
+		type = 'button',
+		disabled,
+		size,
+		isQuiet,
+		isSelected,
+		isEmphasized,
+		staticColor,
+		density,
+		groupOrientation,
+		isJustified,
+		className,
+		icon,
+		label,
+		iconOnly
+	}: ActionButtonRenderProps = $props();
 </script>
 
-{#snippet actionButtonSnippet(p: ActionButtonRenderProps)}
-	<svelte:element
-		this={p.href ? 'a' : 'button'}
-		{...p.restProps}
-		{...p.bitsProps}
-		{@attach (el: Element) => {
-			p.setRef?.(el as HTMLElement);
-			return () => p.setRef?.(null);
-		}}
-		class={p.className}
-		data-spectrum-actionbutton
-		data-size={p.size}
-		data-quiet={p.isQuiet || undefined}
-		data-selected={p.isSelected || undefined}
-		data-emphasized={p.isEmphasized || undefined}
-		data-static-color={p.staticColor}
-		data-density={p.density}
-		data-group-orientation={p.groupOrientation}
-		data-justified={p.isJustified || undefined}
-		data-icon-only={p.iconOnly || undefined}
-		type={p.href ? undefined : (p.type ?? 'button')}
-		href={p.href && !p.disabled ? p.href : undefined}
-		disabled={p.href ? undefined : p.disabled}
-		aria-disabled={p.href ? p.disabled : undefined}
-		role={p.href && p.disabled ? 'link' : undefined}
-		tabindex={p.href && p.disabled ? -1 : 0}
-	>
-		{#if p.icon}
-			<span data-spectrum-actionbutton-icon>
-				{@render p.icon()}
-			</span>
-		{/if}
-		{#if p.label}
-			<span data-spectrum-actionbutton-label>
-				{@render p.label()}
-			</span>
-		{/if}
-	</svelte:element>
-{/snippet}
+<svelte:element
+	this={href ? 'a' : 'button'}
+	{...restProps}
+	{...bitsProps}
+	{@attach (el: Element) => {
+		setRef?.(el as HTMLElement);
+		return () => setRef?.(null);
+	}}
+	class={className}
+	data-spectrum-actionbutton
+	data-size={size}
+	data-quiet={isQuiet || undefined}
+	data-selected={isSelected || undefined}
+	data-emphasized={isEmphasized || undefined}
+	data-static-color={staticColor}
+	data-density={density}
+	data-group-orientation={groupOrientation}
+	data-justified={isJustified || undefined}
+	data-icon-only={iconOnly || undefined}
+	type={href ? undefined : (type ?? 'button')}
+	href={href && !disabled ? href : undefined}
+	disabled={href ? undefined : disabled}
+	aria-disabled={href ? disabled : undefined}
+	role={href && disabled ? 'link' : undefined}
+	tabindex={href && disabled ? -1 : 0}
+>
+	{#if icon}
+		<span data-spectrum-actionbutton-icon>
+			{@render icon()}
+		</span>
+	{/if}
+	{#if label}
+		<span data-spectrum-actionbutton-label>
+			{@render label()}
+		</span>
+	{/if}
+</svelte:element>
 
 <style>
 	/* Shared base styles for ActionButton, ToggleButton, and their group items.
 	   All variants render an element with data-spectrum-actionbutton so these
-	   rules apply uniformly. Scoped once here via Svelte's per-component hash,
-	   reused across all callers via module-exported snippet. */
+	   rules apply uniformly. Scoped via this component's hash; the wrappers
+	   render <ActionButtonBase> so the CSS is emitted in production builds. */
 
 	[data-spectrum-actionbutton] {
 		display: inline-grid;

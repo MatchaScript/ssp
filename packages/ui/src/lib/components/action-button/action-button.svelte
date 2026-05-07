@@ -1,5 +1,5 @@
 <script lang="ts">
-	import { actionButtonSnippet } from './action-button-base.svelte';
+	import ActionButtonBase from './action-button-base.svelte';
 	import type { ActionButtonRootProps } from './types.js';
 
 	let {
@@ -19,17 +19,17 @@
 	let iconOnly = $derived(!!icon && !children);
 </script>
 
-{@render actionButtonSnippet({
-	restProps,
-	setRef: (el) => (ref = el),
-	href,
-	type,
-	disabled,
-	size,
-	isQuiet,
-	staticColor,
-	className,
-	icon,
-	label: children,
-	iconOnly
-})}
+<ActionButtonBase
+	{restProps}
+	setRef={(el) => (ref = el)}
+	{href}
+	{type}
+	{disabled}
+	{size}
+	{isQuiet}
+	{staticColor}
+	{className}
+	{icon}
+	label={children}
+	{iconOnly}
+/>
