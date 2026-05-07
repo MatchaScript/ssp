@@ -7,6 +7,7 @@
     "@matchalatte/ssp-ui": "0.0.1"
   },
   "changesets": [
+    "snippet-to-component",
     "wild-lands-rescue"
   ]
 }
