@@ -95,10 +95,13 @@
 
 	function handleFocusIn() {
 		state.onFocusIn();
-		// First Tab into the grid: place roving focus on the first enabled row.
-		if (!state.isCellModeActive && state.isEmpty === false) {
-			// Highlighted is set lazily — sync only when nothing yet.
-			queueMicrotask(() => state.focusFirst({ focusVisible: true }));
+		// First Tab into the grid: place roving focus on the first enabled row,
+		// but only when nothing is yet highlighted. Without this guard a click
+		// on row 3 would race the microtask and snap focus back to row 1.
+		if (!state.isCellModeActive && !state.isEmpty && !state.hasHighlight) {
+			queueMicrotask(() => {
+				if (!state.hasHighlight) state.focusFirst({ focusVisible: true });
+			});
 		}
 	}
 
@@ -108,7 +111,6 @@
 </script>
 
 <div
-	bind:this={ref}
 	class={className}
 	data-spectrum-tag-group
 	data-size={size}
@@ -133,6 +135,7 @@
 
 	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
+		bind:this={ref}
 		id={groupId}
 		role={state.isEmpty ? 'group' : 'grid'}
 		aria-multiselectable={selectionMode === 'multiple' || undefined}

@@ -113,6 +113,9 @@ export class TagGroupState {
 	get hasFocusWithin() {
 		return this.#hasFocusWithin;
 	}
+	get hasHighlight(): boolean {
+		return this.#collection.highlightedId !== null;
+	}
 
 	// ── focus host wiring ───────────────────────────────────────
 	setFocusHost(el: HTMLElement | null) {
@@ -312,7 +315,7 @@ export class TagGroupState {
 				this.removeKey(outcome.rowKey);
 				return;
 			case 'selectAll':
-				this.#collection.selectAll();
+				this.#selectAllNonLink();
 				return;
 			case 'clearSelection':
 				this.#collection.clearSelection();
@@ -362,6 +365,25 @@ export class TagGroupState {
 
 	#firstEnabledTag(): TagEntry | null {
 		return this.#tags.find((t) => !t.isDisabled) ?? null;
+	}
+
+	/**
+	 * Ctrl/Cmd+A in multiple mode. Spec: link tags are skipped — they don't
+	 * participate in selection. We bypass `SelectableCollection.selectAll()`
+	 * (which has no link awareness) and dispatch a single onSelectionChange.
+	 */
+	#selectAllNonLink(): void {
+		if (this.#props.selectionMode !== 'multiple') return;
+		const next = new Set<string>();
+		for (const tag of this.#tags) {
+			if (tag.isLink) continue;
+			if (tag.isDisabled) continue;
+			if (this.#props.disabledKeys.has(tag.key)) continue;
+			next.add(tag.key);
+		}
+		const prev = new Set(this.#props.selectedKeys);
+		this.#props.onSelectionChange?.(next);
+		this.#announceSelection(prev, next);
 	}
 
 	#getAnnouncer() {
