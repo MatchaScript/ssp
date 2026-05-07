@@ -124,21 +124,12 @@ importers:
 
   packages/ui:
     dependencies:
-      '@adobe/leonardo-contrast-colors':
-        specifier: ^1.1.0
-        version: 1.1.0
-      '@adobe/spectrum-tokens':
-        specifier: ^14.6.0
-        version: 14.6.0
       '@sveltejs/kit':
         specifier: ^2.0.0
         version: 2.59.1(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.55.5(@typescript-eslint/types@8.59.2))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)))(svelte@5.55.5(@typescript-eslint/types@8.59.2))(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1))
       bits-ui:
         specifier: ^2.18.1
         version: 2.18.1(@internationalized/date@3.12.1)(@sveltejs/kit@2.59.1(@sveltejs/vite-plugin-svelte@6.2.4(svelte@5.55.5(@typescript-eslint/types@8.59.2))(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)))(svelte@5.55.5(@typescript-eslint/types@8.59.2))(typescript@5.9.3)(vite@7.3.2(@types/node@25.6.0)(jiti@2.6.1)))(svelte@5.55.5(@typescript-eslint/types@8.59.2))
-      culori:
-        specifier: ^4.0.2
-        version: 4.0.2
       lucide:
         specifier: ^1.14.0
         version: 1.14.0

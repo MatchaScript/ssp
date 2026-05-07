@@ -35,18 +35,15 @@
 		"svelte": "^5.0.0"
 	},
 	"dependencies": {
-		"@adobe/leonardo-contrast-colors": "^1.1.0",
-		"@adobe/spectrum-tokens": "^14.6.0",
 		"bits-ui": "^2.18.1",
-		"culori": "^4.0.2",
 		"lucide": "^1.14.0"
 	},
 	"devDependencies": {
+		"@matchalatte/ssp-core": "workspace:*",
 		"@storybook/addon-svelte-csf": "^5.1.2",
 		"@storybook/sveltekit": "^10.3.6",
 		"@sveltejs/adapter-node": "^5.5.4",
 		"@sveltejs/package": "^2.3.0",
-		"@matchalatte/ssp-core": "workspace:*",
 		"storybook": "^10.3.6",
 		"svelte-check": "^4.4.8"
 	}
