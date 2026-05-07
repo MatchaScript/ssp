@@ -319,9 +319,7 @@ export function generateSpectrumCss(config: SpectrumConfig, tokens: SpectrumToke
 		const lines: string[] = [];
 		for (const color of ['white', 'black']) {
 			const rgb = color === 'white' ? '255 255 255' : '0 0 0';
-			lines.push(
-				`    /* ── Transparent ${color.charAt(0).toUpperCase() + color.slice(1)} ── */`
-			);
+			lines.push(`    /* ── Transparent ${color.charAt(0).toUpperCase() + color.slice(1)} ── */`);
 			transparentLevels.forEach((level) => {
 				const tkn = paletteTokens[`transparent-${color}-${level}`];
 				if (!tkn) return;
