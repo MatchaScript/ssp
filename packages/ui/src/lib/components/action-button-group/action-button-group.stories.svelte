@@ -50,22 +50,23 @@
 		Download,
 		Save
 	} from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 </script>
 
 <Story name="Example">
 	{#snippet template(args)}
 		<ActionButtonGroup {...args}>
 			<ActionButtonGroupItem>
-				{#snippet icon()}<Icon icon={Edit} size={args.size} />{/snippet}
-				Edit
+				<Icon icon={Edit} />
+				<Text>Edit</Text>
 			</ActionButtonGroupItem>
 			<ActionButtonGroupItem>
-				{#snippet icon()}<Icon icon={Copy} size={args.size} />{/snippet}
-				Copy
+				<Icon icon={Copy} />
+				<Text>Copy</Text>
 			</ActionButtonGroupItem>
 			<ActionButtonGroupItem>
-				{#snippet icon()}<Icon icon={Trash2} size={args.size} />{/snippet}
-				Delete
+				<Icon icon={Trash2} />
+				<Text>Delete</Text>
 			</ActionButtonGroupItem>
 		</ActionButtonGroup>
 	{/snippet}
@@ -74,13 +75,13 @@
 <Story name="Formatting toolbar (compact)" asChild>
 	<ActionButtonGroup density="compact" aria-label="Alignment">
 		<ActionButtonGroupItem aria-label="Align left">
-			{#snippet icon()}<Icon icon={AlignLeft} size="m" />{/snippet}
+			<Icon icon={AlignLeft} />
 		</ActionButtonGroupItem>
 		<ActionButtonGroupItem aria-label="Align center">
-			{#snippet icon()}<Icon icon={AlignCenter} size="m" />{/snippet}
+			<Icon icon={AlignCenter} />
 		</ActionButtonGroupItem>
 		<ActionButtonGroupItem aria-label="Align right">
-			{#snippet icon()}<Icon icon={AlignRight} size="m" />{/snippet}
+			<Icon icon={AlignRight} />
 		</ActionButtonGroupItem>
 	</ActionButtonGroup>
 </Story>
@@ -88,16 +89,16 @@
 <Story name="Vertical orientation" asChild>
 	<ActionButtonGroup orientation="vertical" density="compact" aria-label="Tools">
 		<ActionButtonGroupItem aria-label="Edit">
-			{#snippet icon()}<Icon icon={Edit} size="m" />{/snippet}
+			<Icon icon={Edit} />
 		</ActionButtonGroupItem>
 		<ActionButtonGroupItem aria-label="Copy">
-			{#snippet icon()}<Icon icon={Copy} size="m" />{/snippet}
+			<Icon icon={Copy} />
 		</ActionButtonGroupItem>
 		<ActionButtonGroupItem aria-label="Download">
-			{#snippet icon()}<Icon icon={Download} size="m" />{/snippet}
+			<Icon icon={Download} />
 		</ActionButtonGroupItem>
 		<ActionButtonGroupItem aria-label="Delete">
-			{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
+			<Icon icon={Trash2} />
 		</ActionButtonGroupItem>
 	</ActionButtonGroup>
 </Story>
@@ -106,16 +107,16 @@
 	<div style="width: 480px;">
 		<ActionButtonGroup isJustified>
 			<ActionButtonGroupItem>
-				{#snippet icon()}<Icon icon={Save} size="m" />{/snippet}
-				Save
+				<Icon icon={Save} />
+				<Text>Save</Text>
 			</ActionButtonGroupItem>
 			<ActionButtonGroupItem>
-				{#snippet icon()}<Icon icon={Copy} size="m" />{/snippet}
-				Duplicate
+				<Icon icon={Copy} />
+				<Text>Duplicate</Text>
 			</ActionButtonGroupItem>
 			<ActionButtonGroupItem>
-				{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-				Delete
+				<Icon icon={Trash2} />
+				<Text>Delete</Text>
 			</ActionButtonGroupItem>
 		</ActionButtonGroup>
 	</div>
@@ -124,25 +125,25 @@
 <Story name="Quiet" asChild>
 	<ActionButtonGroup isQuiet>
 		<ActionButtonGroupItem>
-			{#snippet icon()}<Icon icon={Edit} size="m" />{/snippet}
-			Edit
+			<Icon icon={Edit} />
+			<Text>Edit</Text>
 		</ActionButtonGroupItem>
 		<ActionButtonGroupItem>
-			{#snippet icon()}<Icon icon={Copy} size="m" />{/snippet}
-			Copy
+			<Icon icon={Copy} />
+			<Text>Copy</Text>
 		</ActionButtonGroupItem>
 		<ActionButtonGroupItem>
-			{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-			Delete
+			<Icon icon={Trash2} />
+			<Text>Delete</Text>
 		</ActionButtonGroupItem>
 	</ActionButtonGroup>
 </Story>
 
 <Story name="Disabled group" asChild>
 	<ActionButtonGroup isDisabled>
-		<ActionButtonGroupItem>Cut</ActionButtonGroupItem>
-		<ActionButtonGroupItem>Copy</ActionButtonGroupItem>
-		<ActionButtonGroupItem>Paste</ActionButtonGroupItem>
+		<ActionButtonGroupItem><Text>Cut</Text></ActionButtonGroupItem>
+		<ActionButtonGroupItem><Text>Copy</Text></ActionButtonGroupItem>
+		<ActionButtonGroupItem><Text>Paste</Text></ActionButtonGroupItem>
 	</ActionButtonGroup>
 </Story>
 
@@ -151,13 +152,13 @@
 		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size (size)}
 			<ActionButtonGroup {size} density="compact" aria-label={`Size ${size}`}>
 				<ActionButtonGroupItem aria-label="Left">
-					{#snippet icon()}<Icon icon={AlignLeft} {size} />{/snippet}
+					<Icon icon={AlignLeft} />
 				</ActionButtonGroupItem>
 				<ActionButtonGroupItem aria-label="Center">
-					{#snippet icon()}<Icon icon={AlignCenter} {size} />{/snippet}
+					<Icon icon={AlignCenter} />
 				</ActionButtonGroupItem>
 				<ActionButtonGroupItem aria-label="Right">
-					{#snippet icon()}<Icon icon={AlignRight} {size} />{/snippet}
+					<Icon icon={AlignRight} />
 				</ActionButtonGroupItem>
 			</ActionButtonGroup>
 		{/each}

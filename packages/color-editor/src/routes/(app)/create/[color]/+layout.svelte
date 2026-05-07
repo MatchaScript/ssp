@@ -392,7 +392,7 @@
 									title={m.create_remove_anchor()}
 									onclick={() => configState.removeColorAnchor(colorName, level)}
 								>
-									{#snippet icon()}<Icon icon={Trash2} />{/snippet}
+									<Icon icon={Trash2} />
 								</ActionButton>
 							</div>
 						</div>

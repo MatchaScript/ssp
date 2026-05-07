@@ -70,7 +70,7 @@
 					aria-label={m.theme_colors_settings()}
 					title={m.theme_colors_settings()}
 				>
-					{#snippet icon()}<Icon icon={Settings} />{/snippet}
+					<Icon icon={Settings} />
 				</ActionButton>
 
 				{#if settingsOpen}

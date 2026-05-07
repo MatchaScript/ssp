@@ -5,7 +5,6 @@ import type { ActionButtonSize, ActionButtonStaticColor } from '../action-button
 export type ToggleButtonRootPropsWithoutHTML = {
 	ref?: HTMLElement | null;
 	children?: Snippet;
-	icon?: Snippet;
 	size?: ActionButtonSize;
 	isQuiet?: boolean;
 	isSelected?: boolean;

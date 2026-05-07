@@ -32,6 +32,7 @@
 
 <script lang="ts">
 	import { Icon, Bookmark, Pin, PinOff, Star, Edit } from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 
 	let pinned = $state(false);
 </script>
@@ -39,8 +40,8 @@
 <Story name="Example">
 	{#snippet template(args)}
 		<ToggleButton {...args}>
-			{#snippet icon()}<Icon icon={Bookmark} size={args.size} />{/snippet}
-			Bookmark
+			<Icon icon={Bookmark} />
+			<Text>Bookmark</Text>
 		</ToggleButton>
 	{/snippet}
 </Story>
@@ -48,8 +49,8 @@
 <Story name="Bind isSelected" asChild>
 	<div style="display: flex; gap: 8px; align-items: center;">
 		<ToggleButton bind:isSelected={pinned} aria-label={pinned ? 'Unpin' : 'Pin'}>
-			{#snippet icon()}<Icon icon={pinned ? PinOff : Pin} size="m" />{/snippet}
-			{pinned ? 'Pinned' : 'Pin'}
+			<Icon icon={pinned ? PinOff : Pin} />
+			<Text>{pinned ? 'Pinned' : 'Pin'}</Text>
 		</ToggleButton>
 		<span style="color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);">
 			state: {pinned ? 'on' : 'off'}
@@ -60,58 +61,58 @@
 <Story name="Quiet" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
 		<ToggleButton isQuiet>
-			{#snippet icon()}<Icon icon={Star} size="m" />{/snippet}
-			Quiet off
+			<Icon icon={Star} />
+			<Text>Quiet off</Text>
 		</ToggleButton>
 		<ToggleButton isQuiet isSelected>
-			{#snippet icon()}<Icon icon={Star} size="m" />{/snippet}
-			Quiet on
+			<Icon icon={Star} />
+			<Text>Quiet on</Text>
 		</ToggleButton>
 	</div>
 </Story>
 
 <Story name="Emphasized" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<ToggleButton isEmphasized>Off</ToggleButton>
-		<ToggleButton isEmphasized isSelected>On</ToggleButton>
-		<ToggleButton isEmphasized isQuiet isSelected>Quiet emphasized on</ToggleButton>
+		<ToggleButton isEmphasized><Text>Off</Text></ToggleButton>
+		<ToggleButton isEmphasized isSelected><Text>On</Text></ToggleButton>
+		<ToggleButton isEmphasized isQuiet isSelected><Text>Quiet emphasized on</Text></ToggleButton>
 	</div>
 </Story>
 
 <Story name="Icon only" asChild>
 	<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
 		<ToggleButton size="s" aria-label="Bookmark">
-			{#snippet icon()}<Icon icon={Bookmark} size="s" />{/snippet}
+			<Icon icon={Bookmark} />
 		</ToggleButton>
 		<ToggleButton size="m" isSelected aria-label="Bookmark">
-			{#snippet icon()}<Icon icon={Bookmark} size="m" />{/snippet}
+			<Icon icon={Bookmark} />
 		</ToggleButton>
 		<ToggleButton size="l" aria-label="Bookmark">
-			{#snippet icon()}<Icon icon={Bookmark} size="l" />{/snippet}
+			<Icon icon={Bookmark} />
 		</ToggleButton>
 		<ToggleButton size="xl" isSelected aria-label="Bookmark">
-			{#snippet icon()}<Icon icon={Bookmark} size="xl" />{/snippet}
+			<Icon icon={Bookmark} />
 		</ToggleButton>
 	</div>
 </Story>
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-		<ToggleButton size="xs">XS</ToggleButton>
-		<ToggleButton size="s">S</ToggleButton>
-		<ToggleButton size="m" isSelected>M</ToggleButton>
-		<ToggleButton size="l">L</ToggleButton>
-		<ToggleButton size="xl">XL</ToggleButton>
+		<ToggleButton size="xs"><Text>XS</Text></ToggleButton>
+		<ToggleButton size="s"><Text>S</Text></ToggleButton>
+		<ToggleButton size="m" isSelected><Text>M</Text></ToggleButton>
+		<ToggleButton size="l"><Text>L</Text></ToggleButton>
+		<ToggleButton size="xl"><Text>XL</Text></ToggleButton>
 	</div>
 </Story>
 
 <Story name="Disabled" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<ToggleButton disabled>Off, disabled</ToggleButton>
-		<ToggleButton disabled isSelected>On, disabled</ToggleButton>
+		<ToggleButton disabled><Text>Off, disabled</Text></ToggleButton>
+		<ToggleButton disabled isSelected><Text>On, disabled</Text></ToggleButton>
 		<ToggleButton disabled isQuiet isSelected>
-			{#snippet icon()}<Icon icon={Edit} size="m" />{/snippet}
-			Quiet on, disabled
+			<Icon icon={Edit} />
+			<Text>Quiet on, disabled</Text>
 		</ToggleButton>
 	</div>
 </Story>

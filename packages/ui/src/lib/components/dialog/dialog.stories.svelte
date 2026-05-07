@@ -3,6 +3,7 @@
 	import * as Dialog from './index.js';
 	import Button from '$lib/components/button/button.svelte';
 	import { Icon, AlertTriangle, Trash2 } from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 
 	const { Story } = defineMeta({
 		title: 'Components/Dialog',
@@ -101,8 +102,8 @@
 				<Dialog.Trigger>
 					{#snippet child({ props })}
 						<Button {...props} variant="negative">
-							{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-							Delete workspace
+							<Icon icon={Trash2} />
+							<Text>Delete workspace</Text>
 						</Button>
 					{/snippet}
 				</Dialog.Trigger>

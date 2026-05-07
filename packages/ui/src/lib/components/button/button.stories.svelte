@@ -36,58 +36,59 @@
 
 <script lang="ts">
 	import { Icon, Edit, Plus, Save, Trash2, Download } from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 </script>
 
 <Story name="Example">
 	{#snippet template(args)}
-		<Button {...args}>Button</Button>
+		<Button {...args}><Text>Button</Text></Button>
 	{/snippet}
 </Story>
 
 <Story name="Variants" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<Button variant="accent">Accent</Button>
-		<Button variant="primary">Primary</Button>
-		<Button variant="secondary">Secondary</Button>
-		<Button variant="negative">Negative</Button>
+		<Button variant="accent"><Text>Accent</Text></Button>
+		<Button variant="primary"><Text>Primary</Text></Button>
+		<Button variant="secondary"><Text>Secondary</Text></Button>
+		<Button variant="negative"><Text>Negative</Text></Button>
 	</div>
 </Story>
 
 <Story name="Outline treatment" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<Button variant="accent" treatment="outline">Accent</Button>
-		<Button variant="primary" treatment="outline">Primary</Button>
-		<Button variant="secondary" treatment="outline">Secondary</Button>
-		<Button variant="negative" treatment="outline">Negative</Button>
+		<Button variant="accent" treatment="outline"><Text>Accent</Text></Button>
+		<Button variant="primary" treatment="outline"><Text>Primary</Text></Button>
+		<Button variant="secondary" treatment="outline"><Text>Secondary</Text></Button>
+		<Button variant="negative" treatment="outline"><Text>Negative</Text></Button>
 	</div>
 </Story>
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-		<Button size="s">Small</Button>
-		<Button size="m">Medium</Button>
-		<Button size="l">Large</Button>
-		<Button size="xl">Extra large</Button>
+		<Button size="s"><Text>Small</Text></Button>
+		<Button size="m"><Text>Medium</Text></Button>
+		<Button size="l"><Text>Large</Text></Button>
+		<Button size="xl"><Text>Extra large</Text></Button>
 	</div>
 </Story>
 
 <Story name="With icon" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
 		<Button variant="accent">
-			{#snippet icon()}<Icon icon={Save} size="m" />{/snippet}
-			Save
+			<Icon icon={Save} />
+			<Text>Save</Text>
 		</Button>
 		<Button variant="primary" treatment="outline">
-			{#snippet icon()}<Icon icon={Edit} size="m" />{/snippet}
-			Edit
+			<Icon icon={Edit} />
+			<Text>Edit</Text>
 		</Button>
 		<Button variant="secondary">
-			{#snippet icon()}<Icon icon={Download} size="m" />{/snippet}
-			Download
+			<Icon icon={Download} />
+			<Text>Download</Text>
 		</Button>
 		<Button variant="negative" treatment="outline">
-			{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-			Delete
+			<Icon icon={Trash2} />
+			<Text>Delete</Text>
 		</Button>
 	</div>
 </Story>
@@ -95,33 +96,35 @@
 <Story name="Icon only" asChild>
 	<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
 		<Button variant="primary" size="s" aria-label="Add">
-			{#snippet icon()}<Icon icon={Plus} size="s" />{/snippet}
+			<Icon icon={Plus} />
 		</Button>
 		<Button variant="primary" size="m" aria-label="Add">
-			{#snippet icon()}<Icon icon={Plus} size="m" />{/snippet}
+			<Icon icon={Plus} />
 		</Button>
 		<Button variant="primary" size="l" aria-label="Add">
-			{#snippet icon()}<Icon icon={Plus} size="l" />{/snippet}
+			<Icon icon={Plus} />
 		</Button>
 		<Button variant="primary" size="xl" aria-label="Add">
-			{#snippet icon()}<Icon icon={Plus} size="xl" />{/snippet}
+			<Icon icon={Plus} />
 		</Button>
 	</div>
 </Story>
 
 <Story name="As link" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<Button href="https://svelte.dev" target="_blank" variant="accent">External link</Button>
-		<Button href="#anchor" variant="secondary" treatment="outline">Anchor</Button>
-		<Button href="#disabled" variant="primary" isDisabled>Disabled link</Button>
+		<Button href="https://svelte.dev" target="_blank" variant="accent"
+			><Text>External link</Text></Button
+		>
+		<Button href="#anchor" variant="secondary" treatment="outline"><Text>Anchor</Text></Button>
+		<Button href="#disabled" variant="primary" isDisabled><Text>Disabled link</Text></Button>
 	</div>
 </Story>
 
 <Story name="Disabled" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<Button variant="accent" isDisabled>Fill disabled</Button>
-		<Button variant="primary" treatment="outline" isDisabled>Outline disabled</Button>
-		<Button variant="negative" isDisabled>Negative disabled</Button>
+		<Button variant="accent" isDisabled><Text>Fill disabled</Text></Button>
+		<Button variant="primary" treatment="outline" isDisabled><Text>Outline disabled</Text></Button>
+		<Button variant="negative" isDisabled><Text>Negative disabled</Text></Button>
 	</div>
 </Story>
 
@@ -130,22 +133,22 @@
 		style="display: flex; gap: 16px; padding: 24px; background: linear-gradient(135deg, #4a3aff, #9c2bff); border-radius: 8px;"
 	>
 		<div style="display: flex; gap: 8px;">
-			<Button staticColor="white" treatment="fill">Fill</Button>
-			<Button staticColor="white" treatment="outline">Outline</Button>
+			<Button staticColor="white" treatment="fill"><Text>Fill</Text></Button>
+			<Button staticColor="white" treatment="outline"><Text>Outline</Text></Button>
 		</div>
 		<div style="display: flex; gap: 8px; padding: 12px; background: #fff; border-radius: 6px;">
-			<Button staticColor="black" treatment="fill">Fill</Button>
-			<Button staticColor="black" treatment="outline">Outline</Button>
+			<Button staticColor="black" treatment="fill"><Text>Fill</Text></Button>
+			<Button staticColor="black" treatment="outline"><Text>Outline</Text></Button>
 		</div>
 	</div>
 </Story>
 
 <Story name="Form row (Cancel / Save)" asChild>
 	<div style="display: flex; justify-content: flex-end; gap: 8px; min-width: 320px;">
-		<Button variant="secondary" treatment="outline">Cancel</Button>
+		<Button variant="secondary" treatment="outline"><Text>Cancel</Text></Button>
 		<Button variant="accent">
-			{#snippet icon()}<Icon icon={Save} size="m" />{/snippet}
-			Save changes
+			<Icon icon={Save} />
+			<Text>Save changes</Text>
 		</Button>
 	</div>
 </Story>

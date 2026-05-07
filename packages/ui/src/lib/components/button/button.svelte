@@ -5,7 +5,6 @@
 		href,
 		type = 'button',
 		children,
-		icon,
 		isDisabled = false,
 		ref = $bindable(null),
 		variant = 'primary',
@@ -15,8 +14,6 @@
 		class: className,
 		...restProps
 	}: ButtonRootProps = $props();
-
-	let iconOnly = $derived(!!icon && !children);
 </script>
 
 <svelte:element
@@ -29,7 +26,6 @@
 	data-treatment={treatment}
 	data-size={size}
 	data-static-color={staticColor}
-	data-icon-only={iconOnly || undefined}
 	type={href ? undefined : type}
 	href={href && !isDisabled ? href : undefined}
 	disabled={href ? undefined : isDisabled}
@@ -37,25 +33,14 @@
 	role={href && isDisabled ? 'link' : undefined}
 	tabindex={href && isDisabled ? -1 : undefined}
 >
-	{#if icon}
-		<span data-spectrum-button-icon>
-			{@render icon()}
-		</span>
-	{/if}
-	{#if children}
-		<span data-spectrum-button-label>
-			{@render children()}
-		</span>
-	{/if}
+	{@render children?.()}
 </svelte:element>
 
 <style>
-	/* Base Settings - applying Grid layout */
 	[data-spectrum-button] {
-		display: inline-grid;
-		grid-auto-flow: column;
-		place-items: center;
-		place-content: center;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		gap: var(--space-2);
 		box-sizing: border-box;
 		text-decoration: none;
@@ -66,7 +51,7 @@
 		border-width: var(--border-width-200);
 		border-style: solid;
 		cursor: default;
-		position: relative; /* Required for ::after overlay */
+		position: relative;
 		transition:
 			background-color var(--duration-fast) var(--ease-default),
 			border-color var(--duration-fast) var(--ease-default),
@@ -100,18 +85,15 @@
 		opacity: var(--background-opacity-down);
 	}
 
-	/* href buttons use pointer cursor */
 	[data-spectrum-button][href] {
 		cursor: pointer;
 	}
 
-	/* Focus visible */
 	[data-spectrum-button]:focus-visible {
 		outline: var(--focus-indicator-thickness) solid var(--focus-indicator-color);
 		outline-offset: var(--focus-indicator-gap);
 	}
 
-	/* Press scale */
 	[data-spectrum-button]:active:not([disabled]):not([aria-disabled='true']) {
 		transform: scale(0.95);
 	}
@@ -121,42 +103,33 @@
 		pointer-events: none;
 	}
 
-	/* Icon wrapper */
-	[data-spectrum-button] [data-spectrum-button-icon] {
-		display: grid;
-		place-items: center;
+	/* Slot ordering — icon always before text regardless of source order */
+	[data-spectrum-button] :global([data-spectrum-icon]) {
 		order: 0;
+		flex-shrink: 0;
 	}
-
-	/* Label wrapper */
-	[data-spectrum-button] [data-spectrum-button-label] {
+	[data-spectrum-button] :global([data-spectrum-text]) {
 		order: 1;
-
-		/* TODO: 後でちゃんと検討、line-height: var(--lh-component);で対策済み 
-		text-box-edge: cap alphabetic;
-		text-box-trim: trim-both;*/
 	}
 
-	/* Icon sizing per button size */
-	[data-spectrum-button][data-size='s'] [data-spectrum-button-icon] {
-		font-size: 14px;
+	/* Icon sizing per button size — cascades to <Icon> via --icon-size */
+	[data-spectrum-button][data-size='s'] {
 		--icon-size: 14px;
 	}
-	[data-spectrum-button][data-size='m'] [data-spectrum-button-icon] {
-		font-size: 18px;
+	[data-spectrum-button][data-size='m'] {
 		--icon-size: 18px;
 	}
-	[data-spectrum-button][data-size='l'] [data-spectrum-button-icon] {
-		font-size: 20px;
+	[data-spectrum-button][data-size='l'] {
 		--icon-size: 20px;
 	}
-	[data-spectrum-button][data-size='xl'] [data-spectrum-button-icon] {
-		font-size: 22px;
+	[data-spectrum-button][data-size='xl'] {
 		--icon-size: 22px;
 	}
 
-	/* Icon-only button */
-	[data-spectrum-button][data-icon-only] {
+	/* Icon-only button: no text child */
+	[data-spectrum-button]:has(:global([data-spectrum-icon])):not(
+			:has(:global([data-spectrum-text]))
+		) {
 		min-inline-size: unset;
 		padding: var(--space-2);
 		aspect-ratio: 1;
@@ -194,7 +167,6 @@
 
 	/* Secondary Fill */
 	[data-spectrum-button][data-variant='secondary'][data-treatment='fill'] {
-		/* Note: Directly uses global gray-100 just like the official SWC system-theme-bridge.css mapping */
 		background-color: var(--gray-100);
 		border-color: transparent;
 		color: var(--neutral-content-color-default);
@@ -230,7 +202,6 @@
 	}
 
 	[data-spectrum-button][data-variant='secondary'][data-treatment='outline'] {
-		/* Note: Matches system-button-secondary-outline-border-color-default */
 		border-color: var(--gray-300);
 		color: var(--neutral-content-color-default);
 	}

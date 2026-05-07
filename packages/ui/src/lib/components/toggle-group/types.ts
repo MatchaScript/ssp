@@ -28,7 +28,6 @@ export type ToggleGroupRootProps = ToggleGroupRootPropsWithoutHTML &
 export type ToggleGroupItemPropsWithoutHTML = {
 	ref?: HTMLElement | null;
 	children?: Snippet;
-	icon?: Snippet;
 	value: string;
 	isDisabled?: boolean;
 };

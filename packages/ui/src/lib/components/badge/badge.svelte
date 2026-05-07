@@ -26,7 +26,6 @@
 		variant?: Variant;
 		size?: Size;
 		fillStyle?: FillStyle;
-		icon?: Snippet;
 		children?: Snippet;
 	};
 
@@ -34,7 +33,6 @@
 		variant = 'neutral',
 		size = 'S',
 		fillStyle = 'bold',
-		icon,
 		children,
 		class: className,
 		...restProps
@@ -49,16 +47,7 @@
 	class={className}
 	{...restProps}
 >
-	{#if icon}
-		<span data-icon>
-			{@render icon()}
-		</span>
-	{/if}
-	{#if children}
-		<span data-label>
-			{@render children()}
-		</span>
-	{/if}
+	{@render children?.()}
 </div>
 
 <style>
@@ -66,9 +55,9 @@
 	   Base
 	══════════════════════════════════════════════════ */
 	[data-spectrum-badge] {
-		display: inline-grid;
-		grid-auto-flow: column;
-		place-items: center;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		gap: var(--_badge-gap);
 		box-sizing: border-box;
 		min-block-size: var(--_badge-min-height);
@@ -98,14 +87,13 @@
 		--_badge-gap: 6px;
 	}
 
-	[data-spectrum-badge] [data-icon] {
-		display: grid;
-		place-items: center;
+	/* Slot ordering — icon always before text regardless of source order */
+	[data-spectrum-badge] :global([data-spectrum-icon]) {
+		order: 0;
 		flex-shrink: 0;
 	}
-
-	[data-spectrum-badge] [data-label] {
-		display: block;
+	[data-spectrum-badge] :global([data-spectrum-text]) {
+		order: 1;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}

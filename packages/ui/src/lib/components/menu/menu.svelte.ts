@@ -133,8 +133,6 @@ export interface MenuTriggerContext {
 	readonly anchorId: string;
 	/** 'submenu' when inside a SubmenuTrigger, 'root' otherwise */
 	readonly variant: 'root' | 'submenu';
-	/** The Menu element, set by Menu on mount. Used for click-outside detection. */
-	menuEl: HTMLElement | null;
 	closeMenu(): void;
 	/** Consume and clear the pending focus strategy (called by Menu on mount/open). */
 	consumeFocusStrategy(): PendingMenuFocus | null;

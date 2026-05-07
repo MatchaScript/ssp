@@ -10,7 +10,6 @@ export type ButtonStaticColor = 'white' | 'black';
 export type ButtonRootPropsWithoutHTML = {
 	ref?: HTMLElement | null;
 	children?: Snippet;
-	icon?: Snippet;
 	variant?: ButtonVariant;
 	treatment?: ButtonTreatment;
 	size?: ButtonSize;

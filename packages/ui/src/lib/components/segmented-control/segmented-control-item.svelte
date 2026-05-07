@@ -6,7 +6,6 @@
 		id,
 		isDisabled = false,
 		children,
-		icon,
 		class: className,
 		...restProps
 	}: SegmentedControlItemProps = $props();
@@ -20,26 +19,16 @@
 			data-spectrum-segmented-control-item
 			data-selected={checked || undefined}
 		>
-			{#if icon}
-				<span data-spectrum-segmented-control-item-icon>
-					{@render icon()}
-				</span>
-			{/if}
-			{#if children}
-				<span data-spectrum-segmented-control-item-label>
-					{@render children()}
-				</span>
-			{/if}
+			{@render children?.()}
 		</button>
 	{/snippet}
 </RadioGroup.Item>
 
 <style>
 	[data-spectrum-segmented-control-item] {
-		display: inline-grid;
-		grid-auto-flow: column;
-		place-items: center;
-		place-content: center;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		gap: var(--space-2);
 		padding: var(--space-1) var(--space-2);
 		min-height: var(--spacing-500);
@@ -60,20 +49,16 @@
 			box-shadow var(--duration-fast, 0.13s) var(--ease-default, ease-out);
 		user-select: none;
 		margin: 0;
-	}
-
-	/* Wrapper styles */
-	[data-spectrum-segmented-control-item] [data-spectrum-segmented-control-item-icon] {
-		display: grid;
-		place-items: center;
-		flex-shrink: 0;
-		font-size: 18px;
 		--icon-size: 18px;
 	}
-	[data-spectrum-segmented-control-item-label] {
-		/* TODO: 後でちゃんと検討 */
-		text-box-edge: cap alphabetic;
-		text-box-trim: trim-both;
+
+	/* Slot ordering — icon always before text regardless of source order */
+	[data-spectrum-segmented-control-item] :global([data-spectrum-icon]) {
+		order: 0;
+		flex-shrink: 0;
+	}
+	[data-spectrum-segmented-control-item] :global([data-spectrum-text]) {
+		order: 1;
 	}
 
 	/* Selected State (Checked) */

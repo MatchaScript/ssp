@@ -52,6 +52,7 @@
 		Bookmark,
 		Pin
 	} from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 
 	let alignment = $state<string[]>(['center']);
 	let formatting = $state<string[]>(['bold']);
@@ -61,13 +62,13 @@
 	{#snippet template(args)}
 		<ToggleGroup {...args}>
 			<ToggleGroupItem value="left" aria-label="Align left">
-				{#snippet icon()}<Icon icon={AlignLeft} size={args.size} />{/snippet}
+				<Icon icon={AlignLeft} />
 			</ToggleGroupItem>
 			<ToggleGroupItem value="center" aria-label="Align center">
-				{#snippet icon()}<Icon icon={AlignCenter} size={args.size} />{/snippet}
+				<Icon icon={AlignCenter} />
 			</ToggleGroupItem>
 			<ToggleGroupItem value="right" aria-label="Align right">
-				{#snippet icon()}<Icon icon={AlignRight} size={args.size} />{/snippet}
+				<Icon icon={AlignRight} />
 			</ToggleGroupItem>
 		</ToggleGroup>
 	{/snippet}
@@ -82,13 +83,13 @@
 			aria-label="Alignment"
 		>
 			<ToggleGroupItem value="left" aria-label="Align left">
-				{#snippet icon()}<Icon icon={AlignLeft} size="m" />{/snippet}
+				<Icon icon={AlignLeft} />
 			</ToggleGroupItem>
 			<ToggleGroupItem value="center" aria-label="Align center">
-				{#snippet icon()}<Icon icon={AlignCenter} size="m" />{/snippet}
+				<Icon icon={AlignCenter} />
 			</ToggleGroupItem>
 			<ToggleGroupItem value="right" aria-label="Align right">
-				{#snippet icon()}<Icon icon={AlignRight} size="m" />{/snippet}
+				<Icon icon={AlignRight} />
 			</ToggleGroupItem>
 		</ToggleGroup>
 		<span style="color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);">
@@ -105,10 +106,10 @@
 			onValueChange={(v) => (formatting = v)}
 			aria-label="Text formatting"
 		>
-			<ToggleGroupItem value="bold">Bold</ToggleGroupItem>
-			<ToggleGroupItem value="italic">Italic</ToggleGroupItem>
-			<ToggleGroupItem value="underline">Underline</ToggleGroupItem>
-			<ToggleGroupItem value="strike">Strike</ToggleGroupItem>
+			<ToggleGroupItem value="bold"><Text>Bold</Text></ToggleGroupItem>
+			<ToggleGroupItem value="italic"><Text>Italic</Text></ToggleGroupItem>
+			<ToggleGroupItem value="underline"><Text>Underline</Text></ToggleGroupItem>
+			<ToggleGroupItem value="strike"><Text>Strike</Text></ToggleGroupItem>
 		</ToggleGroup>
 		<span style="color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);">
 			value: [{formatting.join(', ')}]
@@ -119,16 +120,16 @@
 <Story name="Emphasized" asChild>
 	<ToggleGroup selectionMode="single" value={['star']} isEmphasized aria-label="Rating">
 		<ToggleGroupItem value="star">
-			{#snippet icon()}<Icon icon={Star} size="m" />{/snippet}
-			Star
+			<Icon icon={Star} />
+			<Text>Star</Text>
 		</ToggleGroupItem>
 		<ToggleGroupItem value="bookmark">
-			{#snippet icon()}<Icon icon={Bookmark} size="m" />{/snippet}
-			Bookmark
+			<Icon icon={Bookmark} />
+			<Text>Bookmark</Text>
 		</ToggleGroupItem>
 		<ToggleGroupItem value="pin">
-			{#snippet icon()}<Icon icon={Pin} size="m" />{/snippet}
-			Pin
+			<Icon icon={Pin} />
+			<Text>Pin</Text>
 		</ToggleGroupItem>
 	</ToggleGroup>
 </Story>
@@ -142,13 +143,13 @@
 		aria-label="Tool"
 	>
 		<ToggleGroupItem value="edit" aria-label="Edit">
-			{#snippet icon()}<Icon icon={Edit} size="m" />{/snippet}
+			<Icon icon={Edit} />
 		</ToggleGroupItem>
 		<ToggleGroupItem value="star" aria-label="Star">
-			{#snippet icon()}<Icon icon={Star} size="m" />{/snippet}
+			<Icon icon={Star} />
 		</ToggleGroupItem>
 		<ToggleGroupItem value="pin" aria-label="Pin">
-			{#snippet icon()}<Icon icon={Pin} size="m" />{/snippet}
+			<Icon icon={Pin} />
 		</ToggleGroupItem>
 	</ToggleGroup>
 </Story>
@@ -156,19 +157,19 @@
 <Story name="Justified (fill width)" asChild>
 	<div style="width: 480px;">
 		<ToggleGroup selectionMode="single" value={['center']} isJustified aria-label="Alignment">
-			<ToggleGroupItem value="left">Left</ToggleGroupItem>
-			<ToggleGroupItem value="center">Center</ToggleGroupItem>
-			<ToggleGroupItem value="right">Right</ToggleGroupItem>
-			<ToggleGroupItem value="justify">Justify</ToggleGroupItem>
+			<ToggleGroupItem value="left"><Text>Left</Text></ToggleGroupItem>
+			<ToggleGroupItem value="center"><Text>Center</Text></ToggleGroupItem>
+			<ToggleGroupItem value="right"><Text>Right</Text></ToggleGroupItem>
+			<ToggleGroupItem value="justify"><Text>Justify</Text></ToggleGroupItem>
 		</ToggleGroup>
 	</div>
 </Story>
 
 <Story name="Per-item disabled" asChild>
 	<ToggleGroup selectionMode="multiple" value={['bold']} aria-label="Formatting">
-		<ToggleGroupItem value="bold">Bold</ToggleGroupItem>
-		<ToggleGroupItem value="italic" isDisabled>Italic (disabled)</ToggleGroupItem>
-		<ToggleGroupItem value="underline">Underline</ToggleGroupItem>
+		<ToggleGroupItem value="bold"><Text>Bold</Text></ToggleGroupItem>
+		<ToggleGroupItem value="italic" isDisabled><Text>Italic (disabled)</Text></ToggleGroupItem>
+		<ToggleGroupItem value="underline"><Text>Underline</Text></ToggleGroupItem>
 	</ToggleGroup>
 </Story>
 
@@ -177,13 +178,13 @@
 		{#each ['xs', 's', 'm', 'l', 'xl'] as const as size (size)}
 			<ToggleGroup selectionMode="single" {size} value={['center']} aria-label={`Size ${size}`}>
 				<ToggleGroupItem value="left" aria-label="Left">
-					{#snippet icon()}<Icon icon={AlignLeft} {size} />{/snippet}
+					<Icon icon={AlignLeft} />
 				</ToggleGroupItem>
 				<ToggleGroupItem value="center" aria-label="Center">
-					{#snippet icon()}<Icon icon={AlignCenter} {size} />{/snippet}
+					<Icon icon={AlignCenter} />
 				</ToggleGroupItem>
 				<ToggleGroupItem value="right" aria-label="Right">
-					{#snippet icon()}<Icon icon={AlignRight} {size} />{/snippet}
+					<Icon icon={AlignRight} />
 				</ToggleGroupItem>
 			</ToggleGroup>
 		{/each}

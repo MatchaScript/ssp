@@ -15,7 +15,6 @@ export class SubmenuTriggerState implements SubmenuTriggerContext, MenuTriggerCo
 	#openTimer: ReturnType<typeof setTimeout> | null = null;
 	#closeTimer: ReturnType<typeof setTimeout> | null = null;
 	#pendingFocus: PendingMenuFocus | null = null;
-	menuEl: HTMLElement | null = null;
 
 	constructor(props: SubmenuTriggerStateProps) {
 		this.#props = props;

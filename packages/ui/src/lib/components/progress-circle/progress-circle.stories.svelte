@@ -2,6 +2,7 @@
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import ProgressCircle from './progress-circle.svelte';
 	import Button from '../button/button.svelte';
+	import { Text } from '../text/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Components/ProgressCircle',
@@ -71,8 +72,8 @@
 <Story name="Inline with button" asChild>
 	<div style="display: flex; gap: 12px; align-items: center;">
 		<Button variant="primary" treatment="outline" isDisabled>
-			{#snippet icon()}<ProgressCircle size="s" isIndeterminate aria-label="Submitting" />{/snippet}
-			Submitting…
+			<ProgressCircle size="s" isIndeterminate aria-label="Submitting" />
+			<Text>Submitting…</Text>
 		</Button>
 	</div>
 </Story>

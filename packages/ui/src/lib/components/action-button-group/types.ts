@@ -23,7 +23,6 @@ export type ActionButtonGroupRootProps = ActionButtonGroupRootPropsWithoutHTML &
 export type ActionButtonGroupItemPropsWithoutHTML = {
 	ref?: HTMLElement | null;
 	children?: Snippet;
-	icon?: Snippet;
 	size?: ActionButtonSize;
 	isQuiet?: boolean;
 	staticColor?: ActionButtonStaticColor;

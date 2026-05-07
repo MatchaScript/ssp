@@ -3,7 +3,7 @@
 	import { configState } from '$lib/stores/config.svelte';
 	import { themeColorsState } from '$lib/stores/theme-colors.svelte';
 	import { NumberField } from '@matchalatte/ssp-ui/components/number-field';
-	import { ActionButton } from '@matchalatte/ssp-ui';
+	import { ActionButton, Text } from '@matchalatte/ssp-ui';
 	import { Icon, Trash2, Plus } from '@matchalatte/ssp-ui/components/icon';
 	import {
 		Picker,
@@ -176,17 +176,17 @@
 				<h2 class="section-heading">{m.lightness_stops_heading()}</h2>
 				<div class="stops-actions">
 					<ActionButton size="s" onclick={addStop}>
-						{#snippet icon()}<Icon icon={Plus} />{/snippet}
-						{m.lightness_add()}
+						<Icon icon={Plus} />
+						<Text>{m.lightness_add()}</Text>
 					</ActionButton>
 					<ActionButton size="s" isQuiet onclick={sortStops}>
-						{m.lightness_sort()}
+						<Text>{m.lightness_sort()}</Text>
 					</ActionButton>
 					<ActionButton size="s" isQuiet onclick={distributeRatios}>
-						{m.lightness_distribute_ratios()}
+						<Text>{m.lightness_distribute_ratios()}</Text>
 					</ActionButton>
 					<ActionButton size="s" isQuiet onclick={distributeLightness}>
-						{m.lightness_distribute_lightness()}
+						<Text>{m.lightness_distribute_lightness()}</Text>
 					</ActionButton>
 				</div>
 			</div>
@@ -234,7 +234,7 @@
 									title={m.lightness_remove()}
 									onclick={() => removeStop(i)}
 								>
-									{#snippet icon()}<Icon icon={Trash2} />{/snippet}
+									<Icon icon={Trash2} />
 								</ActionButton>
 							</div>
 						</div>

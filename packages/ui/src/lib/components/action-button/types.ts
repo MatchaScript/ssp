@@ -9,7 +9,6 @@ export type ActionButtonGroupOrientation = 'horizontal' | 'vertical';
 export type ActionButtonRootPropsWithoutHTML = {
 	ref?: HTMLElement | null;
 	children?: Snippet;
-	icon?: Snippet;
 	size?: ActionButtonSize;
 	isQuiet?: boolean;
 	staticColor?: ActionButtonStaticColor;
@@ -58,7 +57,5 @@ export type ActionButtonRenderProps = {
 	isJustified?: boolean;
 
 	className?: ClassValue | null;
-	icon?: Snippet;
-	label?: Snippet;
-	iconOnly?: boolean;
+	children?: Snippet;
 };

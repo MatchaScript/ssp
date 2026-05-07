@@ -5,7 +5,6 @@
 
 	let {
 		children,
-		icon,
 		disabled = false,
 		isSelected = $bindable(false),
 		isEmphasized = false,
@@ -17,8 +16,6 @@
 		onPressedChange,
 		...restProps
 	}: ToggleButtonRootProps = $props();
-
-	let iconOnly = $derived(!!icon && !children);
 
 	function handlePressedChange(pressed: boolean) {
 		isSelected = pressed;
@@ -40,9 +37,7 @@
 			{isQuiet}
 			{staticColor}
 			{className}
-			{icon}
-			label={children}
-			{iconOnly}
+			{children}
 		/>
 	{/snippet}
 </Toggle.Root>

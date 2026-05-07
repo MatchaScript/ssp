@@ -10,6 +10,7 @@
 		Star,
 		Zap
 	} from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 
 	const { Story } = defineMeta({
 		title: 'Components/Badge',
@@ -60,100 +61,100 @@
 
 <Story name="Example">
 	{#snippet template(args)}
-		<Badge {...args}>Badge</Badge>
+		<Badge {...args}><Text>Badge</Text></Badge>
 	{/snippet}
 </Story>
 
 <Story name="Semantic variants" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-		<Badge variant="accent">Accent</Badge>
-		<Badge variant="informative">Informative</Badge>
-		<Badge variant="neutral">Neutral</Badge>
-		<Badge variant="positive">Positive</Badge>
-		<Badge variant="notice">Notice</Badge>
-		<Badge variant="negative">Negative</Badge>
+		<Badge variant="accent"><Text>Accent</Text></Badge>
+		<Badge variant="informative"><Text>Informative</Text></Badge>
+		<Badge variant="neutral"><Text>Neutral</Text></Badge>
+		<Badge variant="positive"><Text>Positive</Text></Badge>
+		<Badge variant="notice"><Text>Notice</Text></Badge>
+		<Badge variant="negative"><Text>Negative</Text></Badge>
 	</div>
 </Story>
 
 <Story name="Subtle fill" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-		<Badge variant="accent" fillStyle="subtle">Accent</Badge>
-		<Badge variant="informative" fillStyle="subtle">Informative</Badge>
-		<Badge variant="positive" fillStyle="subtle">Positive</Badge>
-		<Badge variant="notice" fillStyle="subtle">Notice</Badge>
-		<Badge variant="negative" fillStyle="subtle">Negative</Badge>
+		<Badge variant="accent" fillStyle="subtle"><Text>Accent</Text></Badge>
+		<Badge variant="informative" fillStyle="subtle"><Text>Informative</Text></Badge>
+		<Badge variant="positive" fillStyle="subtle"><Text>Positive</Text></Badge>
+		<Badge variant="notice" fillStyle="subtle"><Text>Notice</Text></Badge>
+		<Badge variant="negative" fillStyle="subtle"><Text>Negative</Text></Badge>
 	</div>
 </Story>
 
 <Story name="Outline fill" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-		<Badge variant="accent" fillStyle="outline">Accent</Badge>
-		<Badge variant="informative" fillStyle="outline">Informative</Badge>
-		<Badge variant="neutral" fillStyle="outline">Neutral</Badge>
-		<Badge variant="positive" fillStyle="outline">Positive</Badge>
-		<Badge variant="notice" fillStyle="outline">Notice</Badge>
-		<Badge variant="negative" fillStyle="outline">Negative</Badge>
+		<Badge variant="accent" fillStyle="outline"><Text>Accent</Text></Badge>
+		<Badge variant="informative" fillStyle="outline"><Text>Informative</Text></Badge>
+		<Badge variant="neutral" fillStyle="outline"><Text>Neutral</Text></Badge>
+		<Badge variant="positive" fillStyle="outline"><Text>Positive</Text></Badge>
+		<Badge variant="notice" fillStyle="outline"><Text>Notice</Text></Badge>
+		<Badge variant="negative" fillStyle="outline"><Text>Negative</Text></Badge>
 	</div>
 </Story>
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-		<Badge variant="accent" size="S">Small</Badge>
-		<Badge variant="accent" size="M">Medium</Badge>
-		<Badge variant="accent" size="L">Large</Badge>
-		<Badge variant="accent" size="XL">Extra large</Badge>
+		<Badge variant="accent" size="S"><Text>Small</Text></Badge>
+		<Badge variant="accent" size="M"><Text>Medium</Text></Badge>
+		<Badge variant="accent" size="L"><Text>Large</Text></Badge>
+		<Badge variant="accent" size="XL"><Text>Extra large</Text></Badge>
 	</div>
 </Story>
 
 <Story name="With icon" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
 		<Badge variant="positive">
-			{#snippet icon()}<Icon icon={CheckCircle} size="s" />{/snippet}
-			Approved
+			<Icon icon={CheckCircle} />
+			<Text>Approved</Text>
 		</Badge>
 		<Badge variant="notice">
-			{#snippet icon()}<Icon icon={AlertTriangle} size="s" />{/snippet}
-			Pending review
+			<Icon icon={AlertTriangle} />
+			<Text>Pending review</Text>
 		</Badge>
 		<Badge variant="negative">
-			{#snippet icon()}<Icon icon={AlertCircle} size="s" />{/snippet}
-			Blocked
+			<Icon icon={AlertCircle} />
+			<Text>Blocked</Text>
 		</Badge>
 		<Badge variant="informative">
-			{#snippet icon()}<Icon icon={Zap} size="s" />{/snippet}
-			Beta
+			<Icon icon={Zap} />
+			<Text>Beta</Text>
 		</Badge>
 	</div>
 </Story>
 
 <Story name="Color palette — bold" asChild>
 	<div style="display: flex; gap: 6px; flex-wrap: wrap; align-items: center; max-width: 640px;">
-		<Badge variant="red">Red</Badge>
-		<Badge variant="orange">Orange</Badge>
-		<Badge variant="yellow">Yellow</Badge>
-		<Badge variant="chartreuse">Chartreuse</Badge>
-		<Badge variant="celery">Celery</Badge>
-		<Badge variant="green">Green</Badge>
-		<Badge variant="seafoam">Seafoam</Badge>
-		<Badge variant="cyan">Cyan</Badge>
-		<Badge variant="blue">Blue</Badge>
-		<Badge variant="indigo">Indigo</Badge>
-		<Badge variant="purple">Purple</Badge>
-		<Badge variant="fuchsia">Fuchsia</Badge>
-		<Badge variant="magenta">Magenta</Badge>
-		<Badge variant="gray">Gray</Badge>
+		<Badge variant="red"><Text>Red</Text></Badge>
+		<Badge variant="orange"><Text>Orange</Text></Badge>
+		<Badge variant="yellow"><Text>Yellow</Text></Badge>
+		<Badge variant="chartreuse"><Text>Chartreuse</Text></Badge>
+		<Badge variant="celery"><Text>Celery</Text></Badge>
+		<Badge variant="green"><Text>Green</Text></Badge>
+		<Badge variant="seafoam"><Text>Seafoam</Text></Badge>
+		<Badge variant="cyan"><Text>Cyan</Text></Badge>
+		<Badge variant="blue"><Text>Blue</Text></Badge>
+		<Badge variant="indigo"><Text>Indigo</Text></Badge>
+		<Badge variant="purple"><Text>Purple</Text></Badge>
+		<Badge variant="fuchsia"><Text>Fuchsia</Text></Badge>
+		<Badge variant="magenta"><Text>Magenta</Text></Badge>
+		<Badge variant="gray"><Text>Gray</Text></Badge>
 	</div>
 </Story>
 
 <Story name="Numeric counts" asChild>
 	<div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-		<Badge variant="negative" size="S">3</Badge>
-		<Badge variant="informative" size="S">12</Badge>
-		<Badge variant="neutral" size="S">99+</Badge>
-		<Badge variant="accent" size="M">New</Badge>
+		<Badge variant="negative" size="S"><Text>3</Text></Badge>
+		<Badge variant="informative" size="S"><Text>12</Text></Badge>
+		<Badge variant="neutral" size="S"><Text>99+</Text></Badge>
+		<Badge variant="accent" size="M"><Text>New</Text></Badge>
 		<Badge variant="positive" size="M">
-			{#snippet icon()}<Icon icon={Check} size="s" />{/snippet}
-			42
+			<Icon icon={Check} />
+			<Text>42</Text>
 		</Badge>
 	</div>
 </Story>
@@ -165,8 +166,8 @@
 		<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
 			<strong>Analytics dashboard</strong>
 			<Badge variant="accent" size="S" fillStyle="subtle">
-				{#snippet icon()}<Icon icon={Star} size="s" />{/snippet}
-				Pro
+				<Icon icon={Star} />
+				<Text>Pro</Text>
 			</Badge>
 		</div>
 		<div style="color: var(--neutral-subdued-content-color-default); font-size: var(--text-75);">

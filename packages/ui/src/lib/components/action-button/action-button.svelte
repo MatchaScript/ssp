@@ -6,7 +6,6 @@
 		href,
 		type = 'button',
 		children,
-		icon,
 		disabled = false,
 		ref = $bindable(null),
 		size = 'm',
@@ -15,8 +14,6 @@
 		class: className,
 		...restProps
 	}: ActionButtonRootProps = $props();
-
-	let iconOnly = $derived(!!icon && !children);
 </script>
 
 <ActionButtonBase
@@ -29,7 +26,5 @@
 	{isQuiet}
 	{staticColor}
 	{className}
-	{icon}
-	label={children}
-	{iconOnly}
+	{children}
 />

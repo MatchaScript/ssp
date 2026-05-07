@@ -1,14 +1,22 @@
 import type { Snippet } from 'svelte';
 import type { HTMLAttributes, HTMLAnchorAttributes } from 'svelte/elements';
-import type { IconNode } from '$lib/components/icon';
+
+export type SideNavActiveMatcher = (href: string, opts: { exact?: boolean }) => boolean;
 
 // ── SideNav (shell) ──────────────────────────────────
 export type SideNavProps = Omit<HTMLAttributes<HTMLElement>, 'children'> & {
 	open?: boolean;
+	/**
+	 * Returns true when the given href should be marked active.
+	 * Without this, no item is ever active — keeps the library router-agnostic.
+	 */
+	activeMatcher?: SideNavActiveMatcher;
 	children?: Snippet;
 	/** i18n overrides */
 	i18n?: {
 		closeMenu?: string;
+		/** Accessible label for the <nav> landmark. */
+		label?: string;
 	};
 };
 
@@ -23,8 +31,6 @@ export type SideNavSectionProps = Omit<HTMLAttributes<HTMLDivElement>, 'children
 
 // ── SideNavItem ──────────────────────────────────────
 export type SideNavItemProps = Omit<HTMLAnchorAttributes, 'children'> & {
-	/** Lucide icon node — rendered at size "s" */
-	icon?: IconNode;
 	/** If true, requires exact pathname match for active state */
 	exact?: boolean;
 	href?: string;

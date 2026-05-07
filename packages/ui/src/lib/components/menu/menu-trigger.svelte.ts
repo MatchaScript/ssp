@@ -9,7 +9,6 @@ export interface MenuTriggerStateProps {
 export class MenuTriggerState implements MenuTriggerContext {
 	#props: MenuTriggerStateProps;
 	#pendingFocus: PendingMenuFocus | null = null;
-	menuEl: HTMLElement | null = null;
 
 	constructor(props: MenuTriggerStateProps) {
 		this.#props = props;

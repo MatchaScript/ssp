@@ -1,20 +1,12 @@
 <script lang="ts">
-	import { page } from '$app/state';
-	import { resolve } from '$app/paths';
-	import { Icon } from '$lib/components/icon';
 	import type { SideNavItemProps } from './types.js';
 	import { getSideNavContext } from './side-nav-context.svelte.js';
 
-	let { icon, exact = false, href, children, ...restProps }: SideNavItemProps = $props();
+	let { exact = false, href, children, ...restProps }: SideNavItemProps = $props();
 
 	const nav = getSideNavContext();
 
-	const isActive = $derived.by(() => {
-		if (!href) return false;
-		const path = page.url?.pathname ?? '';
-		if (exact) return path === href;
-		return path.startsWith(href);
-	});
+	const isActive = $derived(href ? nav.isActive(href, { exact }) : false);
 
 	function handleClick() {
 		nav.closeNav();
@@ -23,22 +15,12 @@
 
 <a
 	{...restProps}
-	href={resolve(href as '/')}
+	{href}
 	data-spectrum-sidenav-item
-	data-active={isActive || undefined}
 	aria-current={isActive ? 'page' : undefined}
 	onclick={handleClick}
 >
-	{#if icon}
-		<span data-spectrum-sidenav-item-icon>
-			<Icon {icon} size="s" />
-		</span>
-	{/if}
-	{#if children}
-		<span data-spectrum-sidenav-item-label>
-			{@render children()}
-		</span>
-	{/if}
+	{@render children?.()}
 </a>
 
 <style>
@@ -54,25 +36,11 @@
 		font-weight: 500;
 		transition: color var(--duration-100) var(--ease-out);
 		overflow: hidden;
+		--icon-size: 16px;
 	}
 
 	[data-spectrum-sidenav-item]:hover {
 		color: var(--neutral-content-color-hover);
-	}
-
-	/* Active indicator pill (left edge) */
-	[data-spectrum-sidenav-item]::before {
-		content: '';
-		grid-column: 1;
-		justify-self: end;
-		width: 3px;
-		height: var(--space-5);
-		background-color: transparent;
-		transition: background-color var(--duration-100) var(--ease-out);
-	}
-
-	[data-spectrum-sidenav-item]:not([data-active]):hover::before {
-		background-color: var(--gray-400);
 	}
 
 	[data-spectrum-sidenav-item]:focus-visible {
@@ -80,34 +48,56 @@
 		outline-offset: -2px;
 	}
 
-	[data-active] {
+	[data-spectrum-sidenav-item][aria-current='page'] {
 		color: var(--neutral-content-color-default);
 		font-weight: 600;
 	}
 
-	[data-active]::before {
+	/*
+	 * Active indicator pill — sits in col 1 (rail track), right-aligned so the
+	 * pill always lands at the rail's inner edge in both expanded and collapsed
+	 * modes (collapsed col 1 is `1fr`).
+	 */
+	[data-spectrum-sidenav-item]::before {
+		content: '';
+		grid-column: 1;
+		justify-self: end;
+		width: 3px;
+		height: var(--space-5);
+		background-color: transparent;
+		border-radius: var(--corner-radius-small-default);
+		transition: background-color var(--duration-100) var(--ease-out);
+	}
+
+	[data-spectrum-sidenav-item]:not([aria-current='page']):hover::before {
+		background-color: var(--gray-400);
+	}
+
+	[data-spectrum-sidenav-item][aria-current='page']::before {
 		background-color: var(--neutral-content-color-default);
 	}
 
-	/* Icon slot */
-	[data-spectrum-sidenav-item-icon] {
+	/* Slot placement */
+	[data-spectrum-sidenav-item] :global([data-spectrum-icon]) {
 		grid-column: 2;
-		display: flex;
-		align-items: center;
-		justify-content: center;
 	}
-
-	/* Label slot */
-	[data-spectrum-sidenav-item-label] {
+	[data-spectrum-sidenav-item] :global([data-spectrum-text]) {
 		grid-column: 3;
+		min-width: 0;
 		white-space: nowrap;
 		overflow: hidden;
 		text-overflow: ellipsis;
 	}
+	/* Anything that's neither icon nor text is treated as suffix. */
+	[data-spectrum-sidenav-item] :global(> :not([data-spectrum-icon]):not([data-spectrum-text])) {
+		grid-column: 4;
+		justify-self: end;
+		color: var(--neutral-subdued-content-color-default);
+	}
 
-	/* ── Collapsed: hide labels ──────────────────────── */
 	@container nav (max-width: 5rem) {
-		[data-spectrum-sidenav-item-label] {
+		[data-spectrum-sidenav-item] :global([data-spectrum-text]),
+		[data-spectrum-sidenav-item] :global(> :not([data-spectrum-icon]):not([data-spectrum-text])) {
 			display: none;
 		}
 	}

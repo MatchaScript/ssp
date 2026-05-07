@@ -42,21 +42,6 @@
 	});
 
 	setMenuTriggerContext(triggerState);
-
-	// Click outside detection
-	$effect(() => {
-		if (!open) return;
-
-		function handlePointerDown(event: PointerEvent) {
-			const target = event.target as Node;
-			if (triggerEl?.contains(target)) return;
-			if (triggerState.menuEl?.contains(target)) return;
-			triggerState.closeMenu();
-		}
-
-		document.addEventListener('pointerdown', handlePointerDown, true);
-		return () => document.removeEventListener('pointerdown', handlePointerDown, true);
-	});
 </script>
 
 <span bind:this={triggerEl} style="display: contents;">

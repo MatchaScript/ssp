@@ -27,6 +27,5 @@ export type ActionBarRootProps = Omit<HTMLAttributes<HTMLDivElement>, 'children'
 export type ActionBarItemProps = Omit<HTMLButtonAttributes, 'children'> & {
 	ref?: HTMLElement | null;
 	children?: Snippet;
-	icon?: Snippet;
 	disabled?: boolean;
 };

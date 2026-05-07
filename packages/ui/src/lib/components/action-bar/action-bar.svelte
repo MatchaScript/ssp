@@ -57,9 +57,7 @@
 							onclick={onClearSelection}
 							aria-label={t.clearSelection}
 						>
-							{#snippet icon()}
-								<Icon icon={X} />
-							{/snippet}
+							<Icon icon={X} />
 						</ActionButton>
 					{/snippet}
 				</Toolbar.Button>

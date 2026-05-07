@@ -6,7 +6,6 @@
 
 	let {
 		children,
-		icon,
 		value,
 		isDisabled = false,
 		ref = $bindable(null),
@@ -15,8 +14,6 @@
 	}: ToggleGroupItemProps = $props();
 
 	const group = getToggleGroupContext();
-
-	let iconOnly = $derived(!!icon && !children);
 </script>
 
 <ToggleGroupPrimitive.Item {value} disabled={isDisabled || group.isDisabled}>
@@ -36,9 +33,7 @@
 			groupOrientation={group.orientation}
 			isJustified={group.isJustified}
 			{className}
-			{icon}
-			label={children}
-			{iconOnly}
+			{children}
 		/>
 	{/snippet}
 </ToggleGroupPrimitive.Item>

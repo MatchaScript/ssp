@@ -24,6 +24,4 @@ export interface SegmentedControlItemProps extends Omit<HTMLButtonAttributes, 'i
 	isDisabled?: boolean;
 	/** The content to display in the segmented control item */
 	children?: Snippet;
-	/** Icon snippet */
-	icon?: Snippet;
 }

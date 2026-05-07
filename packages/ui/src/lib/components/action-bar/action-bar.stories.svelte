@@ -21,6 +21,7 @@
 
 <script lang="ts">
 	import { Icon, Pencil, Trash2, Copy, Download, ExternalLink } from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 
 	let count = $state(3);
 </script>
@@ -39,16 +40,16 @@
 				onClearSelection={() => {}}
 			>
 				<ActionBar.Item onclick={() => {}}>
-					{#snippet icon()}<Icon icon={Pencil} size="m" />{/snippet}
-					Edit
+					<Icon icon={Pencil} />
+					<Text>Edit</Text>
 				</ActionBar.Item>
 				<ActionBar.Item onclick={() => {}}>
-					{#snippet icon()}<Icon icon={Copy} size="m" />{/snippet}
-					Copy
+					<Icon icon={Copy} />
+					<Text>Copy</Text>
 				</ActionBar.Item>
 				<ActionBar.Item onclick={() => {}}>
-					{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-					Delete
+					<Icon icon={Trash2} />
+					<Text>Delete</Text>
 				</ActionBar.Item>
 			</ActionBar.Root>
 		</div>
@@ -72,12 +73,12 @@
 		>
 			<ActionBar.Root selectedItemCount={count} onClearSelection={() => (count = 0)}>
 				<ActionBar.Item onclick={() => {}}>
-					{#snippet icon()}<Icon icon={Pencil} size="m" />{/snippet}
-					Edit
+					<Icon icon={Pencil} />
+					<Text>Edit</Text>
 				</ActionBar.Item>
 				<ActionBar.Item onclick={() => {}}>
-					{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-					Delete
+					<Icon icon={Trash2} />
+					<Text>Delete</Text>
 				</ActionBar.Item>
 			</ActionBar.Root>
 		</div>
@@ -90,12 +91,12 @@
 	>
 		<ActionBar.Root selectedItemCount={5} isEmphasized onClearSelection={() => {}}>
 			<ActionBar.Item onclick={() => {}}>
-				{#snippet icon()}<Icon icon={Download} size="m" />{/snippet}
-				Download
+				<Icon icon={Download} />
+				<Text>Download</Text>
 			</ActionBar.Item>
 			<ActionBar.Item onclick={() => {}}>
-				{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-				Delete
+				<Icon icon={Trash2} />
+				<Text>Delete</Text>
 			</ActionBar.Item>
 		</ActionBar.Root>
 	</div>
@@ -107,19 +108,19 @@
 	>
 		<ActionBar.Root selectedItemCount={12} onClearSelection={() => {}}>
 			<ActionBar.Item onclick={() => {}} aria-label="Edit">
-				{#snippet icon()}<Icon icon={Pencil} size="m" />{/snippet}
+				<Icon icon={Pencil} />
 			</ActionBar.Item>
 			<ActionBar.Item onclick={() => {}} aria-label="Copy">
-				{#snippet icon()}<Icon icon={Copy} size="m" />{/snippet}
+				<Icon icon={Copy} />
 			</ActionBar.Item>
 			<ActionBar.Item onclick={() => {}} aria-label="Download">
-				{#snippet icon()}<Icon icon={Download} size="m" />{/snippet}
+				<Icon icon={Download} />
 			</ActionBar.Item>
 			<ActionBar.Item onclick={() => {}} aria-label="Open">
-				{#snippet icon()}<Icon icon={ExternalLink} size="m" />{/snippet}
+				<Icon icon={ExternalLink} />
 			</ActionBar.Item>
 			<ActionBar.Item onclick={() => {}} aria-label="Delete">
-				{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
+				<Icon icon={Trash2} />
 			</ActionBar.Item>
 		</ActionBar.Root>
 	</div>
@@ -134,12 +135,12 @@
 				<strong>7 files</strong> ready to archive
 			{/snippet}
 			<ActionBar.Item onclick={() => {}}>
-				{#snippet icon()}<Icon icon={Download} size="m" />{/snippet}
-				Archive
+				<Icon icon={Download} />
+				<Text>Archive</Text>
 			</ActionBar.Item>
 			<ActionBar.Item onclick={() => {}} disabled>
-				{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-				Delete
+				<Icon icon={Trash2} />
+				<Text>Delete</Text>
 			</ActionBar.Item>
 		</ActionBar.Root>
 	</div>
@@ -159,12 +160,12 @@
 			}}
 		>
 			<ActionBar.Item onclick={() => {}}>
-				{#snippet icon()}<Icon icon={Copy} size="m" />{/snippet}
-				コピー
+				<Icon icon={Copy} />
+				<Text>コピー</Text>
 			</ActionBar.Item>
 			<ActionBar.Item onclick={() => {}}>
-				{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-				削除
+				<Icon icon={Trash2} />
+				<Text>削除</Text>
 			</ActionBar.Item>
 		</ActionBar.Root>
 	</div>

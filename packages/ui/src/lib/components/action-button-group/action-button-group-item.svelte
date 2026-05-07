@@ -8,7 +8,6 @@
 		href,
 		type = 'button',
 		children,
-		icon,
 		disabled,
 		ref = $bindable(null),
 		size,
@@ -24,8 +23,6 @@
 	let resolvedIsQuiet = $derived(isQuiet ?? group.isQuiet);
 	let resolvedDisabled = $derived(disabled ?? group.isDisabled);
 	let resolvedStaticColor = $derived(staticColor ?? group.staticColor);
-
-	let iconOnly = $derived(!!icon && !children);
 </script>
 
 {#if href}
@@ -45,9 +42,7 @@
 				groupOrientation={group.orientation}
 				isJustified={group.isJustified}
 				{className}
-				{icon}
-				label={children}
-				{iconOnly}
+				{children}
 			/>
 		{/snippet}
 	</Toolbar.Link>
@@ -68,9 +63,7 @@
 				groupOrientation={group.orientation}
 				isJustified={group.isJustified}
 				{className}
-				{icon}
-				label={children}
-				{iconOnly}
+				{children}
 			/>
 		{/snippet}
 	</Toolbar.Button>

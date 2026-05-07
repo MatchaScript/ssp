@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { JsonEditor } from '$lib/components/features/json-editor';
 	import { configState } from '$lib/stores/config.svelte';
-	import { ActionButton } from '@matchalatte/ssp-ui';
-	import { Icon } from '@matchalatte/ssp-ui';
+	import { ActionButton, Icon, Text } from '@matchalatte/ssp-ui';
 	import { Copy, Check } from '@matchalatte/ssp-ui/components/icon';
 	import { m } from '$lib/paraglide/messages';
 
@@ -32,8 +31,8 @@
 	<div class="editor-toolbar">
 		<h1 class="editor-title">{m.editor_title()}</h1>
 		<ActionButton size="s" isQuiet onclick={handleCopy} aria-label={m.editor_copy()}>
-			{#snippet icon()}<Icon icon={copied ? Check : Copy} />{/snippet}
-			{copied ? m.editor_copied() : m.editor_copy()}
+			<Icon icon={copied ? Check : Copy} />
+			<Text>{copied ? m.editor_copied() : m.editor_copy()}</Text>
 		</ActionButton>
 	</div>
 

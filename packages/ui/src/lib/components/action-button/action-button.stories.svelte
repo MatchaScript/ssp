@@ -28,53 +28,54 @@
 
 <script lang="ts">
 	import { Icon, Edit, Save, Plus, Download, Trash2, Settings } from '$lib/components/icon';
+	import { Text } from '$lib/components/text';
 </script>
 
 <Story name="Example">
 	{#snippet template(args)}
 		<ActionButton {...args}>
-			{#snippet icon()}<Icon icon={Edit} size={args.size} />{/snippet}
-			Edit
+			<Icon icon={Edit} />
+			<Text>Edit</Text>
 		</ActionButton>
 	{/snippet}
 </Story>
 
 <Story name="Quiet vs. filled" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<ActionButton>Filled</ActionButton>
-		<ActionButton isQuiet>Quiet</ActionButton>
-		<ActionButton disabled>Disabled</ActionButton>
-		<ActionButton isQuiet disabled>Quiet disabled</ActionButton>
+		<ActionButton><Text>Filled</Text></ActionButton>
+		<ActionButton isQuiet><Text>Quiet</Text></ActionButton>
+		<ActionButton disabled><Text>Disabled</Text></ActionButton>
+		<ActionButton isQuiet disabled><Text>Quiet disabled</Text></ActionButton>
 	</div>
 </Story>
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
-		<ActionButton size="xs">XS</ActionButton>
-		<ActionButton size="s">S</ActionButton>
-		<ActionButton size="m">M</ActionButton>
-		<ActionButton size="l">L</ActionButton>
-		<ActionButton size="xl">XL</ActionButton>
+		<ActionButton size="xs"><Text>XS</Text></ActionButton>
+		<ActionButton size="s"><Text>S</Text></ActionButton>
+		<ActionButton size="m"><Text>M</Text></ActionButton>
+		<ActionButton size="l"><Text>L</Text></ActionButton>
+		<ActionButton size="xl"><Text>XL</Text></ActionButton>
 	</div>
 </Story>
 
 <Story name="With icon and label" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
 		<ActionButton>
-			{#snippet icon()}<Icon icon={Save} size="m" />{/snippet}
-			Save
+			<Icon icon={Save} />
+			<Text>Save</Text>
 		</ActionButton>
 		<ActionButton>
-			{#snippet icon()}<Icon icon={Edit} size="m" />{/snippet}
-			Edit
+			<Icon icon={Edit} />
+			<Text>Edit</Text>
 		</ActionButton>
 		<ActionButton>
-			{#snippet icon()}<Icon icon={Download} size="m" />{/snippet}
-			Download
+			<Icon icon={Download} />
+			<Text>Download</Text>
 		</ActionButton>
 		<ActionButton>
-			{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
-			Delete
+			<Icon icon={Trash2} />
+			<Text>Delete</Text>
 		</ActionButton>
 	</div>
 </Story>
@@ -82,24 +83,26 @@
 <Story name="Icon only" asChild>
 	<div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
 		<ActionButton size="s" aria-label="Settings">
-			{#snippet icon()}<Icon icon={Settings} size="s" />{/snippet}
+			<Icon icon={Settings} />
 		</ActionButton>
 		<ActionButton size="m" aria-label="Settings">
-			{#snippet icon()}<Icon icon={Settings} size="m" />{/snippet}
+			<Icon icon={Settings} />
 		</ActionButton>
 		<ActionButton size="l" aria-label="Settings">
-			{#snippet icon()}<Icon icon={Settings} size="l" />{/snippet}
+			<Icon icon={Settings} />
 		</ActionButton>
 		<ActionButton size="xl" aria-label="Settings">
-			{#snippet icon()}<Icon icon={Settings} size="xl" />{/snippet}
+			<Icon icon={Settings} />
 		</ActionButton>
 	</div>
 </Story>
 
 <Story name="As link" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<ActionButton href="https://svelte.dev" target="_blank">External link</ActionButton>
-		<ActionButton href="#docs" isQuiet>Docs</ActionButton>
+		<ActionButton href="https://svelte.dev" target="_blank"
+			><Text>External link</Text></ActionButton
+		>
+		<ActionButton href="#docs" isQuiet><Text>Docs</Text></ActionButton>
 	</div>
 </Story>
 
@@ -108,11 +111,11 @@
 		style="display: flex; gap: 12px; padding: 24px; background: linear-gradient(135deg, #4a3aff, #9c2bff); border-radius: 8px;"
 	>
 		<ActionButton staticColor="white">
-			{#snippet icon()}<Icon icon={Plus} size="m" />{/snippet}
-			Add
+			<Icon icon={Plus} />
+			<Text>Add</Text>
 		</ActionButton>
 		<ActionButton staticColor="white" isQuiet aria-label="Save">
-			{#snippet icon()}<Icon icon={Save} size="m" />{/snippet}
+			<Icon icon={Save} />
 		</ActionButton>
 	</div>
 </Story>

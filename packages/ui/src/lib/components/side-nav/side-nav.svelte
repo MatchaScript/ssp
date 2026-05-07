@@ -2,15 +2,28 @@
 	import type { SideNavProps } from './types.js';
 	import { setSideNavContext } from './side-nav-context.svelte.js';
 
-	let { open = $bindable(false), children, i18n, ...restProps }: SideNavProps = $props();
+	let {
+		open = $bindable(false),
+		activeMatcher,
+		children,
+		i18n,
+		...restProps
+	}: SideNavProps = $props();
 
 	function closeNav() {
 		open = false;
 	}
 
+	function isActive(href: string, opts: { exact?: boolean }) {
+		return activeMatcher ? activeMatcher(href, opts) : false;
+	}
+
 	setSideNavContext({
 		get closeNav() {
 			return closeNav;
+		},
+		get isActive() {
+			return isActive;
 		}
 	});
 </script>
@@ -24,9 +37,14 @@
 	></button>
 {/if}
 
-<aside {...restProps} data-spectrum-sidenav data-open={open || undefined}>
+<nav
+	{...restProps}
+	data-spectrum-sidenav
+	data-open={open || undefined}
+	aria-label={i18n?.label ?? 'Side navigation'}
+>
 	{@render children?.()}
-</aside>
+</nav>
 
 <style>
 	/* ── Shell: flex column ──────────────────────── */

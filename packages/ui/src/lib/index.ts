@@ -84,3 +84,5 @@ export {
 	type IconSize,
 	type IconColor
 } from './components/icon/index.js';
+
+export { Text, type TextProps } from './components/text/index.js';

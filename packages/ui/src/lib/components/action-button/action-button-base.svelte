@@ -17,9 +17,7 @@
 		groupOrientation,
 		isJustified,
 		className,
-		icon,
-		label,
-		iconOnly
+		children
 	}: ActionButtonRenderProps = $props();
 </script>
 
@@ -41,7 +39,6 @@
 	data-density={density}
 	data-group-orientation={groupOrientation}
 	data-justified={isJustified || undefined}
-	data-icon-only={iconOnly || undefined}
 	type={href ? undefined : (type ?? 'button')}
 	href={href && !disabled ? href : undefined}
 	disabled={href ? undefined : disabled}
@@ -49,16 +46,7 @@
 	role={href && disabled ? 'link' : undefined}
 	tabindex={href && disabled ? -1 : 0}
 >
-	{#if icon}
-		<span data-spectrum-actionbutton-icon>
-			{@render icon()}
-		</span>
-	{/if}
-	{#if label}
-		<span data-spectrum-actionbutton-label>
-			{@render label()}
-		</span>
-	{/if}
+	{@render children?.()}
 </svelte:element>
 
 <style>
@@ -68,10 +56,9 @@
 	   render <ActionButtonBase> so the CSS is emitted in production builds. */
 
 	[data-spectrum-actionbutton] {
-		display: inline-grid;
-		grid-auto-flow: column;
-		place-items: center;
-		place-content: center;
+		display: inline-flex;
+		align-items: center;
+		justify-content: center;
 		gap: var(--spacing-100);
 		box-sizing: border-box;
 		text-decoration: none;
@@ -91,6 +78,24 @@
 		border-radius: var(--corner-radius-100);
 		background-color: var(--gray-100);
 		color: var(--neutral-content-color-default);
+	}
+
+	/* Slot ordering — icon always comes first regardless of source order */
+	[data-spectrum-actionbutton] :global([data-spectrum-icon]) {
+		order: 0;
+		flex-shrink: 0;
+	}
+	[data-spectrum-actionbutton] :global([data-spectrum-text]) {
+		order: 1;
+	}
+
+	/* Icon-only: square, no horizontal padding */
+	[data-spectrum-actionbutton]:has(:global([data-spectrum-icon])):not(
+			:has(:global([data-spectrum-text]))
+		) {
+		min-inline-size: unset;
+		padding: var(--spacing-100);
+		aspect-ratio: 1;
 	}
 
 	[data-spectrum-actionbutton]:hover {
@@ -288,19 +293,6 @@
 		background-color: light-dark(var(--transparent-white-900), var(--transparent-black-900));
 	}
 
-	/* Icon wrapper */
-	[data-spectrum-actionbutton] [data-spectrum-actionbutton-icon] {
-		display: grid;
-		place-items: center;
-		flex-shrink: 0;
-		order: 0;
-	}
-
-	/* Label wrapper */
-	[data-spectrum-actionbutton] [data-spectrum-actionbutton-label] {
-		order: 1;
-	}
-
 	/* Sizes */
 	[data-spectrum-actionbutton][data-size='xs'] {
 		min-height: 20px;
@@ -328,33 +320,21 @@
 		padding: 0 var(--spacing-500);
 	}
 
-	/* Icon sizing per button size */
-	[data-spectrum-actionbutton][data-size='xs'] [data-spectrum-actionbutton-icon] {
-		font-size: 12px;
+	/* Icon sizing per button size — cascades to <Icon> via --icon-size */
+	[data-spectrum-actionbutton][data-size='xs'] {
 		--icon-size: 12px;
 	}
-	[data-spectrum-actionbutton][data-size='s'] [data-spectrum-actionbutton-icon] {
-		font-size: 14px;
+	[data-spectrum-actionbutton][data-size='s'] {
 		--icon-size: 14px;
 	}
-	[data-spectrum-actionbutton][data-size='m'] [data-spectrum-actionbutton-icon] {
-		font-size: 18px;
+	[data-spectrum-actionbutton][data-size='m'] {
 		--icon-size: 18px;
 	}
-	[data-spectrum-actionbutton][data-size='l'] [data-spectrum-actionbutton-icon] {
-		font-size: 20px;
+	[data-spectrum-actionbutton][data-size='l'] {
 		--icon-size: 20px;
 	}
-	[data-spectrum-actionbutton][data-size='xl'] [data-spectrum-actionbutton-icon] {
-		font-size: 22px;
+	[data-spectrum-actionbutton][data-size='xl'] {
 		--icon-size: 22px;
-	}
-
-	/* Icon-only button */
-	[data-spectrum-actionbutton][data-icon-only] {
-		min-inline-size: unset;
-		padding: var(--spacing-100);
-		aspect-ratio: 1;
 	}
 
 	/* Justified (set by ActionButtonGroup via context) */

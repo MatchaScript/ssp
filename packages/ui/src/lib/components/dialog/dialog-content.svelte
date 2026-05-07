@@ -68,9 +68,7 @@
 					onclick={() => dialogEl?.close()}
 					aria-label="Close"
 				>
-					{#snippet icon()}
-						<Icon icon={X} size="xs" />
-					{/snippet}
+					<Icon icon={X} />
 				</ActionButton>
 			{/if}
 		</div>

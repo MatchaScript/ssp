@@ -133,7 +133,7 @@
 				<Tooltip.Trigger>
 					{#snippet child({ props })}
 						<ActionButton {...props} aria-label="Settings">
-							{#snippet icon()}<Icon icon={Settings} size="m" />{/snippet}
+							<Icon icon={Settings} />
 						</ActionButton>
 					{/snippet}
 				</Tooltip.Trigger>
@@ -144,7 +144,7 @@
 				<Tooltip.Trigger>
 					{#snippet child({ props })}
 						<ActionButton {...props} aria-label="Pin">
-							{#snippet icon()}<Icon icon={Pin} size="m" />{/snippet}
+							<Icon icon={Pin} />
 						</ActionButton>
 					{/snippet}
 				</Tooltip.Trigger>
@@ -155,7 +155,7 @@
 				<Tooltip.Trigger>
 					{#snippet child({ props })}
 						<ActionButton {...props} aria-label="Delete">
-							{#snippet icon()}<Icon icon={Trash2} size="m" />{/snippet}
+							<Icon icon={Trash2} />
 						</ActionButton>
 					{/snippet}
 				</Tooltip.Trigger>

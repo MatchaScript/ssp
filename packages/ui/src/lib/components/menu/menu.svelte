@@ -68,15 +68,6 @@
 
 	setMenuContext(menuState);
 
-	// Register the menu element with the trigger context for click-outside detection
-	$effect(() => {
-		if (!triggerCtx || !ref) return;
-		triggerCtx.menuEl = ref;
-		return () => {
-			triggerCtx.menuEl = null;
-		};
-	});
-
 	// Apply the pending focus strategy each time the menu opens. Reading
 	// `triggerCtx.open` makes this effect reactive to open transitions.
 	// tick() defers focusFirst until after MenuItem $effects have registered.
@@ -103,6 +94,12 @@
 		if (event.defaultPrevented) return;
 		menuState.handleKeyDown(event);
 	}
+
+	// popover="auto" handles light-dismiss (outside click, Escape) natively.
+	// Sync our `open` state when the browser closes the popover for any reason.
+	function handleToggle(event: ToggleEvent) {
+		if (event.newState === 'closed') triggerCtx?.closeMenu();
+	}
 </script>
 
 <!--
@@ -120,10 +117,11 @@
 		data-popover={isTriggered || undefined}
 		data-variant={triggerCtx?.variant ?? undefined}
 		data-size={size}
-		popover={isTriggered ? 'manual' : undefined}
+		popover={isTriggered ? 'auto' : undefined}
 		style={isTriggered ? `position-anchor: ${triggerCtx.anchorId};` : undefined}
 		{...restProps}
 		onkeydown={handleKeyDown}
+		ontoggle={isTriggered ? handleToggle : undefined}
 		onpointerenter={() => submenuCtx?.handleContentPointerEnter()}
 		onpointerleave={() => submenuCtx?.handleContentPointerLeave()}
 		{@attach (node) => {

@@ -1,5 +1,6 @@
 <script lang="ts">
 	import { resolve } from '$app/paths';
+	import { page } from '$app/state';
 	import { onDestroy, untrack } from 'svelte';
 	import {
 		Palette,
@@ -12,7 +13,7 @@
 		Save,
 		Download
 	} from '@matchalatte/ssp-ui/components/icon';
-	import { Icon, ActionButton, SideNav, Divider } from '@matchalatte/ssp-ui';
+	import { Icon, ActionButton, SideNav, Divider, Text } from '@matchalatte/ssp-ui';
 	import {
 		Picker,
 		PickerTrigger,
@@ -38,6 +39,11 @@
 		downloadSpectrumCss(configState.raw);
 	}
 
+	function matchPath(href: string, { exact }: { exact?: boolean } = {}) {
+		const path = page.url.pathname;
+		return exact ? path === href : path.startsWith(href);
+	}
+
 	let { children } = $props();
 
 	const cleanupTheme = untrack(() => themeState.init());
@@ -57,34 +63,40 @@
 			title={navCollapsed ? m.nav_expand_sidebar() : m.nav_collapse_sidebar()}
 			aria-label={navCollapsed ? m.nav_expand_sidebar() : m.nav_collapse_sidebar()}
 		>
-			{#snippet icon()}<Icon icon={MenuIcon} />{/snippet}
+			<Icon icon={MenuIcon} />
 		</ActionButton>
 	</div>
 
 	<!-- Col 1-2: ナビ -->
 	<div class="app-nav-wrapper">
-		<SideNav.Root bind:open={navOpen}>
+		<SideNav.Root bind:open={navOpen} activeMatcher={matchPath}>
 			<SideNav.Section grow heading={m.nav_main()}>
-				<SideNav.Item href="/create" icon={Palette}>
-					{m.create_title()}
+				<SideNav.Item href="/create">
+					<Icon icon={Palette} />
+					<Text>{m.create_title()}</Text>
 				</SideNav.Item>
-				<SideNav.Item href="/theme-colors" icon={Layers}>
-					{m.theme_colors_title()}
+				<SideNav.Item href="/theme-colors">
+					<Icon icon={Layers} />
+					<Text>{m.theme_colors_title()}</Text>
 				</SideNav.Item>
-				<SideNav.Item href="/editor" icon={Edit}>
-					{m.editor_title()}
+				<SideNav.Item href="/editor">
+					<Icon icon={Edit} />
+					<Text>{m.editor_title()}</Text>
 				</SideNav.Item>
-				<SideNav.Item href="/lightness" icon={Sun}>
-					{m.lightness_title()}
+				<SideNav.Item href="/lightness">
+					<Icon icon={Sun} />
+					<Text>{m.lightness_title()}</Text>
 				</SideNav.Item>
-				<SideNav.Item href="/chromaticity" icon={ChartSpline}>
-					{m.chromaticity_title()}
+				<SideNav.Item href="/chromaticity">
+					<Icon icon={ChartSpline} />
+					<Text>{m.chromaticity_title()}</Text>
 				</SideNav.Item>
 			</SideNav.Section>
 
 			<SideNav.Section>
-				<SideNav.Item href="/settings" icon={Settings}>
-					{m.nav_settings()}
+				<SideNav.Item href="/settings">
+					<Icon icon={Settings} />
+					<Text>{m.nav_settings()}</Text>
 				</SideNav.Item>
 			</SideNav.Section>
 		</SideNav.Root>
@@ -100,7 +112,7 @@
 				title={m.header_menu()}
 				aria-label={m.header_menu()}
 			>
-				{#snippet icon()}<Icon icon={MenuIcon} />{/snippet}
+				<Icon icon={MenuIcon} />
 			</ActionButton>
 		</div>
 
@@ -108,15 +120,15 @@
 			<a href={resolve('/')} class="header-logo">Color Editor</a>
 			<div class="header-actions">
 				<ActionButton size="s" onclick={handleSave} aria-label={m.header_save()}>
-					{#snippet icon()}<Icon icon={Save} />{/snippet}
-					{m.header_save()}
+					<Icon icon={Save} />
+					<Text>{m.header_save()}</Text>
 				</ActionButton>
 				<ActionButton size="s" onclick={handleExportCss} aria-label={m.header_export_css()}>
-					{#snippet icon()}<Icon icon={Download} />{/snippet}
-					{m.header_export_css()}
+					<Icon icon={Download} />
+					<Text>{m.header_export_css()}</Text>
 				</ActionButton>
 				<ActionButton size="s" isQuiet onclick={handleReset} aria-label={m.header_reset()}>
-					{m.header_reset()}
+					<Text>{m.header_reset()}</Text>
 				</ActionButton>
 			</div>
 			<div class="header-color-space">

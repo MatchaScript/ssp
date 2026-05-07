@@ -6,7 +6,6 @@
 
 	let {
 		children,
-		icon,
 		disabled = false,
 		ref = $bindable(null),
 		...restProps
@@ -24,7 +23,6 @@
 			isQuiet
 			staticColor={state.isEmphasized ? 'auto' : undefined}
 			{disabled}
-			{icon}
 			{children}
 		/>
 	{/snippet}

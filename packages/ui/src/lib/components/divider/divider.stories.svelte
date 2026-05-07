@@ -86,24 +86,24 @@
 		style="display: flex; align-items: center; gap: 4px; padding: 4px; border: 1px solid var(--neutral-border-color-default); border-radius: 6px; width: fit-content;"
 	>
 		<ActionButton isQuiet size="s" aria-label="Align left">
-			{#snippet icon()}<Icon icon={AlignLeft} size="s" />{/snippet}
+			<Icon icon={AlignLeft} />
 		</ActionButton>
 		<ActionButton isQuiet size="s" aria-label="Align center">
-			{#snippet icon()}<Icon icon={AlignCenter} size="s" />{/snippet}
+			<Icon icon={AlignCenter} />
 		</ActionButton>
 		<ActionButton isQuiet size="s" aria-label="Align right">
-			{#snippet icon()}<Icon icon={AlignRight} size="s" />{/snippet}
+			<Icon icon={AlignRight} />
 		</ActionButton>
 		<Divider orientation="vertical" size="s" style="margin: 4px 4px; height: 20px;" />
 		<ActionButton isQuiet size="s" aria-label="Copy">
-			{#snippet icon()}<Icon icon={Copy} size="s" />{/snippet}
+			<Icon icon={Copy} />
 		</ActionButton>
 		<ActionButton isQuiet size="s" aria-label="Edit">
-			{#snippet icon()}<Icon icon={Edit} size="s" />{/snippet}
+			<Icon icon={Edit} />
 		</ActionButton>
 		<Divider orientation="vertical" size="s" style="margin: 4px 4px; height: 20px;" />
 		<ActionButton isQuiet size="s" aria-label="Delete">
-			{#snippet icon()}<Icon icon={Trash2} size="s" />{/snippet}
+			<Icon icon={Trash2} />
 		</ActionButton>
 	</div>
 </Story>
