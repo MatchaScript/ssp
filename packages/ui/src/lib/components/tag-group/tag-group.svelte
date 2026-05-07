@@ -193,3 +193,69 @@
 		</div>
 	{/if}
 </div>
+
+<style>
+	[data-spectrum-tag-group] {
+		display: flex;
+		flex-direction: column;
+		font-family: var(--font-sans);
+	}
+
+	[data-spectrum-tag-group][data-label-position='side'] {
+		display: grid;
+		grid-template-areas:
+			'label list'
+			'.     helptext';
+		grid-template-columns: auto 1fr;
+		align-items: start;
+		column-gap: var(--spacing-200);
+	}
+	[data-spectrum-tag-group][data-label-position='side'] > [data-spectrum-tag-group-label] {
+		grid-area: label;
+		padding-block-start: var(--spacing-75);
+	}
+	[data-spectrum-tag-group][data-label-position='side'] > [data-spectrum-tag-group-list] {
+		grid-area: list;
+	}
+	[data-spectrum-tag-group][data-label-position='side'] > [data-spectrum-tag-group-helptext] {
+		grid-area: helptext;
+	}
+
+	[data-spectrum-tag-group-label] {
+		color: var(--neutral-content-color-default);
+		padding-block-end: var(--spacing-75);
+	}
+	[data-spectrum-tag-group][data-disabled] > [data-spectrum-tag-group-label] {
+		color: var(--disabled-content-color);
+	}
+
+	[data-spectrum-tag-group][data-size='s'] > [data-spectrum-tag-group-label] {
+		font-size: var(--text-75);
+	}
+	[data-spectrum-tag-group][data-size='m'] > [data-spectrum-tag-group-label] {
+		font-size: var(--text-100);
+	}
+	[data-spectrum-tag-group][data-size='l'] > [data-spectrum-tag-group-label] {
+		font-size: var(--text-200);
+	}
+
+	[data-spectrum-tag-group-list] {
+		display: flex;
+		flex-wrap: wrap;
+		gap: var(--spacing-100);
+		outline: none;
+		min-height: var(--spacing-400);
+	}
+
+	[data-spectrum-tag-group-list]:focus-visible {
+		outline: var(--focus-indicator-thickness) solid var(--focus-indicator-color);
+		outline-offset: var(--focus-indicator-gap);
+		border-radius: var(--corner-radius-small-default);
+	}
+
+	[data-spectrum-tag-group-empty] {
+		color: var(--neutral-subdued-content-color-default);
+		font-size: var(--text-100);
+		padding: var(--spacing-200);
+	}
+</style>
