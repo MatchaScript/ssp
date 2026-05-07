@@ -1,0 +1,47 @@
+name: Release
+
+on:
+  push:
+    branches: [main]
+
+# Serialize on workflow only — main is the sole trigger and a race between
+# two release runs can corrupt a publish (Svelte uses the same pattern).
+concurrency:
+  group: ${{ github.workflow }}
+
+permissions: {}
+
+jobs:
+  release:
+    if: github.repository == 'MatchaScript/ssp'
+    name: Release
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write # Version PR commit / GitHub Release
+      pull-requests: write # Version PR の作成・更新
+      id-token: write # OIDC: npm trusted publishing + provenance
+    steps:
+      - uses: actions/checkout@v6
+        with:
+          fetch-depth: 0
+      - uses: pnpm/action-setup@v6.0.5
+      - uses: actions/setup-node@v6.4.0
+        with:
+          node-version: 24
+          cache: pnpm
+          registry-url: 'https://registry.npmjs.org'
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Create Release Pull Request or Publish to npm
+        id: changesets
+        uses: changesets/action@v1
+        with:
+          publish: pnpm ci:publish
+          version: pnpm changeset version
+          commit: 'chore(release): version packages'
+          title: 'chore(release): version packages'
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          NPM_CONFIG_PROVENANCE: 'true'
