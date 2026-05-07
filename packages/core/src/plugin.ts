@@ -17,9 +17,7 @@ const defaultTokens: SpectrumTokens = {
 	semantic: JSON.parse(
 		fs.readFileSync(path.join(tokensDir, 'semantic.json'), 'utf8')
 	) as VariablesJson,
-	palette: JSON.parse(
-		fs.readFileSync(path.join(tokensDir, 'palette.json'), 'utf8')
-	) as PaletteJson
+	palette: JSON.parse(fs.readFileSync(path.join(tokensDir, 'palette.json'), 'utf8')) as PaletteJson
 };
 
 export interface SpectrumThemeOptions {
