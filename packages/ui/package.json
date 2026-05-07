@@ -37,6 +37,9 @@
 	"files": [
 		"dist",
 		"!dist/**/*.stories.*",
+		"!dist/**/*.spec.*",
+		"!dist/**/*.test.*",
+		"!dist/**/*.spec-harness.*",
 		"!dist/styles/spectrum.css"
 	],
 	"scripts": {
