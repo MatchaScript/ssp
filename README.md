@@ -17,22 +17,22 @@ A Spectrum-inspired design system toolkit for Svelte 5.
 SSP is published as three packages. Only `ssp-ui` is required at runtime; the
 other two support custom theming workflows.
 
-| Package                     | Role                                                                              | Required? |
-| --------------------------- | --------------------------------------------------------------------------------- | --------- |
-| **`@matchalatte/ssp-ui`**   | Svelte 5 component library with a Spectrum-flavored API                           | yes       |
-| **`@matchalatte/ssp-core`** | Vite plugin that exposes a generated theme as a virtual module for live reloading | optional  |
-| **color-editor**            | Interactive `npx` tool for authoring `spectrum.config.json`                       | optional  |
+| Package                      | Role                                                                              | Required? |
+| ---------------------------- | --------------------------------------------------------------------------------- | --------- |
+| **`@matchalatte/ssp-ui`**    | Svelte 5 component library with a Spectrum-flavored API                           | yes       |
+| **`@matchalatte/ssp-theme`** | Vite plugin that exposes a generated theme as a virtual module for live reloading | optional  |
+| **color-editor**             | Interactive `npx` tool for authoring `spectrum.config.json`                       | optional  |
 
 `ssp-ui` includes a default theme stylesheet, so importing the components and
 the theme CSS is enough to get started. To use a custom palette, author one
 with `color-editor` and either:
 
 - emit the resulting CSS once and ship it as a regular stylesheet, or
-- install `ssp-core` to consume `spectrum.config.json` through the
+- install `ssp-theme` to consume `spectrum.config.json` through the
   `virtual:ssp/theme.css` Vite virtual module, which adds HMR during
   development.
 
-Either way, theming work happens at build time — `ssp-core`, when used, is
+Either way, theming work happens at build time — `ssp-theme`, when used, is
 never part of the runtime dependency graph.
 
 ## Status
@@ -45,7 +45,7 @@ never part of the runtime dependency graph.
 
 ```sh
 pnpm add @matchalatte/ssp-ui            # component library
-pnpm add -D @matchalatte/ssp-core       # optional: Vite plugin for live-reloading custom themes
+pnpm add -D @matchalatte/ssp-theme      # optional: Vite plugin for live-reloading custom themes
 ```
 
 ```svelte
@@ -89,7 +89,7 @@ Toolchain versions are pinned in `mise.toml` (`mise install` to provision).
 
 Spectrum tokens and Leonardo are used under the Apache License 2.0. See
 [NOTICE](./NOTICE) for third-party attribution covering the Adobe Spectrum
-token data redistributed under `packages/core/src/tokens/`.
+token data redistributed under `packages/theme/src/tokens/`.
 
 [bits-ui]: https://bits-ui.com/
 [leonardo]: https://github.com/adobe/leonardo

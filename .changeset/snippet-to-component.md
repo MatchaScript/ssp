@@ -1,6 +1,6 @@
 ---
 '@matchalatte/ssp-color-editor': patch
-'@matchalatte/ssp-core': patch
+'@matchalatte/ssp-theme': patch
 '@matchalatte/ssp-ui': patch
 ---
 

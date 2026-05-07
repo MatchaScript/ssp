@@ -18,11 +18,11 @@ Adobe project, used and redistributed under the Apache License, Version 2.0.
     Copyright: Copyright Adobe Inc. and contributors.
 
   Files derived from the above:
-    - packages/core/src/tokens/semantic.json
-    - packages/core/src/tokens/palette.json
+    - packages/theme/src/tokens/semantic.json
+    - packages/theme/src/tokens/palette.json
 
-  These files are produced by `packages/core/scripts/extract-tokens.ts`,
+  These files are produced by `packages/theme/scripts/extract-tokens.ts`,
   which reads the upstream `@adobe/spectrum-tokens` package and emits a
   filtered/reshaped subset as JSON. The token names and values are derived
-  from the upstream source. See packages/core/src/tokens/NOTICE for the
+  from the upstream source. See packages/theme/src/tokens/NOTICE for the
   sidecar attribution that travels with those files.

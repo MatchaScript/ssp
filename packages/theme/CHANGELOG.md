@@ -1,4 +1,4 @@
-# @matchalatte/ssp-core
+# @matchalatte/ssp-theme
 
 ## 0.0.2-next.1
 

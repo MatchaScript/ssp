@@ -1,18 +1,18 @@
 import {
 	generateSpectrumCss,
-	type SpectrumConfig as CoreSpectrumConfig,
+	type SpectrumConfig as ThemeSpectrumConfig,
 	type SpectrumTokens
-} from '@matchalatte/ssp-core/generate';
-import semantic from '@matchalatte/ssp-core/tokens/semantic.json';
-import palette from '@matchalatte/ssp-core/tokens/palette.json';
+} from '@matchalatte/ssp-theme/generate';
+import semantic from '@matchalatte/ssp-theme/tokens/semantic.json';
+import palette from '@matchalatte/ssp-theme/tokens/palette.json';
 import type { SpectrumConfig } from '$lib/types/spectrum-config';
 
 // JSON imports infer literal-narrow types that conflict with the loose
-// runtime shape core consumes, so widen at the boundary.
+// runtime shape ssp-theme consumes, so widen at the boundary.
 const tokens = { semantic, palette } as unknown as SpectrumTokens;
 
 export function buildSpectrumCss(config: SpectrumConfig): string {
-	return generateSpectrumCss(config as unknown as CoreSpectrumConfig, tokens);
+	return generateSpectrumCss(config as unknown as ThemeSpectrumConfig, tokens);
 }
 
 export function downloadSpectrumCss(config: SpectrumConfig, filename = 'spectrum.css') {

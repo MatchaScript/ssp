@@ -47,7 +47,7 @@
 	"devDependencies": {
 		"@adobe/leonardo-contrast-colors": "^1.1.0",
 		"@inlang/paraglide-js": "^2.18.0",
-		"@matchalatte/ssp-core": "workspace:*",
+		"@matchalatte/ssp-theme": "workspace:*",
 		"@matchalatte/ssp-ui": "workspace:*",
 		"@sveltejs/adapter-static": "^3.0.10",
 		"@types/d3-scale": "^4.0.9",

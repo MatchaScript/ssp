@@ -3,7 +3,7 @@
   "tag": "next",
   "initialVersions": {
     "@matchalatte/ssp-color-editor": "0.0.1",
-    "@matchalatte/ssp-core": "0.0.1",
+    "@matchalatte/ssp-theme": "0.0.1",
     "@matchalatte/ssp-ui": "0.0.1"
   },
   "changesets": [

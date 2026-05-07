@@ -39,7 +39,7 @@
 		"lucide": "^1.14.0"
 	},
 	"devDependencies": {
-		"@matchalatte/ssp-core": "workspace:*",
+		"@matchalatte/ssp-theme": "workspace:*",
 		"@storybook/addon-svelte-csf": "^5.1.2",
 		"@storybook/sveltekit": "^10.3.6",
 		"@sveltejs/adapter-node": "^5.5.4",

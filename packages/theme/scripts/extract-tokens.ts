@@ -2,11 +2,11 @@
  * Extract semantic tokens from @adobe/spectrum-tokens into a static JSON file.
  *
  * Usage:
- *   node --experimental-strip-types packages/core/scripts/extract-tokens.ts
+ *   node --experimental-strip-types packages/theme/scripts/extract-tokens.ts
  *
  * Output:
- *   packages/core/src/tokens/semantic.json
- *   packages/core/src/tokens/palette.json
+ *   packages/theme/src/tokens/semantic.json
+ *   packages/theme/src/tokens/palette.json
  */
 
 import fs from 'node:fs';
