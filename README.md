@@ -19,7 +19,7 @@ other two support custom theming workflows.
 
 | Package                     | Role                                                                              | Required? |
 | --------------------------- | --------------------------------------------------------------------------------- | --------- |
-| **`@matchalatte/ssp-ui`**   | Svelte 5 component library with a Spectrum-flavored API                           | ✅ yes    |
+| **`@matchalatte/ssp-ui`**   | Svelte 5 component library with a Spectrum-flavored API                           | yes       |
 | **`@matchalatte/ssp-core`** | Vite plugin that exposes a generated theme as a virtual module for live reloading | optional  |
 | **color-editor**            | Interactive `npx` tool for authoring `spectrum.config.json`                       | optional  |
 
@@ -32,20 +32,19 @@ with `color-editor` and either:
   `virtual:ssp/theme.css` Vite virtual module, which adds HMR during
   development.
 
-In both cases `ssp-core` is a build-time concern — it is never part of the
-runtime dependency graph.
+Either way, theming work happens at build time — `ssp-core`, when used, is
+never part of the runtime dependency graph.
 
 ## Status
 
-🚧 **Pre-release / experimental.**
+**Pre-release / experimental.**
 
 ## Getting started
 
-> Detailed installation docs and a hosted demo are coming. For now, the
-> package layout is:
+> Detailed installation docs and a hosted demo are coming.
 
 ```sh
-pnpm add @matchalatte/ssp-ui            # component library — this is all you need
+pnpm add @matchalatte/ssp-ui            # component library
 pnpm add -D @matchalatte/ssp-core       # optional: Vite plugin for live-reloading custom themes
 ```
 
