@@ -11,13 +11,17 @@
 		"check": "turbo run check",
 		"lint": "eslint .",
 		"format": "prettier --write .",
-		"format:check": "prettier --check ."
+		"format:check": "prettier --check .",
+		"changeset": "changeset",
+		"ci:publish": "pnpm build && changeset publish"
 	},
 	"devDependencies": {
+		"@changesets/cli": "^2.31.0",
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
 		"@sveltejs/kit": "^2.59.1",
 		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@svitejs/changesets-changelog-github-compact": "^1.2.0",
 		"@types/culori": "^4.0.1",
 		"eslint": "^10.3.0",
 		"eslint-config-prettier": "^10.1.8",
