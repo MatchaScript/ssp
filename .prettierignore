@@ -10,6 +10,14 @@ dist
 .svelte-kit
 build
 
+# Generated files (produced by @matchalatte/ssp-core's plugin/generator;
+# keep their formatting decided by the generator, not prettier)
+packages/*/src/lib/styles/spectrum.css
+
+# Tool-managed files (Changesets CLI rewrites pre.json on every version /
+# pre enter|exit; let it own its formatting)
+.changeset/pre.json
+
 # Miscellaneous
 **/static/
 .claude/

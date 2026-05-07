@@ -1,173 +1,141 @@
 @layer reset, tokens, palette, semantics, base, utilities;
 
 @layer reset {
-	*,
-	*::before,
-	*::after {
-		box-sizing: border-box;
-		margin: 0;
-		padding: 0;
-	}
+
+    *,
+    *::before,
+    *::after {
+        box-sizing: border-box;
+        margin: 0;
+        padding: 0;
+    }
 }
 
 /* ── 1. Design Tokens ─────────────────────────────────────────────────── */
 @layer tokens {
-	:root {
-		color-scheme: light dark;
+    :root {
+        color-scheme: light dark;
 
-		/* ── Typography: Scale ── */
-		--type-scale-ratio: 1.125;
-		--text-base-px: 14;
+        /* ── Typography: Scale ── */
+        --type-scale-ratio: 1.125;
+        --text-base-px: 14;
 
-		--text-25: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), -3)), 1) * 1px
-		);
-		--text-50: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), -2)), 1) * 1px
-		);
-		--text-75: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), -1)), 1) * 1px
-		);
-		--text-100: calc(var(--text-base-px) * 1px);
-		--text-200: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 1)), 1) * 1px
-		);
-		--text-300: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 2)), 1) * 1px
-		);
-		--text-400: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 3)), 1) * 1px
-		);
-		--text-500: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 4)), 1) * 1px
-		);
-		--text-600: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 5)), 1) * 1px
-		);
-		--text-700: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 6)), 1) * 1px
-		);
-		--text-800: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 7)), 1) * 1px
-		);
-		--text-900: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 8)), 1) * 1px
-		);
-		--text-1000: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 9)), 1) * 1px
-		);
-		--text-1100: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 10)), 1) * 1px
-		);
-		--text-1200: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 11)), 1) * 1px
-		);
-		--text-1300: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 12)), 1) * 1px
-		);
-		--text-1400: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 13)), 1) * 1px
-		);
-		--text-1500: calc(
-			round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 14)), 1) * 1px
-		);
+        --text-25: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), -3)), 1) * 1px);
+        --text-50: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), -2)), 1) * 1px);
+        --text-75: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), -1)), 1) * 1px);
+        --text-100: calc(var(--text-base-px) * 1px);
+        --text-200: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 1)), 1) * 1px);
+        --text-300: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 2)), 1) * 1px);
+        --text-400: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 3)), 1) * 1px);
+        --text-500: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 4)), 1) * 1px);
+        --text-600: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 5)), 1) * 1px);
+        --text-700: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 6)), 1) * 1px);
+        --text-800: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 7)), 1) * 1px);
+        --text-900: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 8)), 1) * 1px);
+        --text-1000: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 9)), 1) * 1px);
+        --text-1100: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 10)), 1) * 1px);
+        --text-1200: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 11)), 1) * 1px);
+        --text-1300: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 12)), 1) * 1px);
+        --text-1400: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 13)), 1) * 1px);
+        --text-1500: calc(round(nearest, calc(var(--text-base-px) * pow(var(--type-scale-ratio), 14)), 1) * 1px);
 
-		/* ── Typography: Line Heights ── */
-		--lh-heading: 1.3;
-		--lh-detail: 1.3;
-		--lh-component: 1.3;
-		--lh-body: 1.5;
-		--lh-code: 1.5;
+        /* ── Typography: Line Heights ── */
+        --lh-heading: 1.3;
+        --lh-detail: 1.3;
+        --lh-component: 1.3;
+        --lh-body: 1.5;
+        --lh-code: 1.5;
 
-		--lh-cjk-heading: 1.5;
-		--lh-cjk-component: 1.5;
-		--lh-cjk-body: 1.7;
+        --lh-cjk-heading: 1.5;
+        --lh-cjk-component: 1.5;
+        --lh-cjk-body: 1.7;
 
-		/* ── Motion ── */
-		--ease-out: cubic-bezier(0, 0, 0.4, 1);
-		--ease-in: cubic-bezier(0.5, 0, 1, 1);
-		--ease-in-out: cubic-bezier(0.45, 0, 0.4, 1);
+        /* ── Motion ── */
+        --ease-out: cubic-bezier(0, 0, 0.40, 1);
+        --ease-in: cubic-bezier(0.50, 0, 1, 1);
+        --ease-in-out: cubic-bezier(0.45, 0, 0.40, 1);
 
-		--duration-100: 130ms;
-		--duration-200: 160ms;
-		--duration-300: 190ms;
-		--duration-400: 220ms;
-		--duration-500: 250ms;
-		--duration-600: 300ms;
-		--duration-700: 350ms;
-		--duration-800: 400ms;
-		--duration-900: 450ms;
-		--duration-1000: 500ms;
+        --duration-100: 130ms;
+        --duration-200: 160ms;
+        --duration-300: 190ms;
+        --duration-400: 220ms;
+        --duration-500: 250ms;
+        --duration-600: 300ms;
+        --duration-700: 350ms;
+        --duration-800: 400ms;
+        --duration-900: 450ms;
+        --duration-1000: 500ms;
 
-		--duration-fast: var(--duration-100);
-		--duration-normal: var(--duration-200);
-		--duration-slow: var(--duration-600);
-		--duration-slower: var(--duration-1000);
-		--ease-default: var(--ease-out);
+        --duration-fast: var(--duration-100);
+        --duration-normal: var(--duration-200);
+        --duration-slow: var(--duration-600);
+        --duration-slower: var(--duration-1000);
+        --ease-default: var(--ease-out);
 
-		/* ── Layout & Spacing ── */
-		--space-1: 0.25rem;
-		--space-2: 0.5rem;
-		--space-3: 0.75rem;
-		--space-4: 1rem;
-		--space-5: 1.25rem;
-		--space-6: 1.5rem;
-		--space-8: 2rem;
-		--space-10: 2.5rem;
-		--space-12: 3rem;
-		--space-16: 4rem;
+        /* ── Layout & Spacing ── */
+        --space-1: 0.25rem;
+        --space-2: 0.5rem;
+        --space-3: 0.75rem;
+        --space-4: 1rem;
+        --space-5: 1.25rem;
+        --space-6: 1.5rem;
+        --space-8: 2rem;
+        --space-10: 2.5rem;
+        --space-12: 3rem;
+        --space-16: 4rem;
 
-		/* ── Transparent White ── */
-		--transparent-white-25: rgb(255 255 255 / 0);
-		--transparent-white-50: rgb(255 255 255 / 0.04);
-		--transparent-white-75: rgb(255 255 255 / 0.07);
-		--transparent-white-100: rgb(255 255 255 / 0.11);
-		--transparent-white-200: rgb(255 255 255 / 0.14);
-		--transparent-white-300: rgb(255 255 255 / 0.17);
-		--transparent-white-400: rgb(255 255 255 / 0.21);
-		--transparent-white-500: rgb(255 255 255 / 0.39);
-		--transparent-white-600: rgb(255 255 255 / 0.51);
-		--transparent-white-700: rgb(255 255 255 / 0.66);
-		--transparent-white-800: rgb(255 255 255 / 0.85);
-		--transparent-white-900: rgb(255 255 255 / 0.94);
-		--transparent-white-1000: rgb(255 255 255 / 1);
+            /* ── Transparent White ── */
+    --transparent-white-25: rgb(255 255 255 / 0);
+    --transparent-white-50: rgb(255 255 255 / 0.04);
+    --transparent-white-75: rgb(255 255 255 / 0.07);
+    --transparent-white-100: rgb(255 255 255 / 0.11);
+    --transparent-white-200: rgb(255 255 255 / 0.14);
+    --transparent-white-300: rgb(255 255 255 / 0.17);
+    --transparent-white-400: rgb(255 255 255 / 0.21);
+    --transparent-white-500: rgb(255 255 255 / 0.39);
+    --transparent-white-600: rgb(255 255 255 / 0.51);
+    --transparent-white-700: rgb(255 255 255 / 0.66);
+    --transparent-white-800: rgb(255 255 255 / 0.85);
+    --transparent-white-900: rgb(255 255 255 / 0.94);
+    --transparent-white-1000: rgb(255 255 255 / 1);
 
-		/* ── Transparent Black ── */
-		--transparent-black-25: rgb(0 0 0 / 0);
-		--transparent-black-50: rgb(0 0 0 / 0.03);
-		--transparent-black-75: rgb(0 0 0 / 0.05);
-		--transparent-black-100: rgb(0 0 0 / 0.09);
-		--transparent-black-200: rgb(0 0 0 / 0.12);
-		--transparent-black-300: rgb(0 0 0 / 0.15);
-		--transparent-black-400: rgb(0 0 0 / 0.22);
-		--transparent-black-500: rgb(0 0 0 / 0.44);
-		--transparent-black-600: rgb(0 0 0 / 0.56);
-		--transparent-black-700: rgb(0 0 0 / 0.69);
-		--transparent-black-800: rgb(0 0 0 / 0.84);
-		--transparent-black-900: rgb(0 0 0 / 0.93);
-		--transparent-black-1000: rgb(0 0 0 / 1);
+    /* ── Transparent Black ── */
+    --transparent-black-25: rgb(0 0 0 / 0);
+    --transparent-black-50: rgb(0 0 0 / 0.03);
+    --transparent-black-75: rgb(0 0 0 / 0.05);
+    --transparent-black-100: rgb(0 0 0 / 0.09);
+    --transparent-black-200: rgb(0 0 0 / 0.12);
+    --transparent-black-300: rgb(0 0 0 / 0.15);
+    --transparent-black-400: rgb(0 0 0 / 0.22);
+    --transparent-black-500: rgb(0 0 0 / 0.44);
+    --transparent-black-600: rgb(0 0 0 / 0.56);
+    --transparent-black-700: rgb(0 0 0 / 0.69);
+    --transparent-black-800: rgb(0 0 0 / 0.84);
+    --transparent-black-900: rgb(0 0 0 / 0.93);
+    --transparent-black-1000: rgb(0 0 0 / 1);
 
-		/* ── Absolute B/W ── */
-		--black: oklch(0 0 0);
-		--white: oklch(1 0 0);
+        /* ── Absolute B/W ── */
+        --black: oklch(0 0 0);
+        --white: oklch(1 0 0);
 
-		/* ── Material Blurs ── */
-		--blur-sm: blur(8px) saturate(120%);
-		--blur-md: blur(20px) saturate(150%);
-		--blur-lg: blur(40px) saturate(180%);
-		--blur-xl: blur(60px) saturate(200%);
-	}
+        /* ── Material Blurs ── */
+        --blur-sm: blur(8px) saturate(120%);
+        --blur-md: blur(20px) saturate(150%);
+        --blur-lg: blur(40px) saturate(180%);
+        --blur-xl: blur(60px) saturate(200%);
+    }
 
-	@media (max-width: 767px) {
-		:root {
-			--text-base-px: 17;
-		}
-	}
+    @media (max-width: 767px) {
+        :root {
+            --text-base-px: 17;
+        }
+    }
 }
 
 /* ── 2. Palette (Dynamically Generated from Config) ───────────────────── */
 @layer palette {
-	:root {
+    	:root {
+
 		/* --- Gray --- */
 		--gray-25: light-dark(#ffffff, #101010);
 		--gray-50: light-dark(#f7f7f7, #1b1b1b);
@@ -470,6 +438,7 @@
 		--static-cyan-900: #0b78b4;
 		--static-cyan-1000: #066693;
 		--static-cyan-1100: #00577a;
+
 	}
 
 	/* ── Explicit Theme Forcing ── */
@@ -484,18 +453,13 @@
 
 /* ── 3. Semantics ──────────────────────────────────────────────────────── */
 @layer semantics {
-	:root {
-		/* ── Project Tokens ── */
-		--glass-bg-auto: light-dark(
-			oklch(from var(--background-layer-2-color) l c h / 0.7),
-			oklch(from var(--background-layer-2-color) l c h / 0.65)
-		);
-		--glass-border-auto: light-dark(var(--transparent-black-100), var(--transparent-white-100));
-		--glass-shadow: light-dark(
-			0 1px 4px var(--transparent-black-200),
-			0 1px 4px var(--transparent-black-400)
-		);
+    :root {
+        /* ── Project Tokens ── */
+        --glass-bg-auto: light-dark(oklch(from var(--background-layer-2-color) l c h / 0.7), oklch(from var(--background-layer-2-color) l c h / 0.65));
+        --glass-border-auto: light-dark(var(--transparent-black-100), var(--transparent-white-100));
+        --glass-shadow: light-dark(0 1px 4px var(--transparent-black-200), 0 1px 4px var(--transparent-black-400));
 
+        
 		/* --- Spectrum Layout Tokens --- */
 		--border-width-100: 1px;
 		--border-width-200: 2px;
@@ -576,27 +540,15 @@
 		--drop-shadow-color-100: light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.36));
 		--drop-shadow-color-200: light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.48));
 		--drop-shadow-color-300: light-dark(rgba(0, 0, 0, 0.2), rgba(0, 0, 0, 0.6));
-		--drop-shadow-dragged:
-			0px 12px 16px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)),
-			0px 6px 8px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)),
-			0px 0px 6px 0px light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.48));
+		--drop-shadow-dragged: 0px 12px 16px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)), 0px 6px 8px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)), 0px 0px 6px 0px light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.48));
 		--drop-shadow-dragged-color: var(--drop-shadow-color-300);
 		--drop-shadow-dragged-key-color: light-dark(rgba(0, 0, 0, 0.16), rgba(0, 0, 0, 0.48));
-		--drop-shadow-elevated:
-			0px 4px 12px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)),
-			0px 2px 6px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)),
-			0px 0px 2px 0px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.36));
+		--drop-shadow-elevated: 0px 4px 12px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)), 0px 2px 6px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)), 0px 0px 2px 0px light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.36));
 		--drop-shadow-elevated-color: var(--drop-shadow-color-200);
 		--drop-shadow-elevated-key-color: light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.36));
-		--drop-shadow-emphasized:
-			0px 2px 8px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)),
-			0px 1px 4px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)),
-			0px 0px 1px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24));
+		--drop-shadow-emphasized: 0px 2px 8px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)), 0px 1px 4px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)), 0px 0px 1px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24));
 		--drop-shadow-emphasized-default-color: var(--drop-shadow-color-100);
-		--drop-shadow-emphasized-hover:
-			0px 4px 12px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)),
-			0px 2px 6px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)),
-			0px 0px 2px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24));
+		--drop-shadow-emphasized-hover: 0px 4px 12px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24)), 0px 2px 6px 0px light-dark(rgba(0, 0, 0, 0.04), rgba(0, 0, 0, 0.12)), 0px 0px 2px 0px light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24));
 		--drop-shadow-emphasized-hover-color: var(--drop-shadow-color-200);
 		--drop-shadow-emphasized-hover-key-color: light-dark(rgba(0, 0, 0, 0.12), rgba(0, 0, 0, 0.36));
 		--drop-shadow-emphasized-key-color: light-dark(rgba(0, 0, 0, 0.08), rgba(0, 0, 0, 0.24));
@@ -660,7 +612,7 @@
 		--opacity-checkerboard-square-dark: light-dark(var(--gray-200), var(--gray-800));
 		--opacity-checkerboard-square-light: var(--white);
 		--popover-border-color: light-dark(rgba(255, 255, 255, 0), var(--gray-400));
-		--popover-border-opacity: light-dark(0, 1);
+		--popover-border-opacity: light-dark(0, 1.0);
 		--popover-edge-to-content-area: var(--spacing-100);
 		--popover-tip-height: 8px;
 		--popover-tip-width: 16px;
@@ -723,14 +675,8 @@
 		--celery-background-color-default: light-dark(var(--celery-600), var(--celery-900));
 		--celery-subtle-background-color-default: light-dark(var(--celery-200), var(--celery-300));
 		--celery-visual-color: light-dark(var(--celery-700), var(--celery-800));
-		--chartreuse-background-color-default: light-dark(
-			var(--chartreuse-500),
-			var(--chartreuse-1000)
-		);
-		--chartreuse-subtle-background-color-default: light-dark(
-			var(--chartreuse-200),
-			var(--chartreuse-300)
-		);
+		--chartreuse-background-color-default: light-dark(var(--chartreuse-500), var(--chartreuse-1000));
+		--chartreuse-subtle-background-color-default: light-dark(var(--chartreuse-200), var(--chartreuse-300));
 		--chartreuse-visual-color: light-dark(var(--chartreuse-600), var(--chartreuse-900));
 		--magenta-background-color-default: light-dark(var(--magenta-900), var(--magenta-800));
 		--magenta-subtle-background-color-default: light-dark(var(--magenta-200), var(--magenta-300));
@@ -755,47 +701,42 @@
 		--gray-visual-color: light-dark(var(--gray-500), var(--gray-600));
 
 		/* ── Typography: Fonts ── */
-		--font-sans:
-			system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial,
-			sans-serif;
+		--font-sans: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
 		--font-serif: ui-serif, Georgia, Cambria, 'Times New Roman', Times, serif;
 		--font-mono: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
-	}
+    }
 }
 
 /* ── 4. Base Styles ────────────────────────────────────────────────────── */
 @layer base {
-	body {
-		font-family: var(--font-sans);
-		font-size: var(--text-200);
-		line-height: var(--lh-body);
-		background-color: var(--background-layer-1-color);
-		color: var(--neutral-content-color-default);
+    body {
+        font-family: var(--font-sans);
+        font-size: var(--text-200);
+        line-height: var(--lh-body);
+        background-color: var(--background-layer-1-color);
+        color: var(--neutral-content-color-default);
 
-		font-variant-numeric: tabular-nums;
-		font-feature-settings:
-			'pwid' on,
-			'palt' on,
-			'pkna' on;
-		-webkit-font-smoothing: antialiased;
-		-moz-osx-font-smoothing: grayscale;
-	}
+        font-variant-numeric: tabular-nums;
+        font-feature-settings: 'pwid' on, 'palt' on, 'pkna' on;
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+    }
 
-	h1,
-	h2,
-	h3,
-	h4,
-	h5,
-	h6 {
-		color: var(--gray-900);
-		line-height: var(--lh-heading);
-	}
+    h1,
+    h2,
+    h3,
+    h4,
+    h5,
+    h6 {
+        color: var(--gray-900);
+        line-height: var(--lh-heading);
+    }
 
-	:lang(ja),
-	:lang(zh),
-	:lang(ko) {
-		--lh-heading: var(--lh-cjk-heading);
-		--lh-body: var(--lh-cjk-body);
-		--lh-component: var(--lh-cjk-component);
-	}
+    :lang(ja),
+    :lang(zh),
+    :lang(ko) {
+        --lh-heading: var(--lh-cjk-heading);
+        --lh-body: var(--lh-cjk-body);
+        --lh-component: var(--lh-cjk-component);
+    }
 }
