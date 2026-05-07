@@ -1,6 +1,6 @@
 {
 	"name": "@matchalatte/ssp-ui",
-	"version": "0.0.1",
+	"version": "0.0.2-next.0",
 	"type": "module",
 	"svelte": "./dist/index.js",
 	"types": "./dist/index.d.ts",
