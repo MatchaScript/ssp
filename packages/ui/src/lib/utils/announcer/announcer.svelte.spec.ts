@@ -40,10 +40,27 @@ describe('announcer', () => {
 		expect(document.querySelectorAll('[data-ssp-announcer]')).toHaveLength(1);
 	});
 
-	it('exposes both polite and assertive log regions', () => {
+	it('creates log regions with correct ARIA attributes', () => {
 		getAnnouncer(document);
-		expect(getLog('polite')).not.toBeNull();
-		expect(getLog('assertive')).not.toBeNull();
+		const polite = getLog('polite');
+		const assertive = getLog('assertive');
+		expect(polite).not.toBeNull();
+		expect(assertive).not.toBeNull();
+		expect(polite?.getAttribute('role')).toBe('log');
+		expect(assertive?.getAttribute('role')).toBe('log');
+		expect(polite?.getAttribute('aria-live')).toBe('polite');
+		expect(assertive?.getAttribute('aria-live')).toBe('assertive');
+		expect(polite?.getAttribute('aria-relevant')).toBe('additions');
+		expect(assertive?.getAttribute('aria-relevant')).toBe('additions');
+	});
+
+	it('the announcer root is visually hidden via clip-rect sr-only style', () => {
+		getAnnouncer(document);
+		const root = getAnnouncerNode();
+		const cssText = root?.style.cssText ?? '';
+		expect(cssText).toContain('position: absolute');
+		expect(cssText).toContain('width: 1px');
+		expect(cssText).toContain('clip: rect(0, 0, 0, 0)');
 	});
 
 	it('appends polite messages to the polite log', () => {
@@ -68,13 +85,14 @@ describe('announcer', () => {
 		expect(getLog('polite')?.textContent ?? '').not.toContain('temp');
 	});
 
-	it('clear() empties a specific kind without scheduling cleanup', () => {
+	it('clear() empties a specific kind without affecting the other', () => {
 		const a = getAnnouncer(document)!;
-		a.announce('one', 'polite');
-		a.announce('two', 'polite');
+		a.announce('polite-one', 'polite');
+		a.announce('polite-two', 'polite');
+		a.announce('assertive-msg', 'assertive');
 		a.clear('polite');
 		expect(getLog('polite')?.textContent ?? '').toBe('');
-		expect(getLog('assertive')?.textContent ?? '').toBe('');
+		expect(getLog('assertive')?.textContent ?? '').toBe('assertive-msg');
 	});
 
 	it('clear() with no argument empties both', () => {
