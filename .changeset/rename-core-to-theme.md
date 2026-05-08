@@ -49,4 +49,4 @@ Affected components: `Button`, `ActionButton`, `ActionBarItem`, `ActionButtonGro
 </SideNav>
 ```
 
-Without it, no item is ever active — this keeps the library router-agnostic. <!-- TODO: confirm wording / add migration notes for any other API changes I missed -->
+Without it, no item is ever active — this keeps the library router-agnostic.
