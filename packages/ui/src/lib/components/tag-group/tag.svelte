@@ -43,13 +43,15 @@
 		);
 	});
 
-	// Sync mutable fields without re-registering.
+	// Sync mutable fields without re-registering. Track the reactive inputs
+	// in the outer scope, then dispatch the side effect inside `untrack` so
+	// updateTag's internal `#tags.map(...)` read doesn't get added to this
+	// effect's dep set (which would loop with the `#tags = ...` write).
 	$effect(() => {
-		state.updateTag(domId, {
-			disabled: isTagDisabled,
-			textValue: textValue ?? ref?.textContent?.trim() ?? '',
-			isLink: !!href
-		});
+		const disabled = isTagDisabled;
+		const text = textValue ?? ref?.textContent?.trim() ?? '';
+		const isLink = !!href;
+		untrack(() => state.updateTag(domId, { disabled, textValue: text, isLink }));
 	});
 
 	function handleRowClick(event: MouseEvent) {
