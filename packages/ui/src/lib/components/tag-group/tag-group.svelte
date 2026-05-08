@@ -60,7 +60,7 @@
 		(isError && errorMessage) || (!isError && helpText) ? `${uid}-helptext` : undefined
 	);
 
-	const state = new TagGroupState({
+	const groupState = new TagGroupState({
 		get size() {
 			return size;
 		},
@@ -91,22 +91,32 @@
 		}
 	});
 
-	setTagGroupContext(state);
+	setTagGroupContext(groupState);
+
+	// Tags register themselves via `$effect` after the first render commits, so
+	// `groupState.isEmpty` is true on the initial pass even when children are
+	// about to populate. Gating the empty-state slot on `hasMounted` prevents a
+	// one-frame flash of "No tags." while children mount.
+	let hasMounted = $state(false);
+	$effect(() => {
+		hasMounted = true;
+	});
+	const showEmptyState = $derived(hasMounted && groupState.isEmpty);
 
 	function handleFocusIn() {
-		state.onFocusIn();
+		groupState.onFocusIn();
 		// First Tab into the grid: place roving focus on the first enabled row,
 		// but only when nothing is yet highlighted. Without this guard a click
 		// on row 3 would race the microtask and snap focus back to row 1.
-		if (!state.isCellModeActive && !state.isEmpty && !state.hasHighlight) {
+		if (!groupState.isCellModeActive && !groupState.isEmpty && !groupState.hasHighlight) {
 			queueMicrotask(() => {
-				if (!state.hasHighlight) state.focusFirst({ focusVisible: true });
+				if (!groupState.hasHighlight) groupState.focusFirst({ focusVisible: true });
 			});
 		}
 	}
 
 	function handleFocusOut() {
-		state.onFocusOut();
+		groupState.onFocusOut();
 	}
 </script>
 
@@ -118,7 +128,7 @@
 	data-disabled={isDisabled || undefined}
 	data-readonly={isReadOnly || undefined}
 	data-error={isError || undefined}
-	data-empty={state.isEmpty || undefined}
+	data-empty={showEmptyState || undefined}
 	data-label-position={labelPosition}
 >
 	{#if label}
@@ -144,15 +154,16 @@
 		aria-label={!label ? restProps['aria-label'] : undefined}
 		aria-describedby={helpTextId}
 		data-spectrum-tag-group-list
-		data-empty={state.isEmpty || undefined}
-		tabindex={state.getContainerTabIndex()}
+		data-empty={showEmptyState || undefined}
+		tabindex={groupState.getContainerTabIndex()}
 		onfocusin={(e) => {
-			state.setFocusHost(e.currentTarget);
+			groupState.setFocusHost(e.currentTarget);
 			handleFocusIn();
 		}}
 		onfocusout={handleFocusOut}
 	>
-		{#if state.isEmpty}
+		{@render children?.()}
+		{#if showEmptyState}
 			{#if renderEmptyState}
 				<div data-spectrum-tag-group-empty>
 					{@render renderEmptyState()}
@@ -160,8 +171,6 @@
 			{:else}
 				<div data-spectrum-tag-group-empty>No tags.</div>
 			{/if}
-		{:else}
-			{@render children?.()}
 		{/if}
 	</div>
 
