@@ -44,8 +44,11 @@ Affected components: `Button`, `ActionButton`, `ActionBarItem`, `ActionButtonGro
 `SideNav` gained an `activeMatcher` prop for router-agnostic active-state highlighting:
 
 ```svelte
-<SideNav activeMatcher={(href, { exact }) => exact ? page.url.pathname === href : page.url.pathname.startsWith(href)}>
-  <!-- ... -->
+<SideNav
+	activeMatcher={(href, { exact }) =>
+		exact ? page.url.pathname === href : page.url.pathname.startsWith(href)}
+>
+	<!-- ... -->
 </SideNav>
 ```
 

@@ -266,8 +266,8 @@
 	{#snippet template()}
 		<div style="display: flex; flex-direction: column; gap: 12px;">
 			<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
-				Active: <code>{collapsedActiveHref}</code> — pill stays anchored to the left edge in
-				collapsed mode.
+				Active: <code>{collapsedActiveHref}</code> — pill stays anchored to the left edge in collapsed
+				mode.
 			</div>
 			<div
 				style="width: 54px; height: 360px; border: 1px solid var(--neutral-border-color-default); border-radius: 8px; background: var(--background-layer-1-color); overflow: hidden;"
