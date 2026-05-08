@@ -38,5 +38,13 @@ export default defineConfig(
 			// $bindable() への代入を ESLint がフロー解析できず誤検知するため Svelte ファイルでは無効化
 			'no-useless-assignment': 'off'
 		}
+	},
+	{
+		// ssp-ui is a router-agnostic component library — consumers resolve hrefs
+		// at call sites, so the SvelteKit-specific resolve() rule does not apply.
+		files: ['packages/ui/**/*.svelte', 'packages/ui/**/*.svelte.ts', 'packages/ui/**/*.svelte.js'],
+		rules: {
+			'svelte/no-navigation-without-resolve': 'off'
+		}
 	}
 );
