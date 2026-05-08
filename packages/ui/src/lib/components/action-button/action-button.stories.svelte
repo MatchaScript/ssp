@@ -99,8 +99,7 @@
 
 <Story name="As link" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap;">
-		<ActionButton href="https://svelte.dev" target="_blank"
-			><Text>External link</Text></ActionButton
+		<ActionButton href="https://svelte.dev" target="_blank"><Text>External link</Text></ActionButton
 		>
 		<ActionButton href="#docs" isQuiet><Text>Docs</Text></ActionButton>
 	</div>

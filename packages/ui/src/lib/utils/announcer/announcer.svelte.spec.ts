@@ -6,9 +6,7 @@ function getAnnouncerNode(): HTMLElement | null {
 }
 
 function getLog(kind: 'polite' | 'assertive'): HTMLElement | null {
-	return document.querySelector<HTMLElement>(
-		`[data-ssp-announcer] [aria-live="${kind}"]`
-	);
+	return document.querySelector<HTMLElement>(`[data-ssp-announcer] [aria-live="${kind}"]`);
 }
 
 describe('announcer', () => {
