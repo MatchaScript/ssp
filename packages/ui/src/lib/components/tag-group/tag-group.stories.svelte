@@ -1,6 +1,6 @@
 <script module lang="ts">
 	import { defineMeta } from '@storybook/addon-svelte-csf';
-	import { expect, userEvent, within } from 'storybook/test';
+	import { expect, userEvent, waitFor, within } from 'storybook/test';
 	import { TagGroup } from '$lib/index.js';
 	import { SvelteSet } from 'svelte/reactivity';
 
@@ -44,7 +44,8 @@
 	args={{}}
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		await expect(canvas.getAllByRole('row')).toHaveLength(3);
+		const rows = await canvas.findAllByRole('row');
+		expect(rows).toHaveLength(3);
 	}}
 	asChild
 >
@@ -74,7 +75,7 @@
 	args={{ selectionMode: 'multiple' }}
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		const rows = canvas.getAllByRole('row');
+		const rows = await canvas.findAllByRole('row');
 		expect(rows[0].getAttribute('aria-selected')).toBe('false');
 		await userEvent.click(rows[0]);
 		expect(rows[0].getAttribute('aria-selected')).toBe('true');
@@ -118,13 +119,13 @@
 	args={{}}
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		const buttons = canvas.getAllByRole('button', { name: /remove/i });
+		const buttons = await canvas.findAllByRole('button', { name: /remove/i });
 		expect(buttons.length).toBe(3);
-		// Click first remove
+		// Click first remove; wait for the row to disappear from the accessibility tree
 		await userEvent.click(buttons[0]);
-		// After removal, two rows remain
-		await new Promise((r) => setTimeout(r, 50));
-		expect(canvas.getAllByRole('row').length).toBe(2);
+		await waitFor(() => {
+			expect(canvas.getAllByRole('row').length).toBe(2);
+		});
 	}}
 >
 	{#snippet template()}
@@ -167,7 +168,7 @@
 	args={{}}
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		const rows = canvas.getAllByRole('row');
+		const rows = await canvas.findAllByRole('row');
 		// Link tags should not have aria-selected
 		expect(rows[0].hasAttribute('aria-selected')).toBe(false);
 		// And should contain a stretched <a>
@@ -192,7 +193,7 @@
 	args={{}}
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		const rows = canvas.getAllByRole('row');
+		const rows = await canvas.findAllByRole('row');
 		// Group isDisabled => all rows disabled
 		expect(rows[0].getAttribute('aria-disabled')).toBe('true');
 		expect(rows[1].getAttribute('aria-disabled')).toBe('true');
@@ -271,9 +272,10 @@
 	args={{}}
 	play={async ({ canvasElement }) => {
 		const canvas = within(canvasElement);
-		// role transitions to "group" when empty
-		const group = canvas.getByRole('group');
-		expect(group).toBeInTheDocument();
+		// Container is always role=grid; an empty grid renders the empty-state
+		// snippet instead of any rows.
+		const grid = canvas.getByRole('grid');
+		expect(grid).toBeInTheDocument();
 		expect(canvas.queryAllByRole('row').length).toBe(0);
 	}}
 >

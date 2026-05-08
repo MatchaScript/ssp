@@ -133,16 +133,13 @@
 		</div>
 	{/if}
 
-	<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 	<div
 		bind:this={ref}
 		id={groupId}
-		role={state.isEmpty ? 'group' : 'grid'}
+		role="grid"
 		aria-multiselectable={selectionMode === 'multiple' || undefined}
 		aria-disabled={isDisabled || undefined}
 		aria-readonly={isReadOnly || undefined}
-		aria-invalid={isError || undefined}
-		aria-required={isRequired || undefined}
 		aria-labelledby={label ? labelId : restProps['aria-labelledby']}
 		aria-label={!label ? restProps['aria-label'] : undefined}
 		aria-describedby={helpTextId}
