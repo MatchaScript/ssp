@@ -251,6 +251,11 @@ export class TagGroupState {
 		this.#applyOutcome(event, outcome, rowKey);
 	}
 	onCellKeydown(event: KeyboardEvent, rowKey: string, cellId: CellId): void {
+		// Stop the cell-level keydown from bubbling to the row's onkeydown,
+		// which would re-dispatch the same key as a row-mode event and
+		// double-toggle selection on Space/Enter (etc.). When focus is on a
+		// cell, the cell handler is the sole authority over the key.
+		event.stopPropagation();
 		const ctx: CellKeydownContext = { ...this.#rowCtx(rowKey), currentCellId: cellId };
 		const outcome = handleTagCellKeydown(event, ctx);
 		this.#applyOutcome(event, outcome, rowKey);
