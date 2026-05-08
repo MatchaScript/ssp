@@ -166,6 +166,14 @@
 		outline: none;
 	}
 
+	/* Focus ring on the row (the focus target in row mode). Without this, the
+	   row receives keyboard focus invisibly — users see nothing happen on Tab,
+	   so keyboard activation feels broken even when handlers fire correctly. */
+	[data-spectrum-tag]:focus-visible {
+		outline: var(--focus-indicator-thickness) solid var(--focus-indicator-color);
+		outline-offset: var(--focus-indicator-gap);
+	}
+
 	[data-spectrum-tag][data-link] {
 		cursor: pointer;
 	}
