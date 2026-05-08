@@ -1,6 +1,6 @@
 {
 	"name": "@matchalatte/ssp-theme",
-	"version": "0.0.2-next.1",
+	"version": "0.0.2-next.2",
 	"type": "module",
 	"exports": {
 		".": {
