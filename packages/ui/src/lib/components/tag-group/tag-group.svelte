@@ -96,7 +96,10 @@
 	// Tags register themselves via `$effect` after the first render commits, so
 	// `groupState.isEmpty` is true on the initial pass even when children are
 	// about to populate. Gating the empty-state slot on `hasMounted` prevents a
-	// one-frame flash of "No tags." while children mount.
+	// one-frame flash of "No tags." while children mount. The flag isn't
+	// derivable from any prop / state — it tracks the "have we run client-side
+	// at all?" boundary, which is exactly the $state + mount-effect pattern.
+	// eslint-disable-next-line svelte/prefer-writable-derived
 	let hasMounted = $state(false);
 	$effect(() => {
 		hasMounted = true;
@@ -108,7 +111,7 @@
 		// First Tab into the grid: place roving focus on the first enabled row,
 		// but only when nothing is yet highlighted. Without this guard a click
 		// on row 3 would race the microtask and snap focus back to row 1.
-		if (!groupState.isCellModeActive && !groupState.isEmpty && !groupState.hasHighlight) {
+		if (!groupState.isEmpty && !groupState.hasHighlight) {
 			queueMicrotask(() => {
 				if (!groupState.hasHighlight) groupState.focusFirst({ focusVisible: true });
 			});
@@ -178,13 +181,7 @@
 		<div data-spectrum-tag-group-helptext>
 			{#if isError && errorMessage}
 				{#if typeof errorMessage === 'string'}
-					<HelpText
-						{size}
-						{isError}
-						{isDisabled}
-						errorMessage={errorMessage}
-						id={helpTextId}
-					/>
+					<HelpText {size} {isError} {isDisabled} {errorMessage} id={helpTextId} />
 				{:else}
 					<div data-spectrum-help-text data-error data-size={size} id={helpTextId}>
 						{@render errorMessage()}
@@ -248,12 +245,22 @@
 		font-size: var(--text-200);
 	}
 
+	/* S2 uses inline + per-tag margin: 4 (≈8px between tags). We model that with
+	   flex-wrap + a half-spacing gap so adjacent tags sit ~8px apart. */
 	[data-spectrum-tag-group-list] {
 		display: flex;
 		flex-wrap: wrap;
-		gap: var(--spacing-100);
+		gap: var(--spacing-75);
 		outline: none;
+	}
+	[data-spectrum-tag-group][data-size='s'] > [data-spectrum-tag-group-list] {
 		min-height: var(--spacing-400);
+	}
+	[data-spectrum-tag-group][data-size='m'] > [data-spectrum-tag-group-list] {
+		min-height: var(--spacing-500);
+	}
+	[data-spectrum-tag-group][data-size='l'] > [data-spectrum-tag-group-list] {
+		min-height: var(--spacing-600);
 	}
 
 	[data-spectrum-tag-group-list]:focus-visible {
@@ -265,6 +272,6 @@
 	[data-spectrum-tag-group-empty] {
 		color: var(--neutral-subdued-content-color-default);
 		font-size: var(--text-100);
-		padding: var(--spacing-200);
+		padding-block: var(--spacing-75);
 	}
 </style>

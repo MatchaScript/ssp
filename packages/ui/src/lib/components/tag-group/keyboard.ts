@@ -1,9 +1,17 @@
 import type { TagGroupSelectionMode } from './types.js';
 
-export type CellId = 'content' | 'remove';
+/**
+ * Pure keyboard delegate for TagGroup row-level navigation and selection.
+ *
+ * The TagGroup uses the react-aria `keyboardNavigationBehavior: 'tab'` model:
+ * arrow keys navigate between rows, Tab moves to focusable descendants of the
+ * focused row (i.e. the ClearButton X). Tab is handled by the browser via
+ * synchronised roving tabindex on the row and its X — this module owns the
+ * arrow / activation / removal / selection keys only.
+ */
 
 /**
- * Minimal keyboard-event interface consumed by the handlers.
+ * Minimal keyboard-event interface consumed by the handler.
  * Satisfied by the browser's `KeyboardEvent` and by plain objects in tests.
  */
 export interface KeyboardEventLike {
@@ -13,10 +21,6 @@ export interface KeyboardEventLike {
 	readonly metaKey: boolean;
 	readonly altKey: boolean;
 }
-
-export type FocusTarget =
-	| { kind: 'row'; rowKey: string }
-	| { kind: 'cell'; rowKey: string; cellId: CellId };
 
 export interface KeyboardModifiers {
 	readonly shift: boolean;
@@ -33,17 +37,12 @@ export interface RowKeydownContext {
 	readonly rows: readonly RowDescriptor[];
 	readonly currentRowKey: string;
 	readonly dir: 'ltr' | 'rtl';
-	readonly hasRemoveButton: (rowKey: string) => boolean;
 	readonly selectionMode: TagGroupSelectionMode;
 	readonly allowsSelectAll: boolean;
 }
 
-export interface CellKeydownContext extends RowKeydownContext {
-	readonly currentCellId: CellId;
-}
-
 export type KeyboardOutcome =
-	| { type: 'focus'; target: FocusTarget }
+	| { type: 'focus'; rowKey: string }
 	| { type: 'select'; rowKey: string; modifiers: KeyboardModifiers }
 	| { type: 'activateLink'; rowKey: string; modifiers: KeyboardModifiers }
 	| { type: 'remove'; rowKey: string }
@@ -54,9 +53,7 @@ export type KeyboardOutcome =
 
 // ── direction-aware key resolution ──────────────────────────────
 //
-// `nextKey` / `prevKey` resolve to the key string that means "step toward the
-// end" / "step toward the start" given the page direction. In horizontal
-// orientation (TagGroup's only mode for v1), rtl flips left and right.
+// In horizontal orientation (TagGroup's only mode), rtl flips left/right.
 
 function nextKey(dir: 'ltr' | 'rtl'): 'ArrowRight' | 'ArrowLeft' {
 	return dir === 'rtl' ? 'ArrowLeft' : 'ArrowRight';
@@ -99,7 +96,7 @@ function isPrintable(e: KeyboardEventLike): boolean {
 	return e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
 }
 
-// ── public handlers ─────────────────────────────────────────────
+// ── public handler ──────────────────────────────────────────────
 
 export function handleTagRowKeydown(
 	event: KeyboardEventLike,
@@ -113,33 +110,22 @@ export function handleTagRowKeydown(
 		case next: {
 			const target = findEnabled(ctx.rows, idx + 1, 1);
 			if (!target) return null;
-			return { type: 'focus', target: { kind: 'row', rowKey: target.key } };
+			return { type: 'focus', rowKey: target.key };
 		}
 		case prev: {
 			const target = findEnabled(ctx.rows, idx - 1, -1);
 			if (!target) return null;
-			return { type: 'focus', target: { kind: 'row', rowKey: target.key } };
-		}
-		case 'ArrowDown': {
-			if (ctx.rows[idx]?.isLink) return null;
-			if (!ctx.hasRemoveButton(ctx.currentRowKey)) return null;
-			return {
-				type: 'focus',
-				target: { kind: 'cell', rowKey: ctx.currentRowKey, cellId: 'content' }
-			};
-		}
-		case 'ArrowUp': {
-			return null;
+			return { type: 'focus', rowKey: target.key };
 		}
 		case 'Home': {
 			const target = firstEnabled(ctx.rows);
 			if (!target) return null;
-			return { type: 'focus', target: { kind: 'row', rowKey: target.key } };
+			return { type: 'focus', rowKey: target.key };
 		}
 		case 'End': {
 			const target = lastEnabled(ctx.rows);
 			if (!target) return null;
-			return { type: 'focus', target: { kind: 'row', rowKey: target.key } };
+			return { type: 'focus', rowKey: target.key };
 		}
 		case 'Enter': {
 			const row = ctx.rows[idx];
@@ -176,102 +162,6 @@ export function handleTagRowKeydown(
 		}
 		default: {
 			return isPrintable(event) ? { type: 'typeahead', key: event.key } : null;
-		}
-	}
-}
-
-export function handleTagCellKeydown(
-	event: KeyboardEventLike,
-	ctx: CellKeydownContext
-): KeyboardOutcome {
-	const next = nextKey(ctx.dir);
-	const prev = prevKey(ctx.dir);
-
-	const cells: CellId[] = ctx.hasRemoveButton(ctx.currentRowKey)
-		? ['content', 'remove']
-		: ['content'];
-	const cellIdx = cells.indexOf(ctx.currentCellId);
-
-	switch (event.key) {
-		case next: {
-			const nextCellIdx = cellIdx + 1;
-			if (nextCellIdx < cells.length) {
-				return {
-					type: 'focus',
-					target: { kind: 'cell', rowKey: ctx.currentRowKey, cellId: cells[nextCellIdx] }
-				};
-			}
-			// past the trailing cell: step to the next enabled row's first cell, or
-			// fall back to row mode of the current row.
-			const idx = rowIndex(ctx.rows, ctx.currentRowKey);
-			const target = findEnabled(ctx.rows, idx + 1, 1);
-			if (!target) return { type: 'focus', target: { kind: 'row', rowKey: ctx.currentRowKey } };
-			return {
-				type: 'focus',
-				target: { kind: 'cell', rowKey: target.key, cellId: 'content' }
-			};
-		}
-		case prev: {
-			const prevCellIdx = cellIdx - 1;
-			if (prevCellIdx >= 0) {
-				return {
-					type: 'focus',
-					target: { kind: 'cell', rowKey: ctx.currentRowKey, cellId: cells[prevCellIdx] }
-				};
-			}
-			// past the leading cell: drop back to row mode.
-			return { type: 'focus', target: { kind: 'row', rowKey: ctx.currentRowKey } };
-		}
-		case 'ArrowUp':
-		case 'Escape': {
-			return { type: 'focus', target: { kind: 'row', rowKey: ctx.currentRowKey } };
-		}
-		case 'ArrowDown': {
-			return null;
-		}
-		case 'Home': {
-			return {
-				type: 'focus',
-				target: { kind: 'cell', rowKey: ctx.currentRowKey, cellId: cells[0] }
-			};
-		}
-		case 'End': {
-			return {
-				type: 'focus',
-				target: { kind: 'cell', rowKey: ctx.currentRowKey, cellId: cells[cells.length - 1] }
-			};
-		}
-		case 'Enter':
-		case ' ': {
-			if (ctx.currentCellId === 'remove') {
-				return { type: 'remove', rowKey: ctx.currentRowKey };
-			}
-			// content cell: behave like row mode
-			const row = ctx.rows[rowIndex(ctx.rows, ctx.currentRowKey)];
-			if (row?.isLink) {
-				if (event.key === ' ') return null;
-				return { type: 'activateLink', rowKey: ctx.currentRowKey, modifiers: modifiers(event) };
-			}
-			if (ctx.selectionMode === 'none') return null;
-			return { type: 'select', rowKey: ctx.currentRowKey, modifiers: modifiers(event) };
-		}
-		case 'Delete':
-		case 'Backspace': {
-			return { type: 'remove', rowKey: ctx.currentRowKey };
-		}
-		case 'a':
-		case 'A': {
-			if (
-				(event.ctrlKey || event.metaKey) &&
-				ctx.allowsSelectAll &&
-				ctx.selectionMode === 'multiple'
-			) {
-				return { type: 'selectAll' };
-			}
-			return null; // typeahead suppressed in cell mode
-		}
-		default: {
-			return null;
 		}
 	}
 }

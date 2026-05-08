@@ -1,3 +1,10 @@
+/* eslint-disable svelte/prefer-svelte-reactivity --
+ * The `Set` instances in this file are transient: built on a hot path,
+ * handed to `onSelectionChange` / `onRemove`, and immediately garbage
+ * collected. They are never stored as $state, so SvelteSet would only add
+ * proxy overhead without enabling any reactivity.
+ */
+
 import { createContext } from 'svelte';
 import {
 	SelectableCollection,
@@ -5,15 +12,7 @@ import {
 } from '$lib/utils/selectable-collection/index.js';
 import { getElementDirection } from '$lib/utils/direction.js';
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
-import {
-	handleTagRowKeydown,
-	handleTagCellKeydown,
-	type CellId,
-	type FocusTarget,
-	type KeyboardOutcome,
-	type RowKeydownContext,
-	type CellKeydownContext
-} from './keyboard.js';
+import { handleTagRowKeydown, type KeyboardOutcome, type RowKeydownContext } from './keyboard.js';
 import type { TagGroupSelectionMode, TagGroupSize } from './types.js';
 
 interface TagEntry {
@@ -50,16 +49,17 @@ const FOCUS_OPTS = { focusVisible: true } as FocusOptions;
 /**
  * Owns the runtime state for a single TagGroup instance. Selection / typeahead /
  * roving focus on the row level are delegated to a shared `SelectableCollection`.
- * Cell-mode 2D nav is a TagGroup-local concern: a `$state` slot tracks the focused
- * cell and DOM elements are discovered at handler call time via `data-spectrum-tag-cell-id`.
+ *
+ * Keyboard model: row-level roving tabindex. The ClearButton inside a row mirrors
+ * the row's tabindex so the browser's native Tab walk reaches it for the focused
+ * row only — no Tab handler is needed (matches react-aria's
+ * `keyboardNavigationBehavior: 'tab'` outcome via DOM rather than via walker).
  */
 export class TagGroupState {
 	#props: TagGroupStateProps;
 	#collection: SelectableCollection;
 
 	#tags: TagEntry[] = $state([]); // markup order, source of truth for `rows` snapshot
-
-	#focusedCell: { rowKey: string; cellId: CellId } | null = $state(null);
 
 	#focusHostEl: HTMLElement | null = null; // set by tag-group.svelte via setFocusHost()
 
@@ -126,12 +126,11 @@ export class TagGroupState {
 		this.#hasFocusWithin = true;
 	}
 	onFocusOut() {
-		// Defer: focus moves between siblings within the grid all the time. A
-		// short tick lets us collapse those into "still inside".
+		// Defer: focus moves between the row and its X all the time. A short
+		// tick lets us collapse those into "still inside".
 		if (this.#focusinTimer) clearTimeout(this.#focusinTimer);
 		this.#focusinTimer = setTimeout(() => {
 			this.#hasFocusWithin = false;
-			this.#focusedCell = null;
 		}, 0);
 	}
 
@@ -159,10 +158,7 @@ export class TagGroupState {
 		};
 	}
 
-	updateTag(
-		domId: string,
-		updates: { disabled?: boolean; textValue?: string; isLink?: boolean }
-	) {
+	updateTag(domId: string, updates: { disabled?: boolean; textValue?: string; isLink?: boolean }) {
 		this.#collection.updateItem(domId, {
 			disabled: updates.disabled,
 			textValue: updates.textValue
@@ -194,26 +190,25 @@ export class TagGroupState {
 	isLink(value: string): boolean {
 		return this.#tags.find((t) => t.key === value)?.isLink ?? false;
 	}
-	isCellFocused(rowKey: string, cellId: CellId): boolean {
-		const f = this.#focusedCell;
-		return f !== null && f.rowKey === rowKey && f.cellId === cellId;
-	}
 	isRowFocused(domId: string): boolean {
-		// In cell mode, no row carries tabindex=0 for focus highlighting.
-		if (this.#focusedCell !== null) return false;
 		return this.#collection.highlightedId === domId;
 	}
-	get isCellModeActive(): boolean {
-		return this.#focusedCell !== null;
-	}
 
-	// ── tabindex helpers (single tab stop) ──────────────────────
+	// ── tabindex helpers (single tab stop into the group) ───────
 	getContainerTabIndex(): 0 | -1 {
 		// Empty grid is the only candidate when there are no tags.
 		return this.isEmpty ? 0 : -1;
 	}
+	/**
+	 * The roving-tab-stop signal for a row.
+	 *
+	 * Also consumed by the ClearButton inside the row: when the row is the
+	 * current tab stop the X is too, so a Tab keystroke advances naturally
+	 * from the row to its X (and a second Tab leaves the group). When the
+	 * row isn't the tab stop, both the row and its X are -1 and the browser
+	 * skips the whole tag.
+	 */
 	getRowTabIndex(domId: string): 0 | -1 {
-		if (this.isCellModeActive) return -1;
 		const highlighted = this.#collection.highlightedId;
 		if (highlighted === null) {
 			// No highlight yet — first enabled row gets the tab stop.
@@ -223,19 +218,10 @@ export class TagGroupState {
 		}
 		return highlighted === domId ? 0 : -1;
 	}
-	getCellTabIndex(rowKey: string, cellId: CellId): 0 | -1 {
-		return this.isCellFocused(rowKey, cellId) ? 0 : -1;
-	}
 
 	// ── high-level event entry points ───────────────────────────
 	onRowFocus(domId: string): void {
-		this.#focusedCell = null;
 		this.#collection.syncHighlight(domId);
-	}
-	onCellFocus(rowKey: string, cellId: CellId): void {
-		this.#focusedCell = { rowKey, cellId };
-		const domId = this.#collection.getDomId(rowKey);
-		if (domId) this.#collection.syncHighlight(domId);
 	}
 
 	onRowClick(rowKey: string, event: MouseEvent): void {
@@ -248,21 +234,10 @@ export class TagGroupState {
 	onRowKeydown(event: KeyboardEvent, rowKey: string): void {
 		const ctx = this.#rowCtx(rowKey);
 		const outcome = handleTagRowKeydown(event, ctx);
-		this.#applyOutcome(event, outcome, rowKey);
-	}
-	onCellKeydown(event: KeyboardEvent, rowKey: string, cellId: CellId): void {
-		// Stop the cell-level keydown from bubbling to the row's onkeydown,
-		// which would re-dispatch the same key as a row-mode event and
-		// double-toggle selection on Space/Enter (etc.). When focus is on a
-		// cell, the cell handler is the sole authority over the key.
-		event.stopPropagation();
-		const ctx: CellKeydownContext = { ...this.#rowCtx(rowKey), currentCellId: cellId };
-		const outcome = handleTagCellKeydown(event, ctx);
-		this.#applyOutcome(event, outcome, rowKey);
+		this.#applyOutcome(event, outcome);
 	}
 
 	focusFirst(opts: { focusVisible?: boolean } = {}): void {
-		this.#focusedCell = null;
 		this.#collection.focusFirst(opts);
 	}
 
@@ -272,8 +247,7 @@ export class TagGroupState {
 		if (!onRemove) return;
 		if (this.isTagDisabled(rowKey)) return;
 		const selected = this.#props.selectedKeys;
-		const keys =
-			selected.has(rowKey) && selected.size > 1 ? new Set(selected) : new Set([rowKey]);
+		const keys = selected.has(rowKey) && selected.size > 1 ? new Set(selected) : new Set([rowKey]);
 		onRemove(keys);
 		const announcer = this.#getAnnouncer();
 		if (announcer) {
@@ -293,19 +267,21 @@ export class TagGroupState {
 			rows: this.#tags.map((t) => ({ key: t.key, disabled: t.isDisabled, isLink: t.isLink })),
 			currentRowKey: rowKey,
 			dir,
-			hasRemoveButton: () => this.allowsRemoving,
 			selectionMode: this.#props.selectionMode,
 			allowsSelectAll: !this.#props.isReadOnly && !this.#props.isDisabled
 		};
 	}
 
-	#applyOutcome(event: KeyboardEvent, outcome: KeyboardOutcome, rowKey: string): void {
+	#applyOutcome(event: KeyboardEvent, outcome: KeyboardOutcome): void {
 		if (!outcome) return;
 		event.preventDefault();
 		switch (outcome.type) {
-			case 'focus':
-				this.#focusTarget(outcome.target);
+			case 'focus': {
+				const domId = this.#collection.getDomId(outcome.rowKey);
+				if (!domId) return;
+				this.#collection.highlight(domId, FOCUS_OPTS);
 				return;
+			}
 			case 'select':
 				this.#collection.selectFromInput(outcome.rowKey, {
 					shiftKey: outcome.modifiers.shift,
@@ -330,26 +306,6 @@ export class TagGroupState {
 				this.#collection.handleKeyDown(event);
 				return;
 		}
-	}
-
-	#focusTarget(target: FocusTarget): void {
-		if (target.kind === 'row') {
-			this.#focusedCell = null;
-			const domId = this.#collection.getDomId(target.rowKey);
-			if (!domId) return;
-			this.#collection.highlight(domId, FOCUS_OPTS);
-			return;
-		}
-		// cell
-		this.#focusedCell = { rowKey: target.rowKey, cellId: target.cellId };
-		const rowDomId = this.#collection.getDomId(target.rowKey);
-		if (rowDomId) this.#collection.syncHighlight(rowDomId);
-		// Discover the cell element from the DOM (no registry).
-		const rowEl = rowDomId ? this.#collection.getElement(rowDomId) : null;
-		const cellEl = rowEl?.querySelector<HTMLElement>(
-			`[data-spectrum-tag-cell-id="${target.cellId}"]`
-		);
-		cellEl?.focus(FOCUS_OPTS);
 	}
 
 	#activateLink(rowKey: string, mods: { shift: boolean; ctrlOrMeta: boolean }): void {

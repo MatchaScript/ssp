@@ -22,6 +22,7 @@ export * as Tooltip from './components/tooltip/index.js';
 export * from './components/action-button/index.js';
 export * from './components/badge/index.js';
 export * from './components/checkbox/index.js';
+export * from './components/clear-button/index.js';
 export * from './components/color-picker/index.js';
 export * from './components/date-field/index.js';
 export * from './components/divider/index.js';

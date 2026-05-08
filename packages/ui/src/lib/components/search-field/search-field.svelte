@@ -1,7 +1,8 @@
 <script lang="ts">
-	import { Icon, Search, X } from '../icon/index.js';
+	import { Icon, Search } from '../icon/index.js';
 	import { Label } from '../label/index.js';
 	import { Field } from '../field/index.js';
+	import { ClearButton } from '../clear-button/index.js';
 	import '../field/field-input.css';
 	import type { SearchFieldProps } from './types.js';
 
@@ -83,15 +84,12 @@
 			{...restProps}
 		/>
 		{#if hasValue && !isDisabled}
-			<button
-				type="button"
+			<ClearButton
+				{size}
 				data-spectrum-search-field-clear-button
 				aria-label="Clear search"
-				tabindex={-1}
 				onclick={clear}
-			>
-				<Icon icon={X} size={size === 'xl' ? 'l' : size === 'l' ? 'm' : 's'} />
-			</button>
+			/>
 		{/if}
 	{/snippet}
 </Field>
@@ -116,28 +114,13 @@
 		color: var(--disabled-content-color);
 	}
 
-	/* ===== Trailing clear button ===== */
+	/* ===== Trailing clear button =====
+	   ClearButton is visually inert (S2 spec — no hover/press background or
+	   colour change, only press-scale + focus ring). We just give it the
+	   subdued ink colour that matches the leading search icon and a small
+	   inset margin from the FieldGroup border. */
 	[data-spectrum-search-field-clear-button] {
-		display: flex;
-		align-items: center;
-		justify-content: center;
-		flex-shrink: 0;
-		appearance: none;
-		background: none;
-		border: none;
-		padding-inline: var(--field-pad-inline);
-		padding-block: 0;
-		margin: 0;
-		cursor: pointer;
 		color: var(--neutral-subdued-content-color-default);
-		transition: color var(--duration-fast) var(--ease-out);
-	}
-
-	[data-spectrum-search-field-clear-button]:hover {
-		color: var(--neutral-subdued-content-color-hover);
-	}
-
-	[data-spectrum-search-field-clear-button]:active {
-		color: var(--neutral-subdued-content-color-down);
+		margin-inline-end: var(--spacing-50);
 	}
 </style>
