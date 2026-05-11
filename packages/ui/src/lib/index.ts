@@ -13,6 +13,7 @@ export * as RadioGroup from './components/radio-group/index.js';
 export * as SegmentedControl from './components/segmented-control/index.js';
 export * as SelectBoxGroup from './components/select-box/index.js';
 export * as SideNav from './components/side-nav/index.js';
+export * as TableView from './components/table-view/index.js';
 export * as Tabs from './components/tabs/index.js';
 export * as TagGroup from './components/tag-group/index.js';
 export * as ToggleGroup from './components/toggle-group/index.js';
