@@ -212,8 +212,10 @@
 		cursor: not-allowed;
 	}
 
-	/* Quiet mode: no row dividers */
-	[data-spectrum-list-view-item][data-quiet] {
+	/* Quiet mode keeps row dividers; only the last row drops its trailing border
+	   since there's no outer container border to clip it against. */
+	[data-spectrum-list-view-row]:not(:has(~ [data-spectrum-list-view-row]))
+		[data-spectrum-list-view-item][data-quiet] {
 		border-block-end: none;
 	}
 
