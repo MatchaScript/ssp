@@ -7,6 +7,7 @@
     "@matchalatte/ssp-ui": "0.0.1"
   },
   "changesets": [
+    "card-s2-alignment",
     "clear-button-and-tag-keyboard",
     "rename-core-to-theme",
     "snippet-to-component",
