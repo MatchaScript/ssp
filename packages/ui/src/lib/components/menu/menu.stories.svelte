@@ -329,6 +329,115 @@
 	{/snippet}
 </Story>
 
+<!--
+  Demonstrates `position-try-fallbacks`:
+    • root menu uses `flip-block`  → opens upward when there's no room below
+    • submenu uses `flip-inline`   → opens leftward when there's no room on the right
+  Each corner trigger has a submenu so both axes can be observed at once.
+  Resize the Storybook preview pane to see fallbacks engage/disengage.
+-->
+<Story name="Flip — corners">
+	{#snippet template()}
+		{#snippet cornerMenu(label: string)}
+			<M.MenuTrigger>
+				{#snippet trigger({ triggerProps })}
+					<Button {...triggerProps}>{label}</Button>
+				{/snippet}
+				<M.Menu onAction={(id) => console.log('Action:', id)}>
+					<M.MenuItem id="undo" shortcut="⌘Z">Undo</M.MenuItem>
+					<M.MenuItem id="redo" shortcut="⌘⇧Z">Redo</M.MenuItem>
+					<M.MenuDivider />
+					<M.SubmenuTrigger>
+						<M.MenuItem id="transform">Transform</M.MenuItem>
+						<M.Menu onAction={(id) => console.log('Action:', id)}>
+							<M.MenuItem id="rotate-cw">Rotate clockwise</M.MenuItem>
+							<M.MenuItem id="rotate-ccw">Rotate counter-clockwise</M.MenuItem>
+							<M.MenuItem id="flip-h">Flip horizontal</M.MenuItem>
+							<M.MenuItem id="flip-v">Flip vertical</M.MenuItem>
+						</M.Menu>
+					</M.SubmenuTrigger>
+					<M.MenuItem id="delete" shortcut="⌫">Delete</M.MenuItem>
+				</M.Menu>
+			</M.MenuTrigger>
+		{/snippet}
+
+		<div
+			style="position: fixed; inset: 0; display: grid; grid-template-columns: 1fr 1fr; grid-template-rows: 1fr 1fr; padding: 16px; box-sizing: border-box;"
+		>
+			<div style="justify-self: start; align-self: start;">
+				{@render cornerMenu('Top-left')}
+			</div>
+			<div style="justify-self: end; align-self: start;">
+				{@render cornerMenu('Top-right')}
+			</div>
+			<div style="justify-self: start; align-self: end;">
+				{@render cornerMenu('Bottom-left')}
+			</div>
+			<div style="justify-self: end; align-self: end;">
+				{@render cornerMenu('Bottom-right')}
+			</div>
+		</div>
+	{/snippet}
+</Story>
+
+<!--
+  Isolates `flip-block` on the root menu. The trigger sits near the bottom of
+  the viewport so the default `position-area: bottom span-right` has no room
+  and falls back to opening upward.
+-->
+<Story name="Flip — root (block axis)">
+	{#snippet template()}
+		<div style="position: fixed; inset: 0; display: flex; flex-direction: column;">
+			<div style="flex: 1;"></div>
+			<div style="padding: 16px;">
+				<M.MenuTrigger>
+					{#snippet trigger({ triggerProps })}
+						<Button {...triggerProps}>Near bottom edge</Button>
+					{/snippet}
+					<M.Menu onAction={(id) => console.log('Action:', id)}>
+						<M.MenuItem id="a">Item A</M.MenuItem>
+						<M.MenuItem id="b">Item B</M.MenuItem>
+						<M.MenuItem id="c">Item C</M.MenuItem>
+						<M.MenuItem id="d">Item D</M.MenuItem>
+					</M.Menu>
+				</M.MenuTrigger>
+			</div>
+		</div>
+	{/snippet}
+</Story>
+
+<!--
+  Isolates `flip-inline` on the submenu. The root menu opens normally; opening
+  the nested submenu forces it to flip from right→left because the trigger is
+  pinned to the right edge.
+-->
+<Story name="Flip — submenu (inline axis)">
+	{#snippet template()}
+		<div
+			style="position: fixed; inset: 0; display: flex; justify-content: flex-end; padding: 16px;"
+		>
+			<M.MenuTrigger>
+				{#snippet trigger({ triggerProps })}
+					<Button {...triggerProps}>Near right edge</Button>
+				{/snippet}
+				<M.Menu onAction={(id) => console.log('Action:', id)}>
+					<M.MenuItem id="undo">Undo</M.MenuItem>
+					<M.MenuItem id="redo">Redo</M.MenuItem>
+					<M.SubmenuTrigger>
+						<M.MenuItem id="transform">Transform ▸</M.MenuItem>
+						<M.Menu onAction={(id) => console.log('Action:', id)}>
+							<M.MenuItem id="rotate-cw">Rotate clockwise</M.MenuItem>
+							<M.MenuItem id="rotate-ccw">Rotate counter-clockwise</M.MenuItem>
+							<M.MenuItem id="flip-h">Flip horizontal</M.MenuItem>
+							<M.MenuItem id="flip-v">Flip vertical</M.MenuItem>
+						</M.Menu>
+					</M.SubmenuTrigger>
+				</M.Menu>
+			</M.MenuTrigger>
+		</div>
+	{/snippet}
+</Story>
+
 <Story name="Sizes">
 	{#snippet template()}
 		<div style="display: flex; gap: 16px; padding-bottom: 240px;">
