@@ -1,5 +1,30 @@
 # @matchalatte/ssp-ui
 
+## 0.0.2-next.5
+
+### Patch Changes
+
+- Keep row dividers in ListView quiet mode. ([#20](https://github.com/MatchaScript/ssp/pull/20))
+
+  Quiet mode previously stripped the `border-block-end` from every item, leaving the list visually flat. S2 ListView keeps the dividers in quiet mode and only drops the trailing border on the last row (since there's no outer container border to clip it against). Switch the selector to `:not(:has(~ [data-spectrum-list-view-row]))` so only the final row's divider is removed.
+
+- SelectBox spacing and layout refinements. ([#21](https://github.com/MatchaScript/ssp/pull/21))
+  - Background switches to the canonical `--background-layer-2-color` token (drops the legacy `--layer-2-background-color` fallback).
+  - Vertical: outer padding bumps from `spacing-300` to `spacing-400`; the illustration→label gap moves from `row-gap` to an explicit `min-content var(--spacing-100) min-content` grid track so the gap is a real layout row (easier to override per-instance via the grid template).
+  - Horizontal: outer padding bumps one step (`spacing-200`→`spacing-300`, `spacing-400`→`spacing-500`, `spacing-300`→`spacing-400`); illustration/text gap moves from `column-gap` to a fixed 10 px grid track, description/label gap to `var(--spacing-50)`.
+  - Both orientations expose `--select-box-max-width` so consumers can clamp the card width without overriding `max-width` directly.
+
+- Add TableView component aligned with React-Spectrum S2. ([#18](https://github.com/MatchaScript/ssp/pull/18))
+  - **Markup-compositional API** mirroring RS S2: `<TableView.Root>` / `Header` / `Body` / `Column` / `Row` / `Cell` register themselves on mount. No data-passed-as-props alternative — columns and rows are declared as children.
+  - **Selection** (`none` / `single` / `multiple`) with controlled / uncontrolled lock-in. Once a consumer supplies a defined `selectedKeys` / `sortDescriptor` / `hiddenColumns` / `columnFilters`, the component stays controlled for its lifetime.
+  - **2D keyboard navigation** via a pure-function `TableKeyboardDelegate`: row mode, cell mode (ArrowRight to enter, ArrowLeft / Esc to exit), and column-header mode (ArrowDown into cells, Enter / Space toggles sort). Page Up / Down, Home / End, and typeahead all follow RAC semantics.
+  - **Sort** with a 2-way header click toggle (ascending ⇄ descending). Sort state is descriptor-only — applying the sort to data is the consumer's responsibility (matches RAC).
+  - **Column visibility & per-column filters** via a chevron-anchored column menu. Filter UI dispatches on `filterType`: text (`contains`), number (`between`), enum (`in`). Filter state lives next to the rest of the controlled props.
+  - **Linked rows** via a stretched `<a>::after` over the rowheader cell, so cmd/middle/right-click context-menu and SvelteKit client-side nav all flow through a real anchor. `linkBehavior='override'` semantics — plain click on a linked row does not toggle selection.
+  - **Loading / empty states** (`loading`, `loadingMore`, custom `renderEmptyState` snippet) and infinite scroll via `onLoadMore` with a 50 px scroll threshold.
+  - **Live-region announcements** for selection, sort, and filter changes piped through the shared announcer utility (mirrors RAC's "speak invisible changes" workaround for `role='grid'`).
+  - **Focus styling** centralised on `<TableView.Root>` to match S2's `cellFocus` (2 px focus-ring inset −2, 6 px corner radius); row leading-edge accent matches S2 TableView's `--rowFocusIndicatorColor` bar.
+
 ## 0.0.2-next.4
 
 ### Patch Changes

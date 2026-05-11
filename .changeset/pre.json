@@ -9,8 +9,11 @@
   "changesets": [
     "card-s2-alignment",
     "clear-button-and-tag-keyboard",
+    "list-view-quiet-dividers",
     "rename-core-to-theme",
+    "select-box-spacing",
     "snippet-to-component",
+    "table-view-s2",
     "wild-lands-rescue"
   ]
 }
