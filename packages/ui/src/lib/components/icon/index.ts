@@ -20,6 +20,7 @@ export {
 	ChevronRight,
 	ArrowLeftToLine,
 	ArrowRightToLine,
+	Ellipsis,
 	EyeOff,
 	Copy,
 	Cpu,
