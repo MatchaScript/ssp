@@ -182,7 +182,7 @@
 	/* Root dropdown positioning */
 	[data-spectrum-menu][data-variant='root'] {
 		position-area: bottom span-right;
-		position-try-fallbacks: flip-block;
+		position-try-fallbacks: flip-block, flip-inline, flip-block flip-inline;
 		margin: var(--spacing-100) 0;
 		z-index: 1000;
 	}
@@ -190,7 +190,7 @@
 	/* Submenu positioning */
 	[data-spectrum-menu][data-variant='submenu'] {
 		position-area: right span-bottom;
-		position-try-fallbacks: flip-inline;
+		position-try-fallbacks: flip-inline, flip-block, flip-inline flip-block;
 		margin: 0 var(--spacing-100);
 		z-index: 1100;
 	}
