@@ -55,9 +55,7 @@
 	// the (much smaller) chevron button — matches what users expect from
 	// "filter this column" affordances. Names must be unique and `--`-prefixed
 	// per the CSS anchor positioning spec.
-	const filterAnchor = $derived(
-		`--ssp-tableview-col-${id.replace(/[^a-zA-Z0-9_-]/g, '_')}`
-	);
+	const filterAnchor = $derived(`--ssp-tableview-col-${id.replace(/[^a-zA-Z0-9_-]/g, '_')}`);
 
 	// Column-header element registry — drives 2D nav (ArrowDown into first
 	// row at this column, ArrowLeft/Right between headers). Kept separate from
@@ -86,9 +84,7 @@
 	// hidden columns drop out of the index. The checkbox column, when present,
 	// is always col 1, so declared columns start at col 2 in that case.
 	const visibleIndex = $derived(tableState.visibleColumnIndex(id));
-	const ariaColIndex = $derived(
-		(tableState.selectionMode === 'none' ? 1 : 2) + visibleIndex
-	);
+	const ariaColIndex = $derived((tableState.selectionMode === 'none' ? 1 : 2) + visibleIndex);
 	const allowsFiltering = $derived(filterType !== undefined);
 	const isFiltered = $derived(tableState.hasFilter(id));
 	// RS parity: sort alone doesn't justify a menu — the header click already
@@ -147,10 +143,7 @@
 				<!-- Filter-active dot. Visible regardless of menu — when filtering is
 				     driven externally (controlled `columnFilters` without a column
 				     menu) the indicator still surfaces the state. -->
-				<span
-					data-spectrum-table-view-column-filter-dot
-					aria-hidden="true"
-				></span>
+				<span data-spectrum-table-view-column-filter-dot aria-hidden="true"></span>
 			{/if}
 			{#if hasMenu}
 				<ColumnMenu columnId={id} {align} {filterAnchor} />
@@ -181,7 +174,7 @@
 		outline: none;
 	}
 
-[data-spectrum-table-view-column][data-sortable] {
+	[data-spectrum-table-view-column][data-sortable] {
 		cursor: pointer;
 		transition: color var(--duration-fast) var(--ease-out);
 	}

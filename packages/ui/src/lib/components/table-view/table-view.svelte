@@ -119,9 +119,7 @@
 		if (columnFilters !== undefined) isColumnFiltersControlled = true;
 	});
 	const effectiveColumnFilters = $derived(
-		isColumnFiltersControlled
-			? (columnFilters ?? EMPTY_FILTERS)
-			: internalColumnFilters
+		isColumnFiltersControlled ? (columnFilters ?? EMPTY_FILTERS) : internalColumnFilters
 	);
 	function setColumnFilters(next: ColumnFilter[]) {
 		if (!isColumnFiltersControlled) internalColumnFilters = next;
@@ -205,10 +203,7 @@
 			isSortInitialized = true;
 			return;
 		}
-		if (
-			prev?.column === next?.column &&
-			prev?.direction === next?.direction
-		) {
+		if (prev?.column === next?.column && prev?.direction === next?.direction) {
 			return;
 		}
 		tableState.announceSortChange(next);
@@ -231,9 +226,7 @@
 	}
 
 	const isInteractive = $derived(!isDisabled && selectionMode !== 'none');
-	const tableTabIndex = $derived(
-		isInteractive && tableState.focusedKey === null ? 0 : -1
-	);
+	const tableTabIndex = $derived(isInteractive && tableState.focusedKey === null ? 0 : -1);
 
 	// Cast at the boundary — context stores TableState<unknown>.
 	setTableContext(tableState as unknown as TableState<unknown>);
@@ -310,11 +303,7 @@
 		{#if loadingState === 'loadingMore'}
 			<tbody>
 				<tr>
-					<td
-						data-spectrum-table-view-loader
-						data-loading-more
-						colspan={totalColumns || 1}
-					>
+					<td data-spectrum-table-view-loader data-loading-more colspan={totalColumns || 1}>
 						<ProgressCircle isIndeterminate={true} size="s" />
 					</td>
 				</tr>

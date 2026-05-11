@@ -106,11 +106,7 @@
 			<Icon icon={ChevronDown} size="s" />
 		</ActionButton>
 	{/snippet}
-	<Menu.Menu
-		size="s"
-		onAction={handleAction}
-		data-popover-align={align ?? 'start'}
-	>
+	<Menu.Menu size="s" onAction={handleAction} data-popover-align={align ?? 'start'}>
 		{#if hasSort}
 			<Menu.MenuItem id="sort-asc">
 				{#snippet icon()}<Icon icon={ArrowUpWideNarrow} size="s" />{/snippet}

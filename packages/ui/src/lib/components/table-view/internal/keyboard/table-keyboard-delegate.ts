@@ -64,20 +64,12 @@ export class TableKeyboardDelegate {
 	#nearestEnabled(targetIdx: number, direction: 1 | -1): { key: string; index: number } | null {
 		const rows = this.#rows();
 		const start = Math.max(0, Math.min(targetIdx, rows.length - 1));
-		for (
-			let i = start;
-			direction === 1 ? i < rows.length : i >= 0;
-			i += direction
-		) {
+		for (let i = start; direction === 1 ? i < rows.length : i >= 0; i += direction) {
 			if (!rows[i].disabled) return { key: rows[i].key, index: i };
 		}
 		// Fallback: try the other direction so callers always land somewhere
 		// enabled if any enabled row exists.
-		for (
-			let i = start;
-			direction === 1 ? i >= 0 : i < rows.length;
-			i -= direction
-		) {
+		for (let i = start; direction === 1 ? i >= 0 : i < rows.length; i -= direction) {
 			if (!rows[i].disabled) return { key: rows[i].key, index: i };
 		}
 		return null;
@@ -232,9 +224,7 @@ export class TableKeyboardDelegate {
 				const idx = this.#rowIndex(current.rowKey);
 				if (idx < 0) return null;
 				const target = this.#nearestEnabled(idx + page, -1);
-				return target
-					? { type: 'cell', rowKey: target.key, columnId: current.columnId }
-					: null;
+				return target ? { type: 'cell', rowKey: target.key, columnId: current.columnId } : null;
 			}
 		}
 	}
@@ -254,9 +244,7 @@ export class TableKeyboardDelegate {
 				const idx = this.#rowIndex(current.rowKey);
 				if (idx < 0) return null;
 				const target = this.#nearestEnabled(idx - page, 1);
-				return target
-					? { type: 'cell', rowKey: target.key, columnId: current.columnId }
-					: null;
+				return target ? { type: 'cell', rowKey: target.key, columnId: current.columnId } : null;
 			}
 		}
 	}

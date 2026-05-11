@@ -145,8 +145,7 @@ export class TableState<TData> {
 			rows: () =>
 				[...this.#rowEntries.entries()].map(([key, entry]) => ({
 					key,
-					disabled:
-						this.#opts.isDisabled || this.#opts.disabledKeys.has(key) || !!entry.isDisabled
+					disabled: this.#opts.isDisabled || this.#opts.disabledKeys.has(key) || !!entry.isDisabled
 				})),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
@@ -788,10 +787,7 @@ export class TableState<TData> {
 	 * ("3 items selected"). Skips announcement when there's nothing to say
 	 * (no diff, or selection is unchanged).
 	 */
-	announceSelectionChange(
-		prev: ReadonlySet<string>,
-		next: ReadonlySet<string>
-	): void {
+	announceSelectionChange(prev: ReadonlySet<string>, next: ReadonlySet<string>): void {
 		if (this.#opts.selectionMode === 'none') return;
 		if (setsEqual(prev, next)) return;
 

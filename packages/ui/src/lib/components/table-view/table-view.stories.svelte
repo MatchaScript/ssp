@@ -238,10 +238,10 @@
 <Story name="Sortable">
 	{#snippet template()}
 		<div style="display: grid; gap: 12px; width: 720px;">
-			<div
-				style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
-			>
-				Sort: <code>{sortableSort ? `${sortableSort.column} ${sortableSort.direction}` : '(none)'}</code>
+			<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+				Sort: <code
+					>{sortableSort ? `${sortableSort.column} ${sortableSort.direction}` : '(none)'}</code
+				>
 			</div>
 			<TableView.Root
 				aria-label="Sortable table"
@@ -274,9 +274,7 @@
 <Story name="Multi-select">
 	{#snippet template()}
 		<div style="display: grid; gap: 12px; width: 720px;">
-			<div
-				style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
-			>
+			<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
 				Selected: <code>{[...selectedUsers].join(', ') || '(none)'}</code>
 			</div>
 			<TableView.Root
@@ -464,8 +462,8 @@
 			<p
 				style="margin: 0; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
 			>
-				Click into the table or press Tab. Use ArrowUp/Down to move, Space to toggle, Shift+Arrow
-				to extend, Cmd/Ctrl+A to select all, Enter to fire onAction, Escape to clear.
+				Click into the table or press Tab. Use ArrowUp/Down to move, Space to toggle, Shift+Arrow to
+				extend, Cmd/Ctrl+A to select all, Enter to fire onAction, Escape to clear.
 			</p>
 			<TableView.Root
 				aria-label="Keyboard nav demo"
@@ -501,11 +499,10 @@
 			<p
 				style="margin: 0; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
 			>
-				Tab into the table to land on the first row. Press ArrowRight to enter cell mode —
-				now ArrowLeft/Right move between cells, ArrowUp/Down jump rows in the same column,
-				ArrowUp on the first row escapes to the column header, ArrowLeft on the first cell
-				returns to row mode, Escape collapses cell mode anywhere. Enter on a sortable header
-				toggles sort.
+				Tab into the table to land on the first row. Press ArrowRight to enter cell mode — now
+				ArrowLeft/Right move between cells, ArrowUp/Down jump rows in the same column, ArrowUp on
+				the first row escapes to the column header, ArrowLeft on the first cell returns to row mode,
+				Escape collapses cell mode anywhere. Enter on a sortable header toggles sort.
 			</p>
 			<TableView.Root aria-label="Cell navigation demo" selectionMode="multiple">
 				<TableView.Header>
@@ -596,9 +593,9 @@
 			<p
 				style="margin: 0; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
 			>
-				Each row is a real <code>&lt;a&gt;</code> link. Click anywhere on a row to navigate,
-				cmd/ctrl/middle-click for a new tab, right-click for the browser link menu (Open in
-				New Tab / Copy Link), keyboard Enter to follow.
+				Each row is a real <code>&lt;a&gt;</code> link. Click anywhere on a row to navigate, cmd/ctrl/middle-click
+				for a new tab, right-click for the browser link menu (Open in New Tab / Copy Link), keyboard Enter
+				to follow.
 			</p>
 			<TableView.Root aria-label="Linked rows">
 				<TableView.Header>
@@ -636,8 +633,8 @@
 			<p
 				style="margin: 0; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
 			>
-				Combination test: row click navigates, checkbox column selects, inline Button in the
-				last cell fires its own onclick (and stays clickable above the row-link overlay).
+				Combination test: row click navigates, checkbox column selects, inline Button in the last
+				cell fires its own onclick (and stays clickable above the row-link overlay).
 			</p>
 			<TableView.Root aria-label="Linked + selectable" selectionMode="multiple">
 				<TableView.Header>
@@ -682,8 +679,8 @@
 				style="margin: 0; font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
 			>
 				First three rows are links; the last two have a per-row <code>onAction</code> instead.
-				Linked rows ignore selection on click; non-linked rows fire <code>onAction</code> on
-				double-click or Enter.
+				Linked rows ignore selection on click; non-linked rows fire <code>onAction</code> on double-click
+				or Enter.
 			</p>
 			<TableView.Root aria-label="Mixed">
 				<TableView.Header>
@@ -724,9 +721,7 @@
 <Story name="Column menu (sort + hide)">
 	{#snippet template()}
 		<div style="display: grid; gap: 12px; width: 760px;">
-			<div
-				style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
-			>
+			<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
 				Hidden columns: <code>{[...menuHidden].join(', ') || '(none)'}</code>
 				<br />
 				Sort:
@@ -744,7 +739,9 @@
 					<TableView.Column id="email" allowsSorting allowsHiding>Email</TableView.Column>
 					<TableView.Column id="role" allowsHiding>Role</TableView.Column>
 					<TableView.Column id="status" allowsHiding>Status</TableView.Column>
-					<TableView.Column id="joined" align="end" allowsSorting allowsHiding>Joined</TableView.Column>
+					<TableView.Column id="joined" align="end" allowsSorting allowsHiding
+						>Joined</TableView.Column
+					>
 				</TableView.Header>
 				<TableView.Body>
 					{#each menuSortedUsers as user (user.id)}
@@ -787,12 +784,8 @@
 <Story name="Column filters">
 	{#snippet template()}
 		<div style="display: grid; gap: 12px; width: 760px;">
-			<div
-				style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
-			>
-				Active filters: <code
-					>{filters.length === 0 ? '(none)' : JSON.stringify(filters)}</code
-				>
+			<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
+				Active filters: <code>{filters.length === 0 ? '(none)' : JSON.stringify(filters)}</code>
 				<br />
 				Showing {filteredUsers.length} of {users.length} rows
 			</div>
@@ -814,9 +807,7 @@
 					<TableView.Column id="status" filterType="enum" enumOptions={statusOptions}>
 						Status
 					</TableView.Column>
-					<TableView.Column id="joined" align="end" allowsSorting>
-						Joined
-					</TableView.Column>
+					<TableView.Column id="joined" align="end" allowsSorting>Joined</TableView.Column>
 				</TableView.Header>
 				<TableView.Body>
 					{#each filteredUsers as user (user.id)}
@@ -842,14 +833,11 @@
 		{@const numericFilters = filters as ColumnFilter[]}
 		{@const filteredServers = applyFilters(servers, numericFilters)}
 		<div style="display: grid; gap: 12px; width: 760px;">
-			<div
-				style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);"
-			>
+			<div style="font-size: var(--text-75); color: var(--neutral-subdued-content-color-default);">
 				Filter the CPU / Memory columns to see between-bound number filters in action.
 				<br />
-				Active: <code
-					>{numericFilters.length === 0 ? '(none)' : JSON.stringify(numericFilters)}</code
-				>
+				Active:
+				<code>{numericFilters.length === 0 ? '(none)' : JSON.stringify(numericFilters)}</code>
 			</div>
 			<TableView.Root
 				aria-label="Filterable fleet"
@@ -860,9 +848,7 @@
 					<TableView.Column id="host" isRowHeader filterType="text">Host</TableView.Column>
 					<TableView.Column id="region" filterType="text">Region</TableView.Column>
 					<TableView.Column id="cpu" align="end" filterType="number">CPU %</TableView.Column>
-					<TableView.Column id="memory" align="end" filterType="number">
-						Memory %
-					</TableView.Column>
+					<TableView.Column id="memory" align="end" filterType="number">Memory %</TableView.Column>
 					<TableView.Column id="status">Status</TableView.Column>
 				</TableView.Header>
 				<TableView.Body>

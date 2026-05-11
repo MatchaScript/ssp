@@ -70,18 +70,14 @@
 	// rowheader column is registered (e.g. transient state during column
 	// registration) `aria-labelledby` is omitted and SR falls back to the
 	// row's textual content.
-	const rowHeaderColumnId = $derived(
-		tableState.collection.columns.find((c) => c.isRowHeader)?.id
-	);
+	const rowHeaderColumnId = $derived(tableState.collection.columns.find((c) => c.isRowHeader)?.id);
 	const ariaLabelledBy = $derived(
 		rowHeaderColumnId ? `${domId}-cell-${rowHeaderColumnId}` : undefined
 	);
 	// 1-based; the header row is always row 1, so body rows start at 2.
 	// Reads from the collection's row order so it tracks dynamic
 	// add/remove and any future sort/filter pipeline.
-	const ariaRowIndex = $derived(
-		tableState.collection.rows.findIndex((r) => r.key === key) + 2
-	);
+	const ariaRowIndex = $derived(tableState.collection.rows.findIndex((r) => r.key === key) + 2);
 
 	$effect(() => {
 		const el = ref;
@@ -203,9 +199,7 @@
 		return untrack(() => tableState.registerCell(key, SELECTION_COLUMN_ID, el));
 	});
 
-	const isCheckboxCellFocused = $derived(
-		tableState.isCellFocused(key, SELECTION_COLUMN_ID)
-	);
+	const isCheckboxCellFocused = $derived(tableState.isCellFocused(key, SELECTION_COLUMN_ID));
 
 	function handleCheckboxKeydown(e: KeyboardEvent) {
 		if (isDisabled) return;
@@ -252,15 +246,8 @@
 			     model. The mirror in `<TableView.Cell>` handles the no-checkbox
 			     case. Styles are `:global` because the matching element lives in
 			     two different components. -->
-			<span
-				data-spectrum-table-view-row-focus-indicator
-				aria-hidden="true"
-			></span>
-			<CheckboxBox
-				checked={isSelected}
-				{isDisabled}
-				size="s"
-			/>
+			<span data-spectrum-table-view-row-focus-indicator aria-hidden="true"></span>
+			<CheckboxBox checked={isSelected} {isDisabled} size="s" />
 		</td>
 	{/if}
 	{@render children()}
@@ -325,7 +312,8 @@
 		pointer-events: none;
 		z-index: 3;
 	}
-	[data-spectrum-table-view-row]:focus-visible :global([data-spectrum-table-view-row-focus-indicator]) {
+	[data-spectrum-table-view-row]:focus-visible
+		:global([data-spectrum-table-view-row-focus-indicator]) {
 		background-color: var(--focus-indicator-color);
 	}
 
@@ -368,7 +356,7 @@
 		outline: none;
 	}
 
-/* ── Lift interactive descendants above the stretched row-link overlay ──
+	/* ── Lift interactive descendants above the stretched row-link overlay ──
 	   The row-link `<a>::after` sits at z-index 0 (positioned, painted on top
 	   of non-positioned siblings). User-provided interactive elements inside
 	   cells must opt out of that interception so their own clicks fire. We

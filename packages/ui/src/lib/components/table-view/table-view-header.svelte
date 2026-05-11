@@ -21,9 +21,7 @@
 		return untrack(() => tableState.registerColumnHeader(SELECTION_COLUMN_ID, el));
 	});
 
-	const isCheckboxHeaderFocused = $derived(
-		tableState.isColumnHeaderFocused(SELECTION_COLUMN_ID)
-	);
+	const isCheckboxHeaderFocused = $derived(tableState.isColumnHeaderFocused(SELECTION_COLUMN_ID));
 
 	function handleCheckboxClick() {
 		if (tableState.selectionMode === 'multiple') tableState.toggleSelectAll();
@@ -91,5 +89,4 @@
 		outline: none;
 		position: relative;
 	}
-
 </style>

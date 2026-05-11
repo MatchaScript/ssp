@@ -57,9 +57,7 @@
 	// of each row is the row's leading edge — render the row focus indicator
 	// inside it. With a checkbox column the indicator lives inside that td
 	// (see `<TableView.Row>`), so we skip it here to avoid duplicates.
-	const isLeadingCell = $derived(
-		cellIndex === 0 && tableState.selectionMode === 'none'
-	);
+	const isLeadingCell = $derived(cellIndex === 0 && tableState.selectionMode === 'none');
 	// `aria-colindex` (Phase 6) is computed against the *visible* column set,
 	// matching W3C ARIA APG semantics. Hidden columns drop out — both because
 	// they're not in the DOM and so AT correctly reports "column N of M".
@@ -171,7 +169,7 @@
 		position: relative;
 	}
 
-/* row header has the same baseline appearance as a regular cell */
+	/* row header has the same baseline appearance as a regular cell */
 	[data-spectrum-table-view-cell][data-row-header] {
 		font-weight: inherit;
 	}
