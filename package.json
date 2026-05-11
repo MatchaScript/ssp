@@ -19,8 +19,8 @@
 		"@changesets/cli": "^2.31.0",
 		"@eslint/compat": "^2.0.5",
 		"@eslint/js": "^10.0.1",
-		"@sveltejs/kit": "^2.59.1",
-		"@sveltejs/vite-plugin-svelte": "^6.2.4",
+		"@sveltejs/kit": "catalog:",
+		"@sveltejs/vite-plugin-svelte": "catalog:",
 		"@svitejs/changesets-changelog-github-compact": "^1.2.0",
 		"@types/culori": "^4.0.1",
 		"eslint": "^10.3.0",
@@ -29,11 +29,11 @@
 		"globals": "^17.6.0",
 		"prettier": "^3.8.2",
 		"prettier-plugin-svelte": "^3.5.1",
-		"svelte": "^5.55.2",
+		"svelte": "catalog:",
 		"turbo": "^2.9.9",
-		"typescript": "^5.7.3",
+		"typescript": "catalog:",
 		"typescript-eslint": "^8.59.2",
-		"vite": "^7.3.1"
+		"vite": "catalog:"
 	},
 	"pnpm": {
 		"onlyBuiltDependencies": [
