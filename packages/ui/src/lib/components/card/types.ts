@@ -2,7 +2,7 @@ import type { Snippet } from 'svelte';
 import type { HTMLAttributes } from 'svelte/elements';
 
 export type CardVariant = 'primary' | 'secondary' | 'tertiary' | 'quiet';
-export type CardSize = 's' | 'm' | 'l';
+export type CardSize = 'xs' | 's' | 'm' | 'l' | 'xl';
 export type CardDensity = 'compact' | 'regular' | 'spacious';
 
 export type CardProps = HTMLAttributes<HTMLElement> & {
@@ -23,6 +23,8 @@ export type CardProps = HTMLAttributes<HTMLElement> & {
 	heading: Snippet;
 	/** 補足テキスト */
 	description?: Snippet;
+	/** タイトル右の補助操作（ActionMenu 等） */
+	menu?: Snippet;
 	/** ボタン・メタ情報領域（カード下部） */
 	footer?: Snippet;
 };

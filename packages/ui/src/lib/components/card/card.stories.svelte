@@ -2,6 +2,9 @@
 	import { defineMeta } from '@storybook/addon-svelte-csf';
 	import { Card } from './index.js';
 	import Button from '$lib/components/button/button.svelte';
+	import { ActionButton } from '$lib/components/action-button/index.js';
+	import { Menu, MenuItem, MenuTrigger } from '$lib/components/menu/index.js';
+	import { Icon, Ellipsis, Edit, Copy, Trash2 } from '$lib/components/icon/index.js';
 
 	const { Story } = defineMeta({
 		title: 'Components/Card',
@@ -14,7 +17,7 @@
 			},
 			size: {
 				control: 'select',
-				options: ['s', 'm', 'l']
+				options: ['xs', 's', 'm', 'l', 'xl']
 			},
 			density: {
 				control: 'select',
@@ -63,6 +66,10 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; flex-direction: column; gap: var(--space-4); width: 360px;">
+		<Card size="xs">
+			{#snippet heading()}Extra small{/snippet}
+			{#snippet description()}Tag-sized.{/snippet}
+		</Card>
 		<Card size="s">
 			{#snippet heading()}Small{/snippet}
 			{#snippet description()}Compact typography and spacing.{/snippet}
@@ -74,6 +81,10 @@
 		<Card size="l">
 			{#snippet heading()}Large{/snippet}
 			{#snippet description()}Larger typography and more spacious padding.{/snippet}
+		</Card>
+		<Card size="xl">
+			{#snippet heading()}Extra large{/snippet}
+			{#snippet description()}Hero card with the largest typography.{/snippet}
 		</Card>
 	</div>
 </Story>
@@ -104,6 +115,38 @@
 				></div>
 			{/snippet}
 			{#snippet heading()}Workspace: dev{/snippet}
+			{#snippet description()}Running · 2 pods · 512Mi{/snippet}
+		</Card>
+	</div>
+</Story>
+
+<Story name="With Menu" asChild>
+	<div style="width: 320px; padding-bottom: 200px;">
+		<Card variant="primary">
+			{#snippet heading()}Workspace: dev{/snippet}
+			{#snippet menu()}
+				<MenuTrigger>
+					{#snippet trigger({ triggerProps })}
+						<ActionButton {...triggerProps} isQuiet size="s" aria-label="More actions">
+							<Icon icon={Ellipsis} />
+						</ActionButton>
+					{/snippet}
+					<Menu onAction={(id) => console.log('Action:', id)}>
+						<MenuItem id="edit">
+							{#snippet icon()}<Icon icon={Edit} size="s" />{/snippet}
+							Edit
+						</MenuItem>
+						<MenuItem id="duplicate">
+							{#snippet icon()}<Icon icon={Copy} size="s" />{/snippet}
+							Duplicate
+						</MenuItem>
+						<MenuItem id="delete">
+							{#snippet icon()}<Icon icon={Trash2} size="s" />{/snippet}
+							Delete
+						</MenuItem>
+					</Menu>
+				</MenuTrigger>
+			{/snippet}
 			{#snippet description()}Running · 2 pods · 512Mi{/snippet}
 		</Card>
 	</div>

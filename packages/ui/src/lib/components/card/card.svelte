@@ -9,6 +9,7 @@
 		preview,
 		heading,
 		description,
+		menu,
 		footer,
 		class: className,
 		...restProps
@@ -36,10 +37,15 @@
 		</div>
 	{/if}
 
-	<div data-spectrum-card-content>
+	<div data-spectrum-card-content data-has-menu={menu ? '' : undefined}>
 		<div data-spectrum-card-heading>
 			{@render heading()}
 		</div>
+		{#if menu}
+			<div data-spectrum-card-menu>
+				{@render menu()}
+			</div>
+		{/if}
 		{#if description}
 			<div data-spectrum-card-description>
 				{@render description()}
@@ -70,6 +76,7 @@
 		border: none;
 		background: none;
 		contain: layout;
+		padding: var(--_card-padding);
 		transition:
 			box-shadow var(--duration-normal) var(--ease-default),
 			background-color var(--duration-normal) var(--ease-default),
@@ -77,8 +84,11 @@
 	}
 
 	/* ══════════════════════════════════════════════════
-	   Size → border-radius
+	   Size → border-radius + font sizes
 	══════════════════════════════════════════════════ */
+	[data-spectrum-card][data-size='xs'] {
+		border-radius: var(--corner-radius-100);
+	}
 	[data-spectrum-card][data-size='s'] {
 		border-radius: var(--corner-radius-200);
 	}
@@ -88,10 +98,16 @@
 	[data-spectrum-card][data-size='l'] {
 		border-radius: var(--corner-radius-400);
 	}
+	[data-spectrum-card][data-size='xl'] {
+		border-radius: var(--corner-radius-500);
+	}
 
 	/* ══════════════════════════════════════════════════
-	   Density → internal spacing (CSS custom prop)
+	   Density × Size → spacing scale (--_card-space)
 	══════════════════════════════════════════════════ */
+	[data-spectrum-card][data-density='compact'][data-size='xs'] {
+		--_card-space: var(--space-1);
+	}
 	[data-spectrum-card][data-density='compact'][data-size='s'] {
 		--_card-space: var(--space-1);
 	}
@@ -101,7 +117,13 @@
 	[data-spectrum-card][data-density='compact'][data-size='l'] {
 		--_card-space: var(--space-3);
 	}
+	[data-spectrum-card][data-density='compact'][data-size='xl'] {
+		--_card-space: var(--space-4);
+	}
 
+	[data-spectrum-card][data-density='regular'][data-size='xs'] {
+		--_card-space: var(--space-1);
+	}
 	[data-spectrum-card][data-density='regular'][data-size='s'] {
 		--_card-space: var(--space-2);
 	}
@@ -111,7 +133,13 @@
 	[data-spectrum-card][data-density='regular'][data-size='l'] {
 		--_card-space: var(--space-4);
 	}
+	[data-spectrum-card][data-density='regular'][data-size='xl'] {
+		--_card-space: var(--space-5);
+	}
 
+	[data-spectrum-card][data-density='spacious'][data-size='xs'] {
+		--_card-space: var(--space-2);
+	}
 	[data-spectrum-card][data-density='spacious'][data-size='s'] {
 		--_card-space: var(--space-3);
 	}
@@ -120,6 +148,18 @@
 	}
 	[data-spectrum-card][data-density='spacious'][data-size='l'] {
 		--_card-space: var(--space-5);
+	}
+	[data-spectrum-card][data-density='spacious'][data-size='xl'] {
+		--_card-space: var(--space-6);
+	}
+
+	/* card padding follows space, but quiet zeroes it out so the
+	   preview's negative margins collapse and the content sits flush */
+	[data-spectrum-card] {
+		--_card-padding: var(--_card-space);
+	}
+	[data-spectrum-card][data-variant='quiet'] {
+		--_card-padding: 0;
 	}
 
 	/* ══════════════════════════════════════════════════
@@ -197,11 +237,18 @@
 	}
 
 	/* ══════════════════════════════════════════════════
-	   Preview
+	   Preview — full-bleed via negative margins
 	══════════════════════════════════════════════════ */
 	[data-spectrum-card-preview] {
 		position: relative;
 		overflow: clip;
+		margin-inline: calc(var(--_card-padding) * -1);
+		margin-top: calc(var(--_card-padding) * -1);
+	}
+
+	/* if preview is the only child, pull bottom margin too */
+	[data-spectrum-card-preview]:last-child {
+		margin-bottom: calc(var(--_card-padding) * -1);
 	}
 
 	[data-spectrum-card-preview] :global(img),
@@ -215,23 +262,34 @@
 	}
 
 	/* ══════════════════════════════════════════════════
-	   Content (heading + description)
+	   Content (heading + menu + description)
 	══════════════════════════════════════════════════ */
 	[data-spectrum-card-content] {
-		display: flex;
-		flex-direction: column;
+		display: grid;
+		grid-template-columns: 1fr;
+		grid-template-areas: 'heading' 'description';
+		column-gap: var(--space-1);
+		row-gap: calc(var(--_card-space) * 0.5);
 		flex-grow: 1;
-		padding: var(--_card-space);
-		gap: calc(var(--_card-space) * 0.5);
+		align-content: start;
 	}
 
-	/* preview がある場合、content の上パディングはスペーシングに従う（previewとの間隔） */
+	[data-spectrum-card-content][data-has-menu] {
+		grid-template-columns: minmax(0, 1fr) auto;
+		grid-template-areas:
+			'heading menu'
+			'description description';
+		align-items: baseline;
+	}
+
+	/* spacing between preview and content */
 	[data-spectrum-card-preview] + [data-spectrum-card-content] {
 		padding-top: var(--_card-space);
 	}
 
 	/* ── Heading ──────────────────────────────────── */
 	[data-spectrum-card-heading] {
+		grid-area: heading;
 		font-weight: 600;
 		color: var(--neutral-content-color-default);
 		line-height: var(--lh-heading);
@@ -243,6 +301,9 @@
 		-webkit-box-orient: vertical;
 	}
 
+	[data-spectrum-card][data-size='xs'] [data-spectrum-card-heading] {
+		font-size: var(--text-75);
+	}
 	[data-spectrum-card][data-size='s'] [data-spectrum-card-heading] {
 		font-size: var(--text-100);
 	}
@@ -252,9 +313,21 @@
 	[data-spectrum-card][data-size='l'] [data-spectrum-card-heading] {
 		font-size: var(--text-300);
 	}
+	[data-spectrum-card][data-size='xl'] [data-spectrum-card-heading] {
+		font-size: var(--text-400);
+	}
+
+	/* ── Menu slot ────────────────────────────────── */
+	[data-spectrum-card-menu] {
+		grid-area: menu;
+		display: flex;
+		align-items: center;
+		justify-self: end;
+	}
 
 	/* ── Description ──────────────────────────────── */
 	[data-spectrum-card-description] {
+		grid-area: description;
 		font-weight: 400;
 		color: var(--neutral-subdued-content-color-default);
 		line-height: var(--lh-body);
@@ -266,6 +339,9 @@
 		-webkit-box-orient: vertical;
 	}
 
+	[data-spectrum-card][data-size='xs'] [data-spectrum-card-description] {
+		font-size: var(--text-50);
+	}
 	[data-spectrum-card][data-size='s'] [data-spectrum-card-description] {
 		font-size: var(--text-75);
 	}
@@ -274,6 +350,9 @@
 	}
 	[data-spectrum-card][data-size='l'] [data-spectrum-card-description] {
 		font-size: var(--text-100);
+	}
+	[data-spectrum-card][data-size='xl'] [data-spectrum-card-description] {
+		font-size: var(--text-200);
 	}
 
 	/* ══════════════════════════════════════════════════
@@ -285,6 +364,6 @@
 		align-items: center;
 		justify-content: flex-end;
 		gap: var(--space-2);
-		padding: 0 var(--_card-space) var(--_card-space);
+		padding-top: var(--_card-space);
 	}
 </style>
