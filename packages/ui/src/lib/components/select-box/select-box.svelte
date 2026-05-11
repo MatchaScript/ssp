@@ -100,7 +100,7 @@
 		font-size: var(--text-100);
 		color: var(--neutral-content-color-default);
 
-		background-color: var(--layer-2-background-color, var(--background-base-color));
+		background-color: var(--background-layer-2-color);
 		border: var(--border-width-200) solid transparent;
 		border-radius: var(--corner-radius-large-default, 12px);
 
@@ -114,18 +114,19 @@
 
 	/* Vertical (default) — square card with stacked illustration + label */
 	[data-spectrum-select-box][data-orientation='vertical'] {
+		--select-box-max-width: 170px;
 		width: 170px;
 		min-width: 144px;
 		height: 170px;
 		min-height: 144px;
 		max-height: 170px;
-		max-width: 100%;
-		padding: var(--spacing-300);
+		max-width: min(100%, var(--select-box-max-width));
+		padding: var(--spacing-400);
 		grid-template-areas:
 			'illustration'
+			'.'
 			'label';
-		grid-template-rows: 1fr min-content;
-		row-gap: var(--spacing-100);
+		grid-template-rows: min-content var(--spacing-100) min-content;
 		align-content: center;
 		justify-items: center;
 		text-align: center;
@@ -133,24 +134,24 @@
 
 	/* Horizontal — wide card with side-by-side illustration + (label + description) */
 	[data-spectrum-select-box][data-orientation='horizontal'] {
+		--select-box-max-width: 480px;
 		width: 368px;
 		min-width: 188px;
-		max-width: min(100%, 480px);
+		max-width: min(100%, var(--select-box-max-width));
 		min-height: 80px;
 		max-height: 240px;
-		padding: var(--spacing-200);
-		padding-inline-start: var(--spacing-400);
-		padding-inline-end: var(--spacing-300);
+		padding: var(--spacing-300);
+		padding-inline-start: var(--spacing-500);
+		padding-inline-end: var(--spacing-400);
 		grid-template-areas:
-			'illustration label'
-			'illustration description';
-		grid-template-columns: min-content 1fr;
-		grid-template-rows: min-content min-content;
-		column-gap: var(--spacing-200);
+			'illustration . label'
+			'illustration . description';
+		grid-template-columns: min-content 10px 1fr;
+		grid-template-rows: min-content var(--spacing-50) min-content;
 		align-content: center;
 	}
 	[data-spectrum-select-box][data-orientation='horizontal']:not([data-has-description]) {
-		grid-template-areas: 'illustration label';
+		grid-template-areas: 'illustration . label';
 		grid-template-rows: min-content;
 	}
 	[data-spectrum-select-box][data-orientation='horizontal']:not([data-has-illustration]) {
