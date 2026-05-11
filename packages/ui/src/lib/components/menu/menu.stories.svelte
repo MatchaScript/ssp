@@ -413,7 +413,9 @@
 -->
 <Story name="Flip — submenu (inline axis)">
 	{#snippet template()}
-		<div style="position: fixed; inset: 0; display: flex; justify-content: flex-end; padding: 16px;">
+		<div
+			style="position: fixed; inset: 0; display: flex; justify-content: flex-end; padding: 16px;"
+		>
 			<M.MenuTrigger>
 				{#snippet trigger({ triggerProps })}
 					<Button {...triggerProps}>Near right edge</Button>
