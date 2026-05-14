@@ -41,7 +41,7 @@
 		"culori": "^4.0.2"
 	},
 	"peerDependencies": {
-		"vite": ">=5.0.0"
+		"vite": "catalog:"
 	},
 	"devDependencies": {
 		"@adobe/spectrum-tokens": "^14.6.0"
