@@ -32,7 +32,7 @@
 		"svelte": "catalog:",
 		"turbo": "^2.9.14",
 		"typescript": "catalog:",
-		"typescript-eslint": "^8.59.2",
+		"typescript-eslint": "^8.59.4",
 		"vite": "catalog:"
 	},
 	"pnpm": {
