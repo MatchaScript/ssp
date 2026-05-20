@@ -23,7 +23,7 @@
 		"@sveltejs/vite-plugin-svelte": "catalog:",
 		"@svitejs/changesets-changelog-github-compact": "^1.2.0",
 		"@types/culori": "^4.0.1",
-		"eslint": "^10.3.0",
+		"eslint": "^10.4.0",
 		"eslint-config-prettier": "^10.1.8",
 		"eslint-plugin-svelte": "^3.17.0",
 		"globals": "^17.6.0",
