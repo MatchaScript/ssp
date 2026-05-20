@@ -30,7 +30,7 @@
 		"prettier": "^3.8.2",
 		"prettier-plugin-svelte": "^3.5.1",
 		"svelte": "catalog:",
-		"turbo": "^2.9.9",
+		"turbo": "^2.9.14",
 		"typescript": "catalog:",
 		"typescript-eslint": "^8.59.2",
 		"vite": "catalog:"
