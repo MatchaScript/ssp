@@ -7,6 +7,7 @@
 		EyeOff,
 		Filter,
 		FilterX,
+		GripVertical,
 		XCircle
 	} from '../icon/index.js';
 	import { ActionButton } from '../action-button/index.js';
@@ -40,6 +41,8 @@
 	const canHide = $derived(column?.allowsHiding === true);
 	const canFilter = $derived(column?.filterType !== undefined);
 	const hasFilter = $derived(tableState.hasFilter(columnId));
+	const canResize = $derived(column?.allowsResizing === true);
+	const hasMenu = $derived(hasSort || canFilter || canHide || canResize);
 
 	let filterOpen = $state(false);
 
@@ -76,6 +79,14 @@
 			}
 			case 'hide':
 				tableState.hideColumn(columnId);
+				return;
+			case 'resize':
+				// Focus the registered resizer input; it owns edit-mode keyboard
+				// behaviour. queueMicrotask defers past the menu's own click-outside.
+				queueMicrotask(() => {
+					tableState.startResize(columnId);
+					tableState.focusResizer(columnId);
+				});
 				return;
 		}
 	}
@@ -138,13 +149,19 @@
 				</Menu.MenuItem>
 			{/if}
 		{/if}
-		{#if (hasSort || canFilter) && canHide}
+		{#if (hasSort || canFilter) && (canHide || canResize)}
 			<Menu.MenuDivider />
 		{/if}
 		{#if canHide}
 			<Menu.MenuItem id="hide">
 				{#snippet icon()}<Icon icon={EyeOff} size="s" />{/snippet}
 				{tableState.formatter.format('hideColumn')}
+			</Menu.MenuItem>
+		{/if}
+		{#if canResize}
+			<Menu.MenuItem id="resize">
+				{#snippet icon()}<Icon icon={GripVertical} size="s" />{/snippet}
+				{tableState.formatter.format('resizeColumn')}
 			</Menu.MenuItem>
 		{/if}
 	</Menu.Menu>
