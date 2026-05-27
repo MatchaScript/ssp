@@ -4,6 +4,7 @@
 	import { getTableContext } from './state/context.js';
 	import { Icon, ArrowUpWideNarrow, ArrowDownNarrowWide } from '../icon/index.js';
 	import ColumnMenu from './column-menu.svelte';
+	import ColumnResizer from './column-resizer.svelte';
 
 	let {
 		id,
@@ -154,6 +155,9 @@
 				<ColumnMenu columnId={id} {align} {filterAnchor} />
 			{/if}
 		</div>
+		{#if allowsResizing}
+			<ColumnResizer columnId={id} />
+		{/if}
 	</th>
 {/if}
 
