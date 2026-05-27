@@ -4,7 +4,9 @@ import {
 	parseFractionalUnit,
 	parseStaticWidth,
 	getMinWidth,
-	getMaxWidth
+	getMaxWidth,
+	calculateColumnSizes,
+	type LayoutColumn
 } from './column-layout.js';
 
 describe('column-layout parse helpers', () => {
@@ -37,5 +39,65 @@ describe('column-layout parse helpers', () => {
 		expect(getMinWidth(75, 800)).toBe(75);
 		expect(getMaxWidth(undefined, 800)).toBe(Number.MAX_SAFE_INTEGER);
 		expect(getMaxWidth('50%', 800)).toBe(400);
+	});
+});
+
+const COL = (
+	key: string,
+	overrides: Partial<LayoutColumn> = {}
+): LayoutColumn => ({ key, defaultWidth: '1fr', defaultMinWidth: 75, ...overrides });
+
+describe('calculateColumnSizes', () => {
+	it('distributes available width across 1fr columns evenly', () => {
+		expect(calculateColumnSizes(900, [COL('a'), COL('b'), COL('c')], new Map())).toEqual([
+			300, 300, 300
+		]);
+	});
+
+	it('honours static pixel widths and flexes the remainder', () => {
+		expect(
+			calculateColumnSizes(800, [COL('a', { width: 200 }), COL('b'), COL('c')], new Map())
+		).toEqual([200, 300, 300]);
+	});
+
+	it('clamps against minWidth even when over-constrained', () => {
+		const widths = calculateColumnSizes(
+			200,
+			[COL('a', { minWidth: 100 }), COL('b', { minWidth: 100 }), COL('c', { minWidth: 100 })],
+			new Map()
+		);
+		expect(widths).toEqual([100, 100, 100]);
+	});
+
+	it('applies a changed width then re-flexes the rest', () => {
+		const widths = calculateColumnSizes(
+			900,
+			[COL('a'), COL('b'), COL('c')],
+			new Map([['a', 450]])
+		);
+		expect(widths[0]).toBe(450);
+		expect(widths[1]).toBe(225);
+		expect(widths[2]).toBe(225);
+	});
+
+	it('respects fr ratios (2fr : 1fr : 1fr against 800px → 400/200/200)', () => {
+		expect(
+			calculateColumnSizes(
+				800,
+				[COL('a', { defaultWidth: '2fr' }), COL('b'), COL('c')],
+				new Map()
+			)
+		).toEqual([400, 200, 200]);
+	});
+
+	it('preserves total width via cascading rounding', () => {
+		const widths = calculateColumnSizes(1000, [COL('a'), COL('b'), COL('c')], new Map());
+		expect(widths.reduce((a, b) => a + b, 0)).toBe(1000);
+	});
+
+	it('parses percentage widths against the table width', () => {
+		expect(
+			calculateColumnSizes(1000, [COL('a', { width: '25%' }), COL('b'), COL('c')], new Map())
+		).toEqual([250, 375, 375]);
 	});
 });
