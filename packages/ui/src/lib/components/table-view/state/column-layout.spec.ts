@@ -6,6 +6,7 @@ import {
 	getMinWidth,
 	getMaxWidth,
 	calculateColumnSizes,
+	resizeColumnWidth,
 	type LayoutColumn
 } from './column-layout.js';
 
@@ -99,5 +100,64 @@ describe('calculateColumnSizes', () => {
 		expect(
 			calculateColumnSizes(1000, [COL('a', { width: '25%' }), COL('b'), COL('c')], new Map())
 		).toEqual([250, 375, 375]);
+	});
+});
+
+describe('resizeColumnWidth', () => {
+	it('returns all columns with the target at the requested size', () => {
+		const next = resizeColumnWidth(
+			900,
+			[COL('a'), COL('b'), COL('c')],
+			new Map(),
+			'b',
+			400
+		);
+		expect([...next.keys()]).toEqual(['a', 'b', 'c']);
+		expect(next.get('b')).toBe(400);
+	});
+
+	it('freezes columns to the left at their previous pixel width', () => {
+		const next = resizeColumnWidth(
+			900,
+			[COL('a'), COL('b'), COL('c')],
+			new Map(),
+			'b',
+			400
+		);
+		expect(next.get('a')).toBe(300);
+	});
+
+	it('preserves right-side declared widths and fr units', () => {
+		const next = resizeColumnWidth(
+			900,
+			[COL('a'), COL('b'), COL('c', { defaultWidth: '2fr' })],
+			new Map(),
+			'a',
+			200
+		);
+		// `c` retains its '2fr' declaration so the right side keeps flexing.
+		expect(next.get('c')).toBe('2fr');
+	});
+
+	it('clamps the requested width to [minWidth, maxWidth]', () => {
+		const next = resizeColumnWidth(
+			900,
+			[COL('a'), COL('b', { minWidth: 200, maxWidth: 350 }), COL('c')],
+			new Map(),
+			'b',
+			500
+		);
+		expect(next.get('b')).toBe(350);
+	});
+
+	it('floors fractional pixel inputs', () => {
+		const next = resizeColumnWidth(
+			900,
+			[COL('a'), COL('b'), COL('c')],
+			new Map(),
+			'b',
+			317.7
+		);
+		expect(next.get('b')).toBe(317);
 	});
 });

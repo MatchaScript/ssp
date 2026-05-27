@@ -151,3 +151,44 @@ export function calculateColumnSizes(
 
 	return widths;
 }
+
+/**
+ * Apply a resize: clamp `newWidth` to `[minWidth, maxWidth]`, freeze every
+ * column to the left of `key` at its current pixel width, set `key` to the
+ * clamped value, and let columns to the right keep their declared width
+ * (controlled) or prior fr/% value (uncontrolled) so they re-flex against
+ * the remainder.
+ *
+ * Mirrors `TableColumnLayout.resizeColumnWidth` (freeze-left contract).
+ */
+export function resizeColumnWidth(
+	availableWidth: number,
+	columns: readonly LayoutColumn[],
+	currentSizes: ReadonlyMap<string, ColumnSize>,
+	key: string,
+	newWidth: number
+): Map<string, ColumnSize> {
+	const target = columns.find((c) => c.key === key);
+	if (!target) return new Map(currentSizes);
+
+	const min = getMinWidth(target.minWidth ?? target.defaultMinWidth, availableWidth);
+	const max = getMaxWidth(target.maxWidth, availableWidth);
+	const clamped = Math.max(min, Math.min(max, Math.floor(newWidth)));
+
+	const pixelWidths = calculateColumnSizes(availableWidth, columns, currentSizes);
+	const next = new Map<string, ColumnSize>();
+	let frozen = true;
+
+	for (let i = 0; i < columns.length; i++) {
+		const col = columns[i];
+		if (col.key === key) {
+			next.set(col.key, clamped);
+			frozen = false;
+		} else if (frozen) {
+			next.set(col.key, pixelWidths[i]);
+		} else {
+			next.set(col.key, col.width ?? currentSizes.get(col.key) ?? col.defaultWidth ?? '1fr');
+		}
+	}
+	return next;
+}
