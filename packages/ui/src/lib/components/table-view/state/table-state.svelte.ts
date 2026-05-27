@@ -618,8 +618,8 @@ export class TableState<TData> {
 					this.toggleSelectAll();
 					return;
 				}
-				// Plain 'a' falls through to typeahead.
-				// falls through
+			// Plain 'a' falls through to typeahead.
+			// falls through
 			default:
 				if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
 					event.preventDefault();
@@ -936,7 +936,7 @@ export class TableState<TData> {
 		};
 	}
 	focusResizer(columnId: string): void {
-		this.#resizerInputs.get(columnId)?.focus({ preventScroll: false });
+		this.#resizerInputs.get(columnId)?.focus();
 	}
 
 	#columnLabel(columnId: string): string {

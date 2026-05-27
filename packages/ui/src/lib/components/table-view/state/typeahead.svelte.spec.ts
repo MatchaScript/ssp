@@ -26,7 +26,7 @@ describe('cell-mode typeahead', () => {
 		firstRow.focus();
 		firstRow.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
 		flushSync();
-		;(document.activeElement as HTMLElement).dispatchEvent(
+		(document.activeElement as HTMLElement).dispatchEvent(
 			new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true })
 		);
 		flushSync();

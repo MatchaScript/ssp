@@ -14,8 +14,9 @@
 	const isResizing = $derived(tableState.resizingColumn === columnId);
 	const width = $derived(tableState.columnWidth(columnId));
 	const minPx = $derived(Math.floor(tableState.columnMinWidth(columnId)));
-	const maxPxRaw = $derived(Math.floor(tableState.columnMaxWidth(columnId)));
-	const maxPx = $derived(Number.isFinite(maxPxRaw) ? maxPxRaw : Number.MAX_SAFE_INTEGER);
+	// `columnMaxWidth` returns `Number.MAX_SAFE_INTEGER` for unconstrained columns;
+	// `Math.floor` is a no-op on it, so no Infinity guard is needed.
+	const maxPx = $derived(Math.floor(tableState.columnMaxWidth(columnId)));
 
 	const ariaValueText = $derived(`${width} pixels`);
 
@@ -27,16 +28,18 @@
 		return untrack(() => tableState.registerResizerInput(columnId, el));
 	});
 
-	// Pointer drag — onMoveStart starts edit mode, every onMove resizes by
-	// the per-event deltaX (scaled ×10 for keyboard).
+	// Pointer drag — onMoveStart starts edit mode and anchors widthAtMoveStart;
+	// each onMove resizes by the per-event deltaX (scaled ×10 for keyboard).
+	// Direction is read on each onMoveStart so a runtime RTL flip is honoured.
 	$effect(() => {
 		const el = handleEl;
 		if (!el) return;
-		const direction = getElementDirection(el);
+		let direction: 'ltr' | 'rtl' = 'ltr';
 		let widthAtMoveStart = 0;
 		return untrack(() =>
 			attachPointerMove(el, {
 				onMoveStart: () => {
+					direction = getElementDirection(el);
 					widthAtMoveStart = tableState.columnWidth(columnId);
 					tableState.startResize(columnId);
 				},
@@ -50,29 +53,35 @@
 					if (dx === 0) return;
 					widthAtMoveStart += dx;
 					tableState.resizeColumn(columnId, widthAtMoveStart);
-				},
-				onMoveEnd: () => {
-					// Pointer drags end immediately; keyboard "moves" inside edit
-					// mode also call onMoveEnd but we keep edit mode open — the
-					// outer onKeyDown handler closes it on Esc/Enter/Tab.
 				}
+				// `onMoveEnd` deliberately omitted. Pointer drags release via the
+				// effect on `isPointerDragging` below; keyboard arrow "moves" inside
+				// edit mode also fire onMoveEnd-equivalent but we keep edit mode
+				// open until the input's onkeydown sees Esc / Enter / Tab.
 			})
 		);
 	});
 
-	// Track pointer-down state so the cursor overlay only appears during an
-	// actual mouse drag (not for the keyboard edit-mode focus ring).
+	// Tracks whether a mouse drag is in flight so the cursor overlay shows up
+	// only during pointer drags (not in keyboard edit mode). Effect cleanup
+	// removes the window listeners even when the component unmounts mid-drag.
 	function handlePointerDown() {
 		isPointerDragging = true;
+	}
+
+	$effect(() => {
+		if (!isPointerDragging) return;
 		const stop = () => {
 			isPointerDragging = false;
-			window.removeEventListener('pointerup', stop);
-			window.removeEventListener('pointercancel', stop);
-			tableState.endResize();
 		};
 		window.addEventListener('pointerup', stop);
 		window.addEventListener('pointercancel', stop);
-	}
+		return () => {
+			window.removeEventListener('pointerup', stop);
+			window.removeEventListener('pointercancel', stop);
+			if (tableState.resizingColumn === columnId) tableState.endResize();
+		};
+	});
 
 	// Keyboard edit-mode lifecycle on the OUTER div (the input owns its own
 	// keystrokes — Tab/Escape/Enter end edit mode and return focus to the div).
@@ -116,6 +125,9 @@
 	}
 </script>
 
+<!-- The handle sits inside the <th>'s click target. Without `stopPropagation`
+     on click + pointerdown, a tap on the resizer bubbles up and the column
+     header's onclick toggles sort. -->
 <!-- svelte-ignore a11y_no_noninteractive_tabindex -->
 <div
 	bind:this={handleEl}
@@ -124,7 +136,11 @@
 	data-resizing={isResizing ? '' : undefined}
 	tabindex={0}
 	onkeydown={handleDivKeydown}
-	onpointerdown={handlePointerDown}
+	onpointerdown={(e) => {
+		e.stopPropagation();
+		handlePointerDown();
+	}}
+	onclick={(e) => e.stopPropagation()}
 >
 	<input
 		bind:this={inputEl}

@@ -25,10 +25,7 @@ export interface PointerMoveHandlers {
  *
  * Returns a `detach()` cleanup that removes all listeners.
  */
-export function attachPointerMove(
-	el: HTMLElement,
-	handlers: PointerMoveHandlers
-): () => void {
+export function attachPointerMove(el: HTMLElement, handlers: PointerMoveHandlers): () => void {
 	let pointerId: number | null = null;
 	let didMove = false;
 	let lastPageX = 0;

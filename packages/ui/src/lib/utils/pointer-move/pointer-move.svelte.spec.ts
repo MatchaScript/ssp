@@ -25,7 +25,13 @@ describe('attachPointerMove', () => {
 		const detach = attachPointerMove(host, { onMoveStart, onMove });
 
 		host.dispatchEvent(
-			new PointerEvent('pointerdown', { pointerId: 1, clientX: 100, clientY: 0, button: 0, bubbles: true })
+			new PointerEvent('pointerdown', {
+				pointerId: 1,
+				clientX: 100,
+				clientY: 0,
+				button: 0,
+				bubbles: true
+			})
 		);
 		expect(onMoveStart).not.toHaveBeenCalled();
 
@@ -33,7 +39,9 @@ describe('attachPointerMove', () => {
 			new PointerEvent('pointermove', { pointerId: 1, clientX: 150, clientY: 0 })
 		);
 		expect(onMoveStart).toHaveBeenCalledTimes(1);
-		expect(onMove).toHaveBeenCalledWith(expect.objectContaining({ deltaX: 50, pointerType: 'mouse' }));
+		expect(onMove).toHaveBeenCalledWith(
+			expect.objectContaining({ deltaX: 50, pointerType: 'mouse' })
+		);
 
 		detach();
 	});
@@ -42,7 +50,9 @@ describe('attachPointerMove', () => {
 		const onMove = vi.fn();
 		const detach = attachPointerMove(host, { onMove });
 
-		host.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, clientX: 0, button: 0, bubbles: true }));
+		host.dispatchEvent(
+			new PointerEvent('pointerdown', { pointerId: 1, clientX: 0, button: 0, bubbles: true })
+		);
 		window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 10 }));
 		window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 25 }));
 
@@ -57,7 +67,9 @@ describe('attachPointerMove', () => {
 		const onMoveEnd = vi.fn();
 		const detach = attachPointerMove(host, { onMove, onMoveEnd });
 
-		host.dispatchEvent(new PointerEvent('pointerdown', { pointerId: 1, clientX: 0, button: 0, bubbles: true }));
+		host.dispatchEvent(
+			new PointerEvent('pointerdown', { pointerId: 1, clientX: 0, button: 0, bubbles: true })
+		);
 		window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 50 }));
 		window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 50 }));
 
@@ -79,7 +91,9 @@ describe('attachPointerMove', () => {
 
 		host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
 		expect(onMoveStart).toHaveBeenCalled();
-		expect(onMove).toHaveBeenCalledWith(expect.objectContaining({ deltaX: 1, pointerType: 'keyboard' }));
+		expect(onMove).toHaveBeenCalledWith(
+			expect.objectContaining({ deltaX: 1, pointerType: 'keyboard' })
+		);
 		expect(onMoveEnd).toHaveBeenCalled();
 
 		onMove.mockClear();

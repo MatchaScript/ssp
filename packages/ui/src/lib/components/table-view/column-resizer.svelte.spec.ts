@@ -50,7 +50,9 @@ describe('<ColumnResizer>', () => {
 
 	it('Escape on the input exits resize mode', () => {
 		const resizer = host.querySelector('[data-spectrum-table-view-resizer]') as HTMLElement;
-		const input = resizer.querySelector('[data-spectrum-table-view-resizer-input]') as HTMLInputElement;
+		const input = resizer.querySelector(
+			'[data-spectrum-table-view-resizer-input]'
+		) as HTMLInputElement;
 		resizer.focus();
 		resizer.dispatchEvent(new KeyboardEvent('keydown', { key: 'Enter', bubbles: true }));
 		flushSync();
@@ -61,7 +63,9 @@ describe('<ColumnResizer>', () => {
 
 	it('pointer drag updates aria-valuetext', () => {
 		const resizer = host.querySelector('[data-spectrum-table-view-resizer]') as HTMLElement;
-		const input = resizer.querySelector('[data-spectrum-table-view-resizer-input]') as HTMLInputElement;
+		const input = resizer.querySelector(
+			'[data-spectrum-table-view-resizer-input]'
+		) as HTMLInputElement;
 		const before = input.getAttribute('aria-valuetext');
 
 		resizer.dispatchEvent(

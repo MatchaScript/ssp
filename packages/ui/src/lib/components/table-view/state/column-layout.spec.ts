@@ -43,10 +43,12 @@ describe('column-layout parse helpers', () => {
 	});
 });
 
-const COL = (
-	key: string,
-	overrides: Partial<LayoutColumn> = {}
-): LayoutColumn => ({ key, defaultWidth: '1fr', defaultMinWidth: 75, ...overrides });
+const COL = (key: string, overrides: Partial<LayoutColumn> = {}): LayoutColumn => ({
+	key,
+	defaultWidth: '1fr',
+	defaultMinWidth: 75,
+	...overrides
+});
 
 describe('calculateColumnSizes', () => {
 	it('distributes available width across 1fr columns evenly', () => {
@@ -71,11 +73,7 @@ describe('calculateColumnSizes', () => {
 	});
 
 	it('applies a changed width then re-flexes the rest', () => {
-		const widths = calculateColumnSizes(
-			900,
-			[COL('a'), COL('b'), COL('c')],
-			new Map([['a', 450]])
-		);
+		const widths = calculateColumnSizes(900, [COL('a'), COL('b'), COL('c')], new Map([['a', 450]]));
 		expect(widths[0]).toBe(450);
 		expect(widths[1]).toBe(225);
 		expect(widths[2]).toBe(225);
@@ -83,11 +81,7 @@ describe('calculateColumnSizes', () => {
 
 	it('respects fr ratios (2fr : 1fr : 1fr against 800px → 400/200/200)', () => {
 		expect(
-			calculateColumnSizes(
-				800,
-				[COL('a', { defaultWidth: '2fr' }), COL('b'), COL('c')],
-				new Map()
-			)
+			calculateColumnSizes(800, [COL('a', { defaultWidth: '2fr' }), COL('b'), COL('c')], new Map())
 		).toEqual([400, 200, 200]);
 	});
 
@@ -105,25 +99,13 @@ describe('calculateColumnSizes', () => {
 
 describe('resizeColumnWidth', () => {
 	it('returns all columns with the target at the requested size', () => {
-		const next = resizeColumnWidth(
-			900,
-			[COL('a'), COL('b'), COL('c')],
-			new Map(),
-			'b',
-			400
-		);
+		const next = resizeColumnWidth(900, [COL('a'), COL('b'), COL('c')], new Map(), 'b', 400);
 		expect([...next.keys()]).toEqual(['a', 'b', 'c']);
 		expect(next.get('b')).toBe(400);
 	});
 
 	it('freezes columns to the left at their previous pixel width', () => {
-		const next = resizeColumnWidth(
-			900,
-			[COL('a'), COL('b'), COL('c')],
-			new Map(),
-			'b',
-			400
-		);
+		const next = resizeColumnWidth(900, [COL('a'), COL('b'), COL('c')], new Map(), 'b', 400);
 		expect(next.get('a')).toBe(300);
 	});
 
@@ -151,13 +133,7 @@ describe('resizeColumnWidth', () => {
 	});
 
 	it('floors fractional pixel inputs', () => {
-		const next = resizeColumnWidth(
-			900,
-			[COL('a'), COL('b'), COL('c')],
-			new Map(),
-			'b',
-			317.7
-		);
+		const next = resizeColumnWidth(900, [COL('a'), COL('b'), COL('c')], new Map(), 'b', 317.7);
 		expect(next.get('b')).toBe(317);
 	});
 });

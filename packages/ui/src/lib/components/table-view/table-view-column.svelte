@@ -132,7 +132,7 @@
 		data-filtered={isFiltered || undefined}
 		aria-sort={ariaSort}
 		aria-colindex={ariaColIndex}
-		{...(allowsSorting ? { 'aria-description': 'sortable column' } : {})}
+		{...allowsSorting ? { 'aria-description': 'sortable column' } : {}}
 		tabindex={isHeaderFocused ? 0 : -1}
 		onclick={allowsSorting ? handleClick : undefined}
 		onkeydown={handleKeydown}

@@ -1,3 +1,4 @@
+import { untrack } from 'svelte';
 import { SvelteMap } from 'svelte/reactivity';
 import {
 	calculateColumnSizes,
@@ -37,9 +38,13 @@ export class TableColumnLayoutState {
 			// reactively. Plain Set is correct here; SvelteSet would waste tracking.
 			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			const live = new Set(this.#opts.columns.map((c) => c.key));
-			for (const k of [...this.#changedSizes.keys()]) {
-				if (!live.has(k)) this.#changedSizes.delete(k);
-			}
+			// `untrack` so deleting an obsolete key doesn't re-subscribe this
+			// effect to its own writes (would re-fire once per delete otherwise).
+			untrack(() => {
+				for (const k of [...this.#changedSizes.keys()]) {
+					if (!live.has(k)) this.#changedSizes.delete(k);
+				}
+			});
 		});
 	}
 

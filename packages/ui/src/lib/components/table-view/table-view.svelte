@@ -137,10 +137,9 @@
 	$effect(() => {
 		const el = scrollWrapperEl;
 		if (!el) return;
-		const ro = new ResizeObserver((entries) => {
-			for (const entry of entries) {
-				tableWidth = entry.contentBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
-			}
+		// Only one element is observed, so entries[0] is always the wrapper.
+		const ro = new ResizeObserver(([entry]) => {
+			tableWidth = entry.contentBoxSize[0].inlineSize;
 		});
 		ro.observe(el);
 		return () => ro.disconnect();

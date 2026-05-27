@@ -82,8 +82,7 @@ export function calculateColumnSizes(
 	changedColumns: ReadonlyMap<string, ColumnSize>
 ): number[] {
 	const items: FlexItem[] = columns.map((col) => {
-		const resolved =
-			changedColumns.get(col.key) ?? col.width ?? col.defaultWidth ?? '1fr';
+		const resolved = changedColumns.get(col.key) ?? col.width ?? col.defaultWidth ?? '1fr';
 		const min = getMinWidth(col.minWidth ?? col.defaultMinWidth, availableWidth);
 		const max = getMaxWidth(col.maxWidth, availableWidth);
 		const isStaticWidth = isStatic(resolved);
