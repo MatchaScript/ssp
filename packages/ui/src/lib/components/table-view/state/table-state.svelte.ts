@@ -29,6 +29,7 @@ import {
 	TableKeyboardDelegate,
 	type FocusTarget
 } from '../internal/keyboard/table-keyboard-delegate.js';
+import { Typeahead } from '$lib/utils/selectable-collection/typeahead.js';
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
 import { TableColumnLayoutState } from './column-layout-state.svelte.js';
 import type { LayoutColumn } from './column-layout.js';
@@ -132,6 +133,7 @@ export class TableState<TData> {
 	#focusedColumnHeader: string | null = $state(null);
 
 	#delegate: TableKeyboardDelegate;
+	#cellTypeahead: Typeahead;
 	#layout: TableColumnLayoutState;
 	#visibleLayoutColumns = $derived.by<LayoutColumn[]>(() =>
 		this.#visibleColumns.map((c) => ({
@@ -184,6 +186,22 @@ export class TableState<TData> {
 					? this.#visibleColumns
 					: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns]
 		});
+		this.#cellTypeahead = new Typeahead(
+			() =>
+				[...this.#rowEntries.entries()].map(([key, entry]) => ({
+					domId: this.#collection.getDomId(key) ?? key,
+					value: key,
+					el: null as unknown as HTMLElement,
+					disabled: this.#opts.isDisabled || this.#opts.disabledKeys.has(key) || !!entry.isDisabled,
+					textValue: entry.textValue ?? ''
+				})),
+			(domId) => {
+				const rowKey = this.#collection.getValue(domId);
+				const focusedCell = this.#focusedCell;
+				if (!rowKey || !focusedCell) return;
+				this.#focusTarget({ type: 'cell', rowKey, columnId: focusedCell.columnId });
+			}
+		);
 		const self = this;
 		this.#layout = new TableColumnLayoutState({
 			get tableWidth() {
@@ -329,6 +347,16 @@ export class TableState<TData> {
 		updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>
 	): void {
 		this.#collection.updateItem(domId, updates);
+		// Keep #rowEntries in sync so cell-mode typeahead (which reads textValue
+		// from there) sees the scraped/updated label value.
+		const rowKey = this.#collection.getValue(domId);
+		if (rowKey !== undefined) {
+			const entry = this.#rowEntries.get(rowKey);
+			if (entry) {
+				if (updates.textValue !== undefined) entry.textValue = updates.textValue;
+				if (updates.disabled !== undefined) entry.isDisabled = updates.disabled;
+			}
+		}
 	}
 
 	// ── column registration (called from <TableView.Column>) ───
@@ -529,11 +557,6 @@ export class TableState<TData> {
 	 * `TableKeyboardDelegate`; Esc returns to row mode; Enter / Space dispatch
 	 * action / selection on the parent row (mirrors row-mode semantics so the
 	 * keyboard contract stays consistent regardless of focus mode).
-	 *
-	 * Letter-key typeahead is NOT handled here — RA's behavior is to hijack
-	 * letter keys in cell mode too, but Phase 4 keeps typeahead row-mode-only
-	 * to avoid stealing input from cell-embedded TextField / NumberField.
-	 * Phase 5 will revisit when announce + textValue improvements land.
 	 */
 	handleCellKeyDown(event: KeyboardEvent, rowKey: string, columnId: string): void {
 		const current: FocusTarget = { type: 'cell', rowKey, columnId };
@@ -596,6 +619,14 @@ export class TableState<TData> {
 				if ((event.ctrlKey || event.metaKey) && this.selectionMode === 'multiple') {
 					event.preventDefault();
 					this.toggleSelectAll();
+					return;
+				}
+				// Plain 'a' falls through to typeahead.
+				// falls through
+			default:
+				if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+					event.preventDefault();
+					this.#cellTypeahead.search(event.key);
 				}
 				return;
 		}

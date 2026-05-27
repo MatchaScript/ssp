@@ -13,7 +13,7 @@
 
 <TableView.Root {selectionMode}>
 	<TableView.Header>
-		<TableView.Column id="a" allowsResizing defaultWidth={200}>A</TableView.Column>
+		<TableView.Column id="a" isRowHeader allowsResizing defaultWidth={200}>A</TableView.Column>
 		<TableView.Column id="b" allowsResizing>B</TableView.Column>
 		<TableView.Column id="c">C</TableView.Column>
 	</TableView.Header>
