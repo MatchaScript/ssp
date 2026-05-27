@@ -899,6 +899,20 @@ export class TableState<TData> {
 		if (messages.length > 0) this.#getAnnouncer()?.announce(messages.join('. '));
 	}
 
+	announceRowFocus(rowKey: string): void {
+		const index = [...this.#rowEntries.keys()].indexOf(rowKey);
+		if (index === -1) return;
+		const total = this.#rowEntries.size;
+		const rowName = this.#rowLabel(rowKey) || rowKey;
+		this.#getAnnouncer()?.announce(
+			this.#opts.formatter.format('rowFocused', {
+				rowName,
+				index: index + 1,
+				total
+			})
+		);
+	}
+
 	// ── column layout ────────────────────────────────────────────
 	columnWidth(id: string): number {
 		return this.#layout.getWidth(id);

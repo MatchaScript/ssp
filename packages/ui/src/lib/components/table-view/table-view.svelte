@@ -245,6 +245,8 @@
 		if (e.target !== e.currentTarget) return;
 		if (tableState.focusedKey === null) {
 			tableState.focusFirst({ focusVisible: true });
+			const k = tableState.focusedKey;
+			if (k) tableState.announceRowFocus(k);
 		}
 	}
 
