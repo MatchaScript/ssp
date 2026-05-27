@@ -30,6 +30,8 @@ import {
 	type FocusTarget
 } from '../internal/keyboard/table-keyboard-delegate.js';
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
+import { TableColumnLayoutState } from './column-layout-state.svelte.js';
+import type { LayoutColumn } from './column-layout.js';
 
 // Hint Safari (and modern Chromium / Firefox) to keep `:focus-visible`
 // matching after a programmatic focus — without it, arrow-key driven moves
@@ -52,7 +54,8 @@ const SELECTION_COLUMN_DESCRIPTOR: ColumnDescriptor = {
 	id: SELECTION_COLUMN_ID,
 	isRowHeader: false,
 	allowsSorting: false,
-	allowsHiding: false
+	allowsHiding: false,
+	allowsResizing: false
 };
 
 export interface TableStateOptions {
@@ -82,6 +85,9 @@ export interface TableStateOptions {
 	// column filters (Phase 6.2)
 	readonly columnFilters: readonly ColumnFilter[];
 	readonly setColumnFilters: (filters: ColumnFilter[]) => void;
+
+	// layout
+	readonly tableWidth: number;
 
 	// actions
 	readonly onAction?: (key: string) => void;
@@ -122,6 +128,21 @@ export class TableState<TData> {
 	#focusedColumnHeader: string | null = $state(null);
 
 	#delegate: TableKeyboardDelegate;
+	#layout: TableColumnLayoutState;
+	#visibleLayoutColumns = $derived.by<LayoutColumn[]>(() =>
+		this.#visibleColumns.map((c) => ({
+			key: c.id,
+			width: c.width,
+			defaultWidth: c.defaultWidth,
+			minWidth: c.minWidth,
+			maxWidth: c.maxWidth
+		}))
+	);
+
+	// Resizer input elements (one per resizable column). Used so the column
+	// menu's "Resize column" entry can focus the input directly without a
+	// document-wide DOM query.
+	#resizerInputs = new Map<string, HTMLInputElement>();
 
 	constructor(opts: TableStateOptions) {
 		this.#opts = opts;
@@ -158,6 +179,15 @@ export class TableState<TData> {
 				this.#opts.selectionMode === 'none'
 					? this.#visibleColumns
 					: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns]
+		});
+		const self = this;
+		this.#layout = new TableColumnLayoutState({
+			get tableWidth() {
+				return self.#opts.tableWidth;
+			},
+			get columns() {
+				return self.#visibleLayoutColumns;
+			}
 		});
 	}
 
@@ -825,6 +855,44 @@ export class TableState<TData> {
 		}
 
 		if (messages.length > 0) this.#getAnnouncer()?.announce(messages.join('. '));
+	}
+
+	// ── column layout ────────────────────────────────────────────
+	columnWidth(id: string): number {
+		return this.#layout.getWidth(id);
+	}
+	columnMinWidth(id: string): number {
+		return this.#layout.getMinWidth(id);
+	}
+	columnMaxWidth(id: string): number {
+		return this.#layout.getMaxWidth(id);
+	}
+	get widths(): readonly number[] {
+		return this.#layout.widths;
+	}
+	get resizingColumn(): string | null {
+		return this.#layout.resizingColumn;
+	}
+	startResize(id: string): void {
+		this.#layout.startResize(id);
+	}
+	endResize(): void {
+		this.#layout.endResize();
+	}
+	resizeColumn(id: string, newWidth: number): void {
+		this.#layout.resize(id, newWidth);
+	}
+
+	registerResizerInput(columnId: string, el: HTMLInputElement): () => void {
+		this.#resizerInputs.set(columnId, el);
+		return () => {
+			if (this.#resizerInputs.get(columnId) === el) {
+				this.#resizerInputs.delete(columnId);
+			}
+		};
+	}
+	focusResizer(columnId: string): void {
+		this.#resizerInputs.get(columnId)?.focus({ preventScroll: false });
 	}
 
 	#columnLabel(columnId: string): string {

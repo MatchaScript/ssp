@@ -1,4 +1,5 @@
 import type { ColumnFilterType, EnumFilterOption } from '../types.js';
+import type { ColumnSize } from './column-layout.js';
 
 // React Aria's `Node<T>` is the canonical shape for collections. Phase 0 only
 // uses `row` nodes; `column` / `cell` are forward-declared so subsequent phases
@@ -42,11 +43,13 @@ export type ColumnDescriptor = {
 	isRowHeader: boolean;
 	allowsSorting: boolean;
 	allowsHiding: boolean;
+	allowsResizing: boolean;
 	align?: 'start' | 'center' | 'end';
 	showDivider?: boolean;
-	width?: number | string;
-	minWidth?: number;
-	maxWidth?: number;
+	width?: ColumnSize;
+	defaultWidth?: ColumnSize;
+	minWidth?: number | string;
+	maxWidth?: number | string;
 	// Filter dispatcher metadata (Phase 6.2). `filterType` activates the menu's
 	// "Filter…" entry and decides which input UI the popover renders.
 	// `enumOptions` is consumed only by `filterType: 'enum'`.
