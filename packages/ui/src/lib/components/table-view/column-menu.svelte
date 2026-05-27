@@ -42,7 +42,6 @@
 	const canFilter = $derived(column?.filterType !== undefined);
 	const hasFilter = $derived(tableState.hasFilter(columnId));
 	const canResize = $derived(column?.allowsResizing === true);
-	const hasMenu = $derived(hasSort || canFilter || canHide || canResize);
 
 	let filterOpen = $state(false);
 

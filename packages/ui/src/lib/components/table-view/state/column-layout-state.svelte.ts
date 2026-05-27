@@ -33,6 +33,9 @@ export class TableColumnLayoutState {
 	constructor(opts: TableColumnLayoutOptions) {
 		this.#opts = opts;
 		$effect(() => {
+			// Local membership-check Set: lives only for this tick, not observed
+			// reactively. Plain Set is correct here; SvelteSet would waste tracking.
+			// eslint-disable-next-line svelte/prefer-svelte-reactivity
 			const live = new Set(this.#opts.columns.map((c) => c.key));
 			for (const k of [...this.#changedSizes.keys()]) {
 				if (!live.has(k)) this.#changedSizes.delete(k);

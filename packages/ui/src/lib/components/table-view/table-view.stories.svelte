@@ -897,6 +897,9 @@
 
 <Story name="WithColumnWidths">
 	{#snippet template(args)}
+		<!-- Strip Storybook's auto-injected `children` from `args` before spread to
+		     avoid a duplicate-children compile error on the inner TableView.Root. -->
+		<!-- eslint-disable-next-line @typescript-eslint/no-unused-vars -->
 		{@const { children: _children, ...rest } = args}
 		<div style="width: 720px;">
 			<TableView.Root aria-label="Column widths" selectionMode="none" {...rest}>

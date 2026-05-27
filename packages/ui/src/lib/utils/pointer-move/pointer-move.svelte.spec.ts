@@ -9,8 +9,12 @@ describe('attachPointerMove', () => {
 		document.body.appendChild(host);
 		// happy-dom / jsdom may lack these. Stub to no-op.
 		if (!('setPointerCapture' in HTMLElement.prototype)) {
-			(HTMLElement.prototype as any).setPointerCapture = () => {};
-			(HTMLElement.prototype as any).releasePointerCapture = () => {};
+			const proto = HTMLElement.prototype as unknown as {
+				setPointerCapture: (id: number) => void;
+				releasePointerCapture: (id: number) => void;
+			};
+			proto.setPointerCapture = () => {};
+			proto.releasePointerCapture = () => {};
 		}
 	});
 	afterEach(() => host.remove());

@@ -11,8 +11,12 @@ describe('<ColumnResizer>', () => {
 		host.style.width = '900px';
 		document.body.appendChild(host);
 		if (!('setPointerCapture' in HTMLElement.prototype)) {
-			(HTMLElement.prototype as any).setPointerCapture = () => {};
-			(HTMLElement.prototype as any).releasePointerCapture = () => {};
+			const proto = HTMLElement.prototype as unknown as {
+				setPointerCapture: (id: number) => void;
+				releasePointerCapture: (id: number) => void;
+			};
+			proto.setPointerCapture = () => {};
+			proto.releasePointerCapture = () => {};
 		}
 		component = mount(Harness, { target: host, props: {} });
 		flushSync();

@@ -199,6 +199,9 @@ export class TableState<TData> {
 				this.#focusTarget({ type: 'cell', rowKey, columnId: focusedCell.columnId });
 			}
 		);
+		// Captures `this` for the literal-object getters below — Svelte 5 needs a
+		// lexical alias so each getter re-reads the live value on access.
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
 		const self = this;
 		this.#layout = new TableColumnLayoutState({
 			get tableWidth() {
