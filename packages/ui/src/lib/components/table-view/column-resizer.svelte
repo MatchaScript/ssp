@@ -17,8 +17,7 @@
 	const maxPxRaw = $derived(Math.floor(tableState.columnMaxWidth(columnId)));
 	const maxPx = $derived(Number.isFinite(maxPxRaw) ? maxPxRaw : Number.MAX_SAFE_INTEGER);
 
-	const ariaLabel = $derived(tableState.formatter.format('columnResizer'));
-	const ariaValueText = $derived(tableState.formatter.format('columnSize', { value: width }));
+	const ariaValueText = $derived(`${width} pixels`);
 
 	// Register the input element so the column menu's "Resize column" entry can
 	// focus it directly (no document-wide DOM query).
@@ -133,7 +132,7 @@
 		min={minPx}
 		max={maxPx}
 		value={width}
-		aria-label={ariaLabel}
+		aria-label="Column resizer"
 		aria-valuetext={ariaValueText}
 		data-spectrum-table-view-resizer-input
 		onkeydown={handleInputKeydown}

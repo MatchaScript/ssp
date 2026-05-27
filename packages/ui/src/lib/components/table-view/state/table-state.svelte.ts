@@ -34,7 +34,6 @@ import { Typeahead } from '$lib/utils/selectable-collection/typeahead.js';
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
 import { TableColumnLayoutState } from './column-layout-state.svelte.js';
 import type { LayoutColumn } from './column-layout.js';
-import type { StringFormatter } from '$lib/utils/string-formatter/index.js';
 
 // Hint Safari (and modern Chromium / Firefox) to keep `:focus-visible`
 // matching after a programmatic focus — without it, arrow-key driven moves
@@ -91,9 +90,6 @@ export interface TableStateOptions {
 
 	// layout
 	readonly tableWidth: number;
-
-	// i18n
-	readonly formatter: StringFormatter;
 
 	// actions
 	readonly onAction?: (key: string) => void;
@@ -241,9 +237,6 @@ export class TableState<TData> {
 	}
 	get onAction() {
 		return this.#opts.onAction;
-	}
-	get formatter(): StringFormatter {
-		return this.#opts.formatter;
 	}
 
 	// ── columns (registry) ─────────────────────────────────────
@@ -827,11 +820,10 @@ export class TableState<TData> {
 	 */
 	announceFilterChange(columnId: string, applied: boolean): void {
 		const columnName = this.#columnLabel(columnId);
-		this.#getAnnouncer()?.announce(
-			this.#opts.formatter.format(applied ? 'filterApplied' : 'filterCleared', { columnName }),
-			'polite',
-			500
-		);
+		const message = applied
+			? `Filter applied to ${columnName}`
+			: `Filter cleared from ${columnName}`;
+		this.#getAnnouncer()?.announce(message, 'polite', 500);
 	}
 
 	announceSortChange(desc: SortDescriptor | undefined): void {
@@ -839,17 +831,13 @@ export class TableState<TData> {
 			// Column Menu's "Clear sort" lands here. Without an explicit
 			// announcement the column header just silently flips back to
 			// `aria-sort='none'`, which most screen readers ignore.
-			this.#getAnnouncer()?.announce(
-				this.#opts.formatter.format('sortCleared'),
-				'assertive',
-				500
-			);
+			this.#getAnnouncer()?.announce('Sort cleared', 'assertive', 500);
 			return;
 		}
 		const columnName = this.#columnLabel(desc.column);
-		const key = desc.direction === 'ascending' ? 'ascendingSort' : 'descendingSort';
+		const direction = desc.direction === 'ascending' ? 'ascending' : 'descending';
 		this.#getAnnouncer()?.announce(
-			this.#opts.formatter.format(key, { columnName }),
+			`sorted by column ${columnName} in ${direction} order`,
 			'assertive',
 			500
 		);
@@ -874,10 +862,10 @@ export class TableState<TData> {
 		const messages: string[] = [];
 		if (added.length === 1 && removed.length === 0) {
 			const rowName = this.#rowLabel(added[0]);
-			if (rowName) messages.push(this.#opts.formatter.format('rowSelected', { rowName }));
+			if (rowName) messages.push(`${rowName} selected`);
 		} else if (removed.length === 1 && added.length === 0) {
 			const rowName = this.#rowLabel(removed[0]);
-			if (rowName) messages.push(this.#opts.formatter.format('rowNotSelected', { rowName }));
+			if (rowName) messages.push(`${rowName} not selected`);
 		}
 
 		// In multiple mode also announce the running count, except when the
@@ -888,11 +876,13 @@ export class TableState<TData> {
 			const isBulk = next.size > 1 || prev.size > 1;
 			if (noNamedChange || isBulk) {
 				if (next.size === 0) {
-					messages.push(this.#opts.formatter.format('selectionCleared'));
+					messages.push('Selection cleared');
 				} else if (this.#selectableKeys.length > 0 && next.size === this.#selectableKeys.length) {
-					messages.push(this.#opts.formatter.format('allSelected'));
+					messages.push('All items selected');
+				} else if (next.size === 1) {
+					messages.push('1 item selected');
 				} else {
-					messages.push(this.#opts.formatter.format('itemsSelected', { count: next.size }));
+					messages.push(`${next.size} items selected`);
 				}
 			}
 		}
@@ -905,13 +895,7 @@ export class TableState<TData> {
 		if (index === -1) return;
 		const total = this.#rowEntries.size;
 		const rowName = this.#rowLabel(rowKey) || rowKey;
-		this.#getAnnouncer()?.announce(
-			this.#opts.formatter.format('rowFocused', {
-				rowName,
-				index: index + 1,
-				total
-			})
-		);
+		this.#getAnnouncer()?.announce(`${rowName}, row ${index + 1} of ${total}`);
 	}
 
 	// ── column layout ────────────────────────────────────────────

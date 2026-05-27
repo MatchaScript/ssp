@@ -2,10 +2,8 @@
 	import type { ColumnFilter, SortDescriptor, TableViewRootProps } from './types.js';
 	import { TableState } from './state/table-state.svelte.js';
 	import { setTableContext } from './state/context.js';
-	import { getTableViewFormatter } from './state/messages.js';
 	import { ProgressCircle } from '../progress-circle/index.js';
 	import TableViewColgroup from './table-view-colgroup.svelte';
-	const formatter = getTableViewFormatter();
 
 	const EMPTY_KEY_SET: ReadonlySet<string> = new Set();
 	const EMPTY_FILTERS: readonly ColumnFilter[] = [];
@@ -192,8 +190,7 @@
 		},
 		get tableWidth() {
 			return tableWidth;
-		},
-		formatter
+		}
 	});
 
 	// ── Live region announcements ────────────────────────────────
