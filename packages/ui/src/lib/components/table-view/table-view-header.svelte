@@ -50,7 +50,7 @@
 				data-focused={isCheckboxHeaderFocused || undefined}
 				role={tableState.selectionMode === 'multiple' ? 'columnheader' : 'presentation'}
 				aria-colindex={1}
-				aria-label={tableState.selectionMode === 'multiple' ? 'Select all' : undefined}
+				aria-label={tableState.selectionMode === 'multiple' ? tableState.formatter.format('selectAll') : undefined}
 				tabindex={isCheckboxHeaderFocused ? 0 : -1}
 				onclick={tableState.selectionMode === 'multiple' ? handleCheckboxClick : undefined}
 				onkeydown={handleCheckboxKeydown}

@@ -131,6 +131,7 @@
 		data-filtered={isFiltered || undefined}
 		aria-sort={ariaSort}
 		aria-colindex={ariaColIndex}
+		{...(allowsSorting ? { 'aria-description': tableState.formatter.format('sortable') } : {})}
 		tabindex={isHeaderFocused ? 0 : -1}
 		onclick={allowsSorting ? handleClick : undefined}
 		onkeydown={handleKeydown}

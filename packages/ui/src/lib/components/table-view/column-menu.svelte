@@ -88,7 +88,7 @@
 			isQuiet
 			size="s"
 			data-spectrum-table-view-column-menu-trigger
-			aria-label="Column menu"
+			aria-label={tableState.formatter.format('columnMenu')}
 			onclick={(e: MouseEvent) => {
 				// Header click toggles sort; the menu trigger lives inside the
 				// header so its click would bubble up and re-toggle. Stop early
@@ -110,16 +110,16 @@
 		{#if hasSort}
 			<Menu.MenuItem id="sort-asc">
 				{#snippet icon()}<Icon icon={ArrowUpWideNarrow} size="s" />{/snippet}
-				Sort ascending
+				{tableState.formatter.format('sortAscending')}
 			</Menu.MenuItem>
 			<Menu.MenuItem id="sort-desc">
 				{#snippet icon()}<Icon icon={ArrowDownNarrowWide} size="s" />{/snippet}
-				Sort descending
+				{tableState.formatter.format('sortDescending')}
 			</Menu.MenuItem>
 			{#if sortDirection}
 				<Menu.MenuItem id="sort-clear">
 					{#snippet icon()}<Icon icon={XCircle} size="s" />{/snippet}
-					Clear sort
+					{tableState.formatter.format('clearSort')}
 				</Menu.MenuItem>
 			{/if}
 		{/if}
@@ -129,12 +129,12 @@
 		{#if canFilter}
 			<Menu.MenuItem id="filter">
 				{#snippet icon()}<Icon icon={Filter} size="s" />{/snippet}
-				{hasFilter ? 'Edit filter…' : 'Filter…'}
+				{tableState.formatter.format(hasFilter ? 'editFilter' : 'filter')}
 			</Menu.MenuItem>
 			{#if hasFilter}
 				<Menu.MenuItem id="filter-clear">
 					{#snippet icon()}<Icon icon={FilterX} size="s" />{/snippet}
-					Clear filter
+					{tableState.formatter.format('clearFilter')}
 				</Menu.MenuItem>
 			{/if}
 		{/if}
@@ -144,7 +144,7 @@
 		{#if canHide}
 			<Menu.MenuItem id="hide">
 				{#snippet icon()}<Icon icon={EyeOff} size="s" />{/snippet}
-				Hide column
+				{tableState.formatter.format('hideColumn')}
 			</Menu.MenuItem>
 		{/if}
 	</Menu.Menu>

@@ -32,6 +32,7 @@ import {
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
 import { TableColumnLayoutState } from './column-layout-state.svelte.js';
 import type { LayoutColumn } from './column-layout.js';
+import type { StringFormatter } from '$lib/utils/string-formatter/index.js';
 
 // Hint Safari (and modern Chromium / Firefox) to keep `:focus-visible`
 // matching after a programmatic focus — without it, arrow-key driven moves
@@ -88,6 +89,9 @@ export interface TableStateOptions {
 
 	// layout
 	readonly tableWidth: number;
+
+	// i18n
+	readonly formatter: StringFormatter;
 
 	// actions
 	readonly onAction?: (key: string) => void;
@@ -218,6 +222,9 @@ export class TableState<TData> {
 	}
 	get onAction() {
 		return this.#opts.onAction;
+	}
+	get formatter(): StringFormatter {
+		return this.#opts.formatter;
 	}
 
 	// ── columns (registry) ─────────────────────────────────────
@@ -780,9 +787,6 @@ export class TableState<TData> {
 	// through a shared `aria-live` region. We mirror that contract: the
 	// parent component owns a `$effect` that watches selection / sort and
 	// calls these methods whenever the effective value changes.
-	//
-	// Strings are English-only for now. Phase 6 i18n work will move them to
-	// a string formatter once we settle on a localization story for SSP.
 
 	/**
 	 * Announce filter changes for a single column. Single-column granularity
@@ -790,9 +794,9 @@ export class TableState<TData> {
 	 * the column-menu's Filter… popover only mutates one column at a time.
 	 */
 	announceFilterChange(columnId: string, applied: boolean): void {
-		const label = this.#columnLabel(columnId);
+		const columnName = this.#columnLabel(columnId);
 		this.#getAnnouncer()?.announce(
-			applied ? `Filter applied to ${label}` : `Filter cleared from ${label}`,
+			this.#opts.formatter.format(applied ? 'filterApplied' : 'filterCleared', { columnName }),
 			'polite',
 			500
 		);
@@ -803,11 +807,20 @@ export class TableState<TData> {
 			// Phase 6: Column Menu's Clear sort lands here. Without an explicit
 			// announcement the column header just silently flips back to
 			// `aria-sort='none'`, which most screen readers ignore.
-			this.#getAnnouncer()?.announce('Sort cleared', 'assertive', 500);
+			this.#getAnnouncer()?.announce(
+				this.#opts.formatter.format('sortCleared'),
+				'assertive',
+				500
+			);
 			return;
 		}
-		const label = this.#columnLabel(desc.column);
-		this.#getAnnouncer()?.announce(`Sorted by ${label}, ${desc.direction}`, 'assertive', 500);
+		const columnName = this.#columnLabel(desc.column);
+		const key = desc.direction === 'ascending' ? 'ascendingSort' : 'descendingSort';
+		this.#getAnnouncer()?.announce(
+			this.#opts.formatter.format(key, { columnName }),
+			'assertive',
+			500
+		);
 	}
 
 	/**
@@ -828,11 +841,11 @@ export class TableState<TData> {
 
 		const messages: string[] = [];
 		if (added.length === 1 && removed.length === 0) {
-			const label = this.#rowLabel(added[0]);
-			if (label) messages.push(`${label} selected`);
+			const rowName = this.#rowLabel(added[0]);
+			if (rowName) messages.push(this.#opts.formatter.format('rowSelected', { rowName }));
 		} else if (removed.length === 1 && added.length === 0) {
-			const label = this.#rowLabel(removed[0]);
-			if (label) messages.push(`${label} not selected`);
+			const rowName = this.#rowLabel(removed[0]);
+			if (rowName) messages.push(this.#opts.formatter.format('rowNotSelected', { rowName }));
 		}
 
 		// In multiple mode also announce the running count, except when the
@@ -843,13 +856,11 @@ export class TableState<TData> {
 			const isBulk = next.size > 1 || prev.size > 1;
 			if (noNamedChange || isBulk) {
 				if (next.size === 0) {
-					messages.push('Selection cleared');
+					messages.push(this.#opts.formatter.format('selectionCleared'));
 				} else if (this.#selectableKeys.length > 0 && next.size === this.#selectableKeys.length) {
-					messages.push('All items selected');
-				} else if (next.size === 1) {
-					messages.push('1 item selected');
+					messages.push(this.#opts.formatter.format('allSelected'));
 				} else {
-					messages.push(`${next.size} items selected`);
+					messages.push(this.#opts.formatter.format('itemsSelected', { count: next.size }));
 				}
 			}
 		}
