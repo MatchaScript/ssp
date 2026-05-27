@@ -165,6 +165,13 @@
 	}
 
 	const filteredUsers = $derived(applyFilters(sortBy(users, filterSort), filters));
+
+	const rows = [
+		{ id: '1', a: 'Alpha', b: 'Beta', c: 'Gamma' },
+		{ id: '2', a: 'Delta', b: 'Epsilon', c: 'Zeta' },
+		{ id: '3', a: 'Eta', b: 'Theta', c: 'Iota' }
+	];
+
 	const roleOptions = [
 		{ label: 'Owner', value: 'Owner' },
 		{ label: 'Admin', value: 'Admin' },
@@ -886,4 +893,28 @@
 			</TableView.Body>
 		</TableView.Root>
 	</div>
+</Story>
+
+<Story name="WithColumnWidths">
+	{#snippet template(args)}
+		{@const { children: _children, ...rest } = args}
+		<div style="width: 720px;">
+			<TableView.Root aria-label="Column widths" selectionMode="none" {...rest}>
+				<TableView.Header>
+					<TableView.Column id="a" defaultWidth={200}>Two hundred</TableView.Column>
+					<TableView.Column id="b" defaultWidth="2fr">Two fr</TableView.Column>
+					<TableView.Column id="c">One fr</TableView.Column>
+				</TableView.Header>
+				<TableView.Body>
+					{#each rows as row (row.id)}
+						<TableView.Row key={row.id}>
+							<TableView.Cell>{row.a}</TableView.Cell>
+							<TableView.Cell>{row.b}</TableView.Cell>
+							<TableView.Cell>{row.c}</TableView.Cell>
+						</TableView.Row>
+					{/each}
+				</TableView.Body>
+			</TableView.Root>
+		</div>
+	{/snippet}
 </Story>

@@ -3,6 +3,7 @@
 	import { TableState } from './state/table-state.svelte.js';
 	import { setTableContext } from './state/context.js';
 	import { ProgressCircle } from '../progress-circle/index.js';
+	import TableViewColgroup from './table-view-colgroup.svelte';
 
 	const EMPTY_KEY_SET: ReadonlySet<string> = new Set();
 	const EMPTY_FILTERS: readonly ColumnFilter[] = [];
@@ -129,6 +130,22 @@
 	// ── Disabled keys (memoized as Set for fast lookup) ──────────
 	const effectiveDisabledKeys = $derived(disabledKeys ? toKeySet(disabledKeys) : EMPTY_KEY_SET);
 
+	// ── Table width (drives column layout) ───────────────────────
+	let tableWidth = $state(0);
+	let scrollWrapperEl: HTMLDivElement | null = $state(null);
+
+	$effect(() => {
+		const el = scrollWrapperEl;
+		if (!el) return;
+		const ro = new ResizeObserver((entries) => {
+			for (const entry of entries) {
+				tableWidth = entry.contentBoxSize?.[0]?.inlineSize ?? entry.contentRect.width;
+			}
+		});
+		ro.observe(el);
+		return () => ro.disconnect();
+	});
+
 	// ── TableState ───────────────────────────────────────────────
 	const tableState = new TableState<TData>({
 		get density() {
@@ -170,6 +187,9 @@
 		setColumnFilters,
 		get onAction() {
 			return onAction;
+		},
+		get tableWidth() {
+			return tableWidth;
 		}
 	});
 
@@ -260,6 +280,7 @@
 </script>
 
 <div
+	bind:this={scrollWrapperEl}
 	data-spectrum-table-view-wrapper
 	data-density={density}
 	data-quiet={isQuiet || undefined}
@@ -282,6 +303,7 @@
 		onfocusin={handleFocusIn}
 		{...restProps}
 	>
+		<TableViewColgroup />
 		{@render children()}
 		{#if loadingState === 'loading'}
 			<tbody>
@@ -337,6 +359,7 @@
 	/* ── Root Table ──────────────────────────────────────────── */
 
 	[data-spectrum-table-view] {
+		--table-view-checkbox-col-width: 40px;
 		--table-row-hover-color: var(--gray-900);
 		/* S2 uses the same controlFont() for both cells and column headers;
 		   the header is differentiated by font-weight: bold only. */
