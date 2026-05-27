@@ -94,10 +94,10 @@
 	const isFiltered = $derived(tableState.hasFilter(id));
 	// RS parity: sort alone doesn't justify a menu — the header click already
 	// toggles sort. The chevron only appears when there are menu-driven
-	// actions (hide / filter / future resize) that have no other affordance.
+	// actions (hide / filter / resize) that have no other affordance.
 	// Sort items are still rendered *inside* the menu when both apply, so
 	// "Clear sort" stays reachable on a column that's also hideable/filterable.
-	const hasMenu = $derived(allowsHiding || allowsFiltering);
+	const hasMenu = $derived(allowsHiding || allowsFiltering || allowsResizing);
 
 	function handleClick(e: MouseEvent) {
 		// Menu / filter popovers render in the top layer but are still DOM
