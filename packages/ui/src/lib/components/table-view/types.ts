@@ -81,13 +81,13 @@ export type TableViewRootProps = Omit<HTMLTableAttributes, 'role' | 'children'> 
 	defaultSortDescriptor?: SortDescriptor;
 	onSortChange?: (desc: SortDescriptor | undefined) => void;
 
-	// column visibility (Phase 6) — set of column ids that should NOT render. Same
+	// column visibility — set of column ids that should NOT render. Same
 	// controlled / uncontrolled lock-in story as selection / sort.
 	hiddenColumns?: Iterable<string>;
 	defaultHiddenColumns?: Iterable<string>;
 	onHiddenColumnsChange?: (hidden: Set<string>) => void;
 
-	// column filters (Phase 6) — list of active filters keyed by `column`. At
+	// column filters — list of active filters keyed by `column`. At
 	// most one filter per column; setting a new filter replaces an existing one
 	// for the same column, and `value` going empty (cleared text, both bounds
 	// null, no enum options checked) drops the entry entirely. Same lock-in
@@ -139,11 +139,11 @@ export type TableViewColumnProps = {
 	// sorting
 	allowsSorting?: boolean;
 
-	// column menu (Phase 6) — opt-in surface area exposed on the column's
+	// column menu — opt-in surface area exposed on the column's
 	// dropdown menu. Each flag adds the corresponding menu item.
 	allowsHiding?: boolean;
 
-	// filtering (Phase 6) — declares the column as filterable and picks the UI
+	// filtering — declares the column as filterable and picks the UI
 	// dispatcher (text input, two number inputs, or a checkbox list of
 	// `enumOptions`). The consumer still owns applying the filter to data;
 	// the table only stores + emits the descriptor.
@@ -179,7 +179,7 @@ export type TableViewRowProps = {
 	isDisabled?: boolean;
 	textValue?: string;
 
-	// link behavior (Phase 2)
+	// link behavior
 	href?: string;
 	target?: '_self' | '_blank' | '_parent' | '_top';
 	download?: string | boolean;

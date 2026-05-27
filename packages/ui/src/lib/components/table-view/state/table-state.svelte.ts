@@ -2,7 +2,8 @@
  * Several Map/Set instances in this file are intentionally non-reactive
  * (DOM element bookkeeping, registration metadata) — making them SvelteMap
  * would close $derived feedback loops or just waste reactivity tracking.
- * TODO: Audit each site and re-enable for the ones that could be SvelteMap.
+ * Plain Map/Set are used for registries read only from event handlers;
+ * reactive consumers go through SvelteMap.
  */
 import { SvelteMap } from 'svelte/reactivity';
 import {
@@ -80,11 +81,11 @@ export interface TableStateOptions {
 	readonly sortDescriptor: SortDescriptor | undefined;
 	readonly setSortDescriptor: (desc: SortDescriptor | undefined) => void;
 
-	// column visibility (Phase 6)
+	// column visibility
 	readonly hiddenColumns: ReadonlySet<string>;
 	readonly setHiddenColumns: (hidden: Set<string>) => void;
 
-	// column filters (Phase 6.2)
+	// column filters
 	readonly columnFilters: readonly ColumnFilter[];
 	readonly setColumnFilters: (filters: ColumnFilter[]) => void;
 
@@ -275,7 +276,7 @@ export class TableState<TData> {
 		return this.#visibleColumns.findIndex((c) => c.id === id);
 	}
 
-	// ── derived collection (Phase 0: rows + columns) ───────────
+	// ── derived collection (rows + columns) ────────────────────
 	// Collection exposes visible columns only — that's what Header iterates
 	// over and what aria-colcount reflects. Cells still resolve their column
 	// via `tableState.columns[markupIndex]` (see `<TableView.Cell>`).
@@ -696,7 +697,7 @@ export class TableState<TData> {
 		return this.#rowMeta.get(key)?.href;
 	}
 
-	// ── column filters (Phase 6.2) ─────────────────────────────
+	// ── column filters ──────────────────────────────────────────
 	// Filters are addressed by column id. The state is stored as an array on
 	// the consumer side (matching the public `columnFilters` prop shape), but
 	// internal lookups go through this small map for O(1) `getFilter`.
@@ -745,7 +746,7 @@ export class TableState<TData> {
 		this.#opts.setColumnFilters([]);
 	}
 
-	// ── column visibility (Phase 6) ────────────────────────────
+	// ── column visibility ───────────────────────────────────────
 	hideColumn(id: string): void {
 		const col = this.#columnEntries.get(id);
 		// Refuse to hide when the column hasn't opted in; otherwise the consumer
@@ -767,8 +768,8 @@ export class TableState<TData> {
 	/**
 	 * 2-way toggle (RAC parity): clicking the same column flips ascending ⇄
 	 * descending. Clicking a new column starts at ascending. The "off" state
-	 * is reachable only programmatically (`setSortDescriptor(undefined)`) —
-	 * Phase 6 Column Menu will expose it as an explicit "Clear sort" item.
+	 * is reachable programmatically (`setSortDescriptor(undefined)`) or via
+	 * the Column Menu's explicit "Clear sort" item.
 	 */
 	toggleSort(columnId: string): void {
 		const current = this.#opts.sortDescriptor;
@@ -835,7 +836,7 @@ export class TableState<TData> {
 
 	announceSortChange(desc: SortDescriptor | undefined): void {
 		if (!desc) {
-			// Phase 6: Column Menu's Clear sort lands here. Without an explicit
+			// Column Menu's "Clear sort" lands here. Without an explicit
 			// announcement the column header just silently flips back to
 			// `aria-sort='none'`, which most screen readers ignore.
 			this.#getAnnouncer()?.announce(

@@ -125,13 +125,13 @@
 	let serverSort = $state<SortDescriptor | undefined>();
 	const sortedServers = $derived(sortBy(servers, serverSort));
 
-	// Phase 6 column menu story state.
+	// Column menu story state.
 	// eslint-disable-next-line svelte/no-unnecessary-state-wrap -- variable is reassigned (onHiddenColumnsChange), $state is required
 	let menuHidden = $state<Set<string>>(new SvelteSet());
 	let menuSort = $state<SortDescriptor | undefined>();
 	const menuSortedUsers = $derived(sortBy(users, menuSort));
 
-	// Phase 6.2 column filter story state.
+	// Column filter story state.
 	let filters = $state<ColumnFilter[]>([]);
 	let filterSort = $state<SortDescriptor | undefined>();
 

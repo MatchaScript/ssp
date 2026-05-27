@@ -17,7 +17,7 @@
 
 	// Per-column dropdown anchored to the column header. Mirrors S2's
 	// `ColumnWithMenu` in spirit — a single menu surface that consolidates
-	// sort / hide / filter / (Phase 7: resize) — but built from the SSP Menu
+	// sort / hide / filter / resize when allowsResizing — but built from the SSP Menu
 	// primitive so we get keyboard nav / focus management for free.
 	//
 	// Visibility rule: the trigger is shown only when the column has at least

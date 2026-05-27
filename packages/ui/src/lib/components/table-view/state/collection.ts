@@ -1,9 +1,8 @@
 import type { ColumnFilterType, EnumFilterOption } from '../types.js';
 import type { ColumnSize } from './column-layout.js';
 
-// React Aria's `Node<T>` is the canonical shape for collections. Phase 0 only
-// uses `row` nodes; `column` / `cell` are forward-declared so subsequent phases
-// can extend without changing the shape.
+// React Aria's `Node<T>` is the canonical shape for collections. Only 'row'
+// nodes are built; the others are reserved for future shapes.
 export type NodeType = 'row' | 'column' | 'cell' | 'header' | 'body';
 
 export type Node<T> = {
@@ -50,15 +49,14 @@ export type ColumnDescriptor = {
 	defaultWidth?: ColumnSize;
 	minWidth?: number | string;
 	maxWidth?: number | string;
-	// Filter dispatcher metadata (Phase 6.2). `filterType` activates the menu's
+	// Filter dispatcher metadata. `filterType` activates the menu's
 	// "Filter…" entry and decides which input UI the popover renders.
 	// `enumOptions` is consumed only by `filterType: 'enum'`.
 	filterType?: ColumnFilterType;
 	enumOptions?: EnumFilterOption[];
 };
 
-// Minimal collection surface used by Phase 0. Later phases extend with
-// `getKeyBefore` / `getKeyAfter` / `headerRows` / `rowHeaderColumnKeys`.
+// Collection surface consumed by TableState.
 export interface ITableCollection<T> {
 	readonly size: number;
 	readonly rows: ReadonlyArray<Node<T>>;

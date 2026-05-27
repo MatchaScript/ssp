@@ -268,8 +268,7 @@
 
 	// ARIA row / col counts. `aria-rowcount` includes the header row; AT
 	// implementations rely on the count for percentage announcements
-	// ("row 5 of 200"). Phase 9 virtualization will revisit when only a
-	// subset of rows is mounted.
+	// ("row 5 of 200"). Row virtualization is out of scope.
 	const ariaRowCount = $derived(1 + tableState.collection.size);
 	const ariaColCount = $derived(totalColumns);
 
