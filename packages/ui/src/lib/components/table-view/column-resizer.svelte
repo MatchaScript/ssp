@@ -9,7 +9,8 @@
 	const tableState = getTableContext();
 	let handleEl: HTMLDivElement | null = $state(null);
 	let inputEl: HTMLInputElement | null = $state(null);
-	let isPointerDragging = $state(false);
+	// True while a pointer drag is in flight — gates the full-viewport cursor overlay.
+	let showOverlay = $state(false);
 
 	const isResizing = $derived(tableState.resizingColumn === columnId);
 	const width = $derived(tableState.columnWidth(columnId));
@@ -28,20 +29,24 @@
 		return untrack(() => tableState.registerResizerInput(columnId, el));
 	});
 
-	// Pointer drag — onMoveStart starts edit mode and anchors widthAtMoveStart;
-	// each onMove resizes by the per-event deltaX (scaled ×10 for keyboard).
-	// Direction is read on each onMoveStart so a runtime RTL flip is honoured.
+	// Drag + keyboard resize, driven entirely by the pointer-move helper.
+	// onMoveStart anchors widthAtMoveStart and starts edit mode; each onMove
+	// resizes by the per-event deltaX (scaled ×10 for keyboard). Direction is
+	// read on each onMoveStart so a runtime RTL flip is honoured. A pointer
+	// move shows the cursor overlay and ends the resize on release; a keyboard
+	// arrow keeps edit mode open (the input owns Esc / Enter / Tab / blur).
 	$effect(() => {
 		const el = handleEl;
 		if (!el) return;
 		let direction: 'ltr' | 'rtl' = 'ltr';
 		let widthAtMoveStart = 0;
-		return untrack(() =>
+		const detach = untrack(() =>
 			attachPointerMove(el, {
-				onMoveStart: () => {
+				onMoveStart: (pointerType) => {
 					direction = getElementDirection(el);
 					widthAtMoveStart = tableState.columnWidth(columnId);
 					tableState.startResize(columnId);
+					if (pointerType !== 'keyboard') showOverlay = true;
 				},
 				onMove: ({ deltaX, deltaY, pointerType }) => {
 					let dx = direction === 'rtl' ? -deltaX : deltaX;
@@ -53,33 +58,19 @@
 					if (dx === 0) return;
 					widthAtMoveStart += dx;
 					tableState.resizeColumn(columnId, widthAtMoveStart);
+				},
+				onMoveEnd: (pointerType) => {
+					if (pointerType === 'keyboard') return;
+					showOverlay = false;
+					if (isResizing) tableState.endResize();
 				}
-				// `onMoveEnd` deliberately omitted. Pointer drags release via the
-				// effect on `isPointerDragging` below; keyboard arrow "moves" inside
-				// edit mode also fire onMoveEnd-equivalent but we keep edit mode
-				// open until the input's onkeydown sees Esc / Enter / Tab.
 			})
 		);
-	});
-
-	// Tracks whether a mouse drag is in flight so the cursor overlay shows up
-	// only during pointer drags (not in keyboard edit mode). Effect cleanup
-	// removes the window listeners even when the component unmounts mid-drag.
-	function handlePointerDown() {
-		isPointerDragging = true;
-	}
-
-	$effect(() => {
-		if (!isPointerDragging) return;
-		const stop = () => {
-			isPointerDragging = false;
-		};
-		window.addEventListener('pointerup', stop);
-		window.addEventListener('pointercancel', stop);
 		return () => {
-			window.removeEventListener('pointerup', stop);
-			window.removeEventListener('pointercancel', stop);
-			if (tableState.resizingColumn === columnId) tableState.endResize();
+			detach();
+			// Unmounting mid-drag (or mid keyboard edit) must not leave the
+			// column stuck in resize mode.
+			if (isResizing) tableState.endResize();
 		};
 	});
 
@@ -92,6 +83,13 @@
 			tableState.startResize(columnId);
 			inputEl?.focus();
 		}
+	}
+
+	// A keyboard arrow on the div edits in place without ending the resize, so
+	// blurring away (Shift+Tab, click elsewhere) is the div's signal to exit
+	// edit mode. Focus moving to the inner input (Enter / Space) keeps it open.
+	function handleDivBlur(event: FocusEvent) {
+		if (isResizing && event.relatedTarget !== inputEl) tableState.endResize();
 	}
 
 	function handleInputKeydown(event: KeyboardEvent) {
@@ -112,12 +110,9 @@
 	}
 
 	function handleInputChange(event: Event) {
-		// The native range input emits change events on arrow / pageup / pagedown.
-		// Since attachPointerMove already handles keyboard via the OUTER div's
-		// keydown listener, we only honour the value when the user dragged the
-		// internal range thumb (impossible — it's visually hidden) or when
-		// something programmatically set the value. Keep this as a defensive
-		// snap to the input's reported value.
+		// Handles the native range-input keys that attachPointerMove leaves alone
+		// (it preventDefaults only the arrows): PageUp/PageDown/Home/End change
+		// the input's value directly, and this snaps the column width to match.
 		const next = parseInt((event.target as HTMLInputElement).value, 10);
 		if (!Number.isNaN(next) && next !== width) {
 			tableState.resizeColumn(columnId, next);
@@ -136,10 +131,8 @@
 	data-resizing={isResizing ? '' : undefined}
 	tabindex={0}
 	onkeydown={handleDivKeydown}
-	onpointerdown={(e) => {
-		e.stopPropagation();
-		handlePointerDown();
-	}}
+	onblur={handleDivBlur}
+	onpointerdown={(e) => e.stopPropagation()}
 	onclick={(e) => e.stopPropagation()}
 >
 	<input
@@ -157,7 +150,7 @@
 	/>
 </div>
 
-{#if isPointerDragging}
+{#if showOverlay}
 	<!-- Full-viewport cursor overlay: keeps the cursor from flickering when
 	     the pointer crosses other element edges mid-drag. Renders as a
 	     sibling of <table> via Svelte's portal-less layout — fine because

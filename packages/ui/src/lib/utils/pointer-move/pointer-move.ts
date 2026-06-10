@@ -7,9 +7,9 @@ export interface MoveEvent {
 }
 
 export interface PointerMoveHandlers {
-	onMoveStart?: () => void;
+	onMoveStart?: (pointerType: PointerMoveType) => void;
 	onMove?: (event: MoveEvent) => void;
-	onMoveEnd?: () => void;
+	onMoveEnd?: (pointerType: PointerMoveType) => void;
 }
 
 /**
@@ -22,11 +22,15 @@ export interface PointerMoveHandlers {
  *     when the pointer leaves `el` mid-flight.
  *   • Arrow keys are folded into the same `onMove` callback with
  *     `pointerType: 'keyboard'`, deltaX/Y in ±1 units. Consumers scale.
+ *   • `onMoveStart` / `onMoveEnd` carry the same `pointerType` as `onMove`
+ *     so consumers can distinguish a finished pointer drag from a keyboard
+ *     arrow step.
  *
  * Returns a `detach()` cleanup that removes all listeners.
  */
 export function attachPointerMove(el: HTMLElement, handlers: PointerMoveHandlers): () => void {
 	let pointerId: number | null = null;
+	let pointerType: PointerMoveType = 'mouse';
 	let didMove = false;
 	let lastPageX = 0;
 	let lastPageY = 0;
@@ -40,13 +44,9 @@ export function attachPointerMove(el: HTMLElement, handlers: PointerMoveHandlers
 		if (dx === 0 && dy === 0) return;
 		if (!didMove) {
 			didMove = true;
-			handlers.onMoveStart?.();
+			handlers.onMoveStart?.(pointerType);
 		}
-		handlers.onMove?.({
-			deltaX: dx,
-			deltaY: dy,
-			pointerType: (event.pointerType as PointerMoveType) || 'mouse'
-		});
+		handlers.onMove?.({ deltaX: dx, deltaY: dy, pointerType });
 	};
 
 	const finish = (event: PointerEvent) => {
@@ -57,12 +57,13 @@ export function attachPointerMove(el: HTMLElement, handlers: PointerMoveHandlers
 		const wasMoving = didMove;
 		pointerId = null;
 		didMove = false;
-		if (wasMoving) handlers.onMoveEnd?.();
+		if (wasMoving) handlers.onMoveEnd?.(pointerType);
 	};
 
 	const onPointerDown = (event: PointerEvent) => {
 		if (event.button !== 0 || pointerId !== null) return;
 		pointerId = event.pointerId;
+		pointerType = (event.pointerType as PointerMoveType) || 'mouse';
 		didMove = false;
 		lastPageX = event.pageX;
 		lastPageY = event.pageY;
@@ -99,9 +100,9 @@ export function attachPointerMove(el: HTMLElement, handlers: PointerMoveHandlers
 				return;
 		}
 		event.preventDefault();
-		handlers.onMoveStart?.();
+		handlers.onMoveStart?.('keyboard');
 		handlers.onMove?.({ deltaX: dx, deltaY: dy, pointerType: 'keyboard' });
-		handlers.onMoveEnd?.();
+		handlers.onMoveEnd?.('keyboard');
 	};
 
 	el.addEventListener('pointerdown', onPointerDown);

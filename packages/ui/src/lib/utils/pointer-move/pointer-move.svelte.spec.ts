@@ -39,6 +39,7 @@ describe('attachPointerMove', () => {
 			new PointerEvent('pointermove', { pointerId: 1, clientX: 150, clientY: 0 })
 		);
 		expect(onMoveStart).toHaveBeenCalledTimes(1);
+		expect(onMoveStart).toHaveBeenCalledWith('mouse');
 		expect(onMove).toHaveBeenCalledWith(
 			expect.objectContaining({ deltaX: 50, pointerType: 'mouse' })
 		);
@@ -74,11 +75,51 @@ describe('attachPointerMove', () => {
 		window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 50 }));
 
 		expect(onMoveEnd).toHaveBeenCalledTimes(1);
+		expect(onMoveEnd).toHaveBeenCalledWith('mouse');
 
 		onMove.mockClear();
 		// Subsequent moves after up should not fire.
 		window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 200 }));
 		expect(onMove).not.toHaveBeenCalled();
+
+		detach();
+	});
+
+	it('carries the pointerdown pointerType through onMoveStart and onMoveEnd', () => {
+		const onMoveStart = vi.fn();
+		const onMoveEnd = vi.fn();
+		const detach = attachPointerMove(host, { onMoveStart, onMoveEnd });
+
+		host.dispatchEvent(
+			new PointerEvent('pointerdown', {
+				pointerId: 1,
+				clientX: 0,
+				button: 0,
+				pointerType: 'touch',
+				bubbles: true
+			})
+		);
+		window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 30 }));
+		window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 30 }));
+
+		expect(onMoveStart).toHaveBeenCalledWith('touch');
+		expect(onMoveEnd).toHaveBeenCalledWith('touch');
+
+		detach();
+	});
+
+	it('does not fire onMoveEnd on pointerup when no move started', () => {
+		const onMoveStart = vi.fn();
+		const onMoveEnd = vi.fn();
+		const detach = attachPointerMove(host, { onMoveStart, onMoveEnd });
+
+		host.dispatchEvent(
+			new PointerEvent('pointerdown', { pointerId: 1, clientX: 0, button: 0, bubbles: true })
+		);
+		window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 0 }));
+
+		expect(onMoveStart).not.toHaveBeenCalled();
+		expect(onMoveEnd).not.toHaveBeenCalled();
 
 		detach();
 	});
@@ -90,11 +131,11 @@ describe('attachPointerMove', () => {
 		const detach = attachPointerMove(host, { onMoveStart, onMove, onMoveEnd });
 
 		host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowRight', bubbles: true }));
-		expect(onMoveStart).toHaveBeenCalled();
+		expect(onMoveStart).toHaveBeenCalledWith('keyboard');
 		expect(onMove).toHaveBeenCalledWith(
 			expect.objectContaining({ deltaX: 1, pointerType: 'keyboard' })
 		);
-		expect(onMoveEnd).toHaveBeenCalled();
+		expect(onMoveEnd).toHaveBeenCalledWith('keyboard');
 
 		onMove.mockClear();
 		host.dispatchEvent(new KeyboardEvent('keydown', { key: 'ArrowLeft', bubbles: true }));
