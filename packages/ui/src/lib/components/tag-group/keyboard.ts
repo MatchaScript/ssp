@@ -1,4 +1,5 @@
 import type { TagGroupSelectionMode } from './types.js';
+import { isPrintable } from '$lib/utils/selectable-collection/index.js';
 
 /**
  * Pure keyboard delegate for TagGroup row-level navigation and selection.
@@ -90,10 +91,6 @@ function lastEnabled(rows: readonly RowDescriptor[]): RowDescriptor | null {
 
 function modifiers(e: KeyboardEventLike): KeyboardModifiers {
 	return { shift: e.shiftKey, ctrlOrMeta: e.ctrlKey || e.metaKey };
-}
-
-function isPrintable(e: KeyboardEventLike): boolean {
-	return e.key.length === 1 && !e.ctrlKey && !e.metaKey && !e.altKey;
 }
 
 // ── public handler ──────────────────────────────────────────────

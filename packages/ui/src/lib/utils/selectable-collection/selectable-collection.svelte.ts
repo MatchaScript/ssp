@@ -3,6 +3,7 @@
  */
 
 import { Typeahead } from './typeahead.js';
+import { isPrintable } from './keyboard.js';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
@@ -526,7 +527,7 @@ export class SelectableCollection {
 				return this.highlightedId;
 			}
 			default: {
-				if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+				if (isPrintable(event)) {
 					event.preventDefault();
 					this.#typeahead.search(event.key);
 				}

@@ -9,3 +9,4 @@ export {
 } from './selectable-collection.svelte.js';
 
 export { Typeahead } from './typeahead.js';
+export { isPrintable, type KeyboardEventLike } from './keyboard.js';

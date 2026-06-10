@@ -20,6 +20,10 @@ export type RowDescriptor<T> = {
 	rowData: T;
 	textValue?: string;
 	isDisabled?: boolean;
+	// The row's `<tr>` element. Carried so the canonical row order can be
+	// derived from DOM position (`compareDocumentPosition`) rather than mount
+	// order — a keyed `{#each}` reorders the DOM without re-registering.
+	el: HTMLElement;
 };
 
 /**

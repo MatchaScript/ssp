@@ -21,7 +21,7 @@ export type FocusTarget =
 export interface TableKeyboardDelegateOptions {
 	/** Rows in markup order. Disabled rows stay in the list (so indices match) but are skipped when navigating. */
 	readonly rows: () => readonly { key: string; disabled: boolean }[];
-	/** Columns in markup order. The checkbox column is NOT included here. */
+	/** Columns in markup order. The synthetic selection column is prepended whenever `selectionMode !== 'none'`. */
 	readonly columns: () => readonly { id: string }[];
 	/** Default 10. Used for PageUp / PageDown. */
 	readonly pageSize?: () => number;

@@ -8,6 +8,7 @@
 import { SvelteMap } from 'svelte/reactivity';
 import {
 	SelectableCollection,
+	isPrintable,
 	type ItemRegistration,
 	type SelectionInputModifiers
 } from '$lib/utils/selectable-collection/index.js';
@@ -126,6 +127,27 @@ export class TableState<TData> {
 	// Non-reactive per-row metadata (href / onAction). See `RowMeta` doc for
 	// why these are deliberately kept out of the reactive registry.
 	#rowMeta = new Map<string, RowMeta>();
+
+	// Canonical row order is DOM order, not mount order. A keyed `{#each}` lets
+	// the consumer reorder rows (e.g. after a sort) by moving `<tr>` nodes
+	// without re-registering them, so `#rowEntries`' insertion order goes stale.
+	// `#bodyVersion` ticks whenever the `<tbody>`'s direct children change; the
+	// observer is wired by `registerBody`. `#orderedRows` re-sorts entries by
+	// `compareDocumentPosition` only when the version or the registry changes,
+	// and is the single source every position-aware consumer reads (keyboard
+	// nav, aria-rowindex via `collection.rows`, cell typeahead, announcements).
+	#bodyVersion = $state(0);
+	#bodyObserver: MutationObserver | null = null;
+	#orderedRows = $derived.by<RowDescriptor<TData>[]>(() => {
+		// Touch the version so a DOM reorder re-runs this derived.
+		void this.#bodyVersion;
+		return [...this.#rowEntries.values()].sort((a, b) => {
+			const pos = a.el.compareDocumentPosition(b.el);
+			if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+			if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+			return 0;
+		});
+	});
 	#columnEntries = new SvelteMap<string, ColumnDescriptor>();
 
 	// Cell + column-header element registries for 2D keyboard nav. Cells are
@@ -179,9 +201,12 @@ export class TableState<TData> {
 		});
 		this.#delegate = new TableKeyboardDelegate({
 			rows: () =>
-				[...this.#rowEntries.entries()].map(([key, entry]) => ({
-					key,
-					disabled: this.#opts.isDisabled || this.#opts.disabledKeys.has(key) || !!entry.isDisabled
+				this.#orderedRows.map((entry) => ({
+					key: entry.key,
+					disabled:
+						this.#opts.isDisabled ||
+						this.#opts.disabledKeys.has(entry.key) ||
+						!!entry.isDisabled
 				})),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
@@ -194,11 +219,14 @@ export class TableState<TData> {
 		});
 		this.#cellTypeahead = new Typeahead(
 			() =>
-				[...this.#rowEntries.entries()].map(([key, entry]) => ({
-					domId: this.#collection.getDomId(key) ?? key,
-					value: key,
-					el: null as unknown as HTMLElement,
-					disabled: this.#opts.isDisabled || this.#opts.disabledKeys.has(key) || !!entry.isDisabled,
+				this.#orderedRows.map((entry) => ({
+					domId: this.#collection.getDomId(entry.key) ?? entry.key,
+					value: entry.key,
+					el: entry.el,
+					disabled:
+						this.#opts.isDisabled ||
+						this.#opts.disabledKeys.has(entry.key) ||
+						!!entry.isDisabled,
 					textValue: entry.textValue ?? ''
 				})),
 			(domId) => {
@@ -288,10 +316,10 @@ export class TableState<TData> {
 	get collection(): ITableCollection<TData> {
 		const rowNodes: Node<TData>[] = [];
 		let i = 0;
-		for (const [key, entry] of this.#rowEntries) {
+		for (const entry of this.#orderedRows) {
 			rowNodes.push({
 				type: 'row',
-				key,
+				key: entry.key,
 				index: i++,
 				level: 0,
 				textValue: entry.textValue,
@@ -319,7 +347,8 @@ export class TableState<TData> {
 			key: reg.value,
 			rowData: reg.rowData,
 			textValue: reg.textValue,
-			isDisabled: reg.disabled
+			isDisabled: reg.disabled,
+			el: reg.el
 		});
 		this.#rowMeta.set(reg.value, { href: reg.href, onAction: reg.onAction });
 		const unregister = this.#collection.registerItem({
@@ -353,8 +382,11 @@ export class TableState<TData> {
 		updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>
 	): void {
 		this.#collection.updateItem(domId, updates);
-		// Keep #rowEntries in sync so cell-mode typeahead (which reads textValue
-		// from there) sees the scraped/updated label value.
+		// Keep #rowEntries in sync so the ordered-row consumers that read these
+		// fields off the entry — cell-mode typeahead (textValue), keyboard nav
+		// and `collection.rows` (disabled / textValue), `#rowLabel` — see the
+		// scraped/updated label value. The scrape in <TableView.Row> pushes the
+		// rowheader text here when the consumer omits an explicit `textValue`.
 		const rowKey = this.#collection.getValue(domId);
 		if (rowKey !== undefined) {
 			const entry = this.#rowEntries.get(rowKey);
@@ -371,6 +403,24 @@ export class TableState<TData> {
 	}
 	unregisterColumn(id: string): void {
 		this.#columnEntries.delete(id);
+	}
+
+	// ── body registration (called from <TableView.Body>) ───────
+	// Observe the `<tbody>`'s direct children so a keyed `{#each}` reorder
+	// (which moves `<tr>` nodes without re-registering them) bumps the version
+	// that `#orderedRows` reads. childList only, no subtree — row content
+	// changes don't affect row order. Browser-only; the body component wires
+	// this from a client `$effect`, so `MutationObserver` is always defined.
+	registerBody(el: HTMLElement): () => void {
+		this.#bodyObserver?.disconnect();
+		this.#bodyObserver = new MutationObserver(() => {
+			this.#bodyVersion++;
+		});
+		this.#bodyObserver.observe(el, { childList: true });
+		return () => {
+			this.#bodyObserver?.disconnect();
+			this.#bodyObserver = null;
+		};
 	}
 
 	// ── cell + column-header element registries ────────────────
@@ -630,7 +680,7 @@ export class TableState<TData> {
 			// Plain 'a' falls through to typeahead.
 			// falls through
 			default:
-				if (event.key.length === 1 && !event.ctrlKey && !event.metaKey && !event.altKey) {
+				if (isPrintable(event)) {
 					event.preventDefault();
 					this.#cellTypeahead.search(event.key);
 				}
@@ -847,9 +897,8 @@ export class TableState<TData> {
 			return;
 		}
 		const columnName = this.#columnLabel(desc.column);
-		const direction = desc.direction === 'ascending' ? 'ascending' : 'descending';
 		this.#getAnnouncer()?.announce(
-			`sorted by column ${columnName} in ${direction} order`,
+			`sorted by column ${columnName} in ${desc.direction} order`,
 			'assertive',
 			500
 		);
@@ -903,9 +952,10 @@ export class TableState<TData> {
 	}
 
 	announceRowFocus(rowKey: string): void {
-		const index = [...this.#rowEntries.keys()].indexOf(rowKey);
+		const ordered = this.#orderedRows;
+		const index = ordered.findIndex((r) => r.key === rowKey);
 		if (index === -1) return;
-		const total = this.#rowEntries.size;
+		const total = ordered.length;
 		const rowName = this.#rowLabel(rowKey) || rowKey;
 		this.#getAnnouncer()?.announce(`${rowName}, row ${index + 1} of ${total}`);
 	}
