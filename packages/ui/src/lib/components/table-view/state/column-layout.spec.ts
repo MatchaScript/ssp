@@ -109,11 +109,7 @@ describe('calculateColumnSizes', () => {
 		// min=max=40. The remaining width (900-40 = 860) flexes across the user
 		// columns and the whole layout sums to the table width.
 		const selection: LayoutColumn = { id: 'sel', width: 40, minWidth: 40, maxWidth: 40 };
-		const widths = calculateColumnSizes(
-			900,
-			[selection, COL('a'), COL('b'), COL('c')],
-			new Map()
-		);
+		const widths = calculateColumnSizes(900, [selection, COL('a'), COL('b'), COL('c')], new Map());
 		expect(widths[0]).toBe(40);
 		expect(widths.slice(1).reduce((a, b) => a + b, 0)).toBe(860);
 		expect(widths.reduce((a, b) => a + b, 0)).toBe(900);

@@ -52,8 +52,7 @@ describe('TableState column layout integration', () => {
 			flushSync();
 
 			expect(state.columnWidth(SELECTION_COLUMN_ID)).toBe(40);
-			const userSum =
-				state.columnWidth('a') + state.columnWidth('b') + state.columnWidth('c');
+			const userSum = state.columnWidth('a') + state.columnWidth('b') + state.columnWidth('c');
 			expect(userSum).toBe(860);
 		});
 	});

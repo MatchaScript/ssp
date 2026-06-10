@@ -204,9 +204,7 @@ export class TableState<TData> {
 				this.#orderedRows.map((entry) => ({
 					key: entry.key,
 					disabled:
-						this.#opts.isDisabled ||
-						this.#opts.disabledKeys.has(entry.key) ||
-						!!entry.isDisabled
+						this.#opts.isDisabled || this.#opts.disabledKeys.has(entry.key) || !!entry.isDisabled
 				})),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
@@ -224,9 +222,7 @@ export class TableState<TData> {
 					value: entry.key,
 					el: entry.el,
 					disabled:
-						this.#opts.isDisabled ||
-						this.#opts.disabledKeys.has(entry.key) ||
-						!!entry.isDisabled,
+						this.#opts.isDisabled || this.#opts.disabledKeys.has(entry.key) || !!entry.isDisabled,
 					textValue: entry.textValue ?? ''
 				})),
 			(domId) => {

@@ -14,10 +14,7 @@
 <colgroup>
 	{#if showCheckboxColumn}
 		{@const w = tableState.columnWidth(SELECTION_COLUMN_ID)}
-		<col
-			data-spectrum-table-view-checkbox-col
-			style:width={w > 0 ? `${w}px` : undefined}
-		/>
+		<col data-spectrum-table-view-checkbox-col style:width={w > 0 ? `${w}px` : undefined} />
 	{/if}
 	{#each tableState.visibleColumns as col (col.id)}
 		{@const w = tableState.columnWidth(col.id)}

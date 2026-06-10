@@ -46,9 +46,7 @@ describe('<ColumnMenu> resize entry', () => {
 		flushSync();
 
 		expect(host.querySelector('[data-spectrum-table-view-resizer][data-resizing]')).toBeTruthy();
-		expect(
-			document.activeElement?.matches('[data-spectrum-table-view-resizer-input]')
-		).toBe(true);
+		expect(document.activeElement?.matches('[data-spectrum-table-view-resizer-input]')).toBe(true);
 	});
 
 	it('keyboard Enter on "Resize column" enters resize mode and focuses the resizer input', async () => {
@@ -62,8 +60,6 @@ describe('<ColumnMenu> resize entry', () => {
 		flushSync();
 
 		expect(host.querySelector('[data-spectrum-table-view-resizer][data-resizing]')).toBeTruthy();
-		expect(
-			document.activeElement?.matches('[data-spectrum-table-view-resizer-input]')
-		).toBe(true);
+		expect(document.activeElement?.matches('[data-spectrum-table-view-resizer-input]')).toBe(true);
 	});
 });
