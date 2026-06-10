@@ -2,11 +2,13 @@
  * Several Map/Set instances in this file are intentionally non-reactive
  * (DOM element bookkeeping, registration metadata) — making them SvelteMap
  * would close $derived feedback loops or just waste reactivity tracking.
- * TODO: Audit each site and re-enable for the ones that could be SvelteMap.
+ * Plain Map/Set are used for registries read only from event handlers;
+ * reactive consumers go through SvelteMap.
  */
 import { SvelteMap } from 'svelte/reactivity';
 import {
 	SelectableCollection,
+	isPrintable,
 	type ItemRegistration,
 	type SelectionInputModifiers
 } from '$lib/utils/selectable-collection/index.js';
@@ -29,7 +31,10 @@ import {
 	TableKeyboardDelegate,
 	type FocusTarget
 } from '../internal/keyboard/table-keyboard-delegate.js';
+import { Typeahead } from '$lib/utils/selectable-collection/typeahead.js';
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
+import { TableColumnLayoutState } from './column-layout-state.svelte.js';
+import type { LayoutColumn } from './column-layout.js';
 
 // Hint Safari (and modern Chromium / Firefox) to keep `:focus-visible`
 // matching after a programmatic focus — without it, arrow-key driven moves
@@ -48,11 +53,23 @@ const FOCUS_OPTS = { focusVisible: true } as FocusOptions;
  */
 export const SELECTION_COLUMN_ID = '__ssp_table_selection__';
 
+/**
+ * Fixed pixel width of the synthetic selection (checkbox) column. The
+ * descriptor pins `minWidth` / `maxWidth` to the same value so the column
+ * neither flexes nor picks up the 75px default min width — it always occupies
+ * exactly this width in the layout.
+ */
+const SELECTION_COLUMN_WIDTH = 40;
+
 const SELECTION_COLUMN_DESCRIPTOR: ColumnDescriptor = {
 	id: SELECTION_COLUMN_ID,
 	isRowHeader: false,
 	allowsSorting: false,
-	allowsHiding: false
+	allowsHiding: false,
+	allowsResizing: false,
+	width: SELECTION_COLUMN_WIDTH,
+	minWidth: SELECTION_COLUMN_WIDTH,
+	maxWidth: SELECTION_COLUMN_WIDTH
 };
 
 export interface TableStateOptions {
@@ -75,13 +92,16 @@ export interface TableStateOptions {
 	readonly sortDescriptor: SortDescriptor | undefined;
 	readonly setSortDescriptor: (desc: SortDescriptor | undefined) => void;
 
-	// column visibility (Phase 6)
+	// column visibility
 	readonly hiddenColumns: ReadonlySet<string>;
 	readonly setHiddenColumns: (hidden: Set<string>) => void;
 
-	// column filters (Phase 6.2)
+	// column filters
 	readonly columnFilters: readonly ColumnFilter[];
 	readonly setColumnFilters: (filters: ColumnFilter[]) => void;
+
+	// layout
+	readonly tableWidth: number;
 
 	// actions
 	readonly onAction?: (key: string) => void;
@@ -107,6 +127,27 @@ export class TableState<TData> {
 	// Non-reactive per-row metadata (href / onAction). See `RowMeta` doc for
 	// why these are deliberately kept out of the reactive registry.
 	#rowMeta = new Map<string, RowMeta>();
+
+	// Canonical row order is DOM order, not mount order. A keyed `{#each}` lets
+	// the consumer reorder rows (e.g. after a sort) by moving `<tr>` nodes
+	// without re-registering them, so `#rowEntries`' insertion order goes stale.
+	// `#bodyVersion` ticks whenever the `<tbody>`'s direct children change; the
+	// observer is wired by `registerBody`. `#orderedRows` re-sorts entries by
+	// `compareDocumentPosition` only when the version or the registry changes,
+	// and is the single source every position-aware consumer reads (keyboard
+	// nav, aria-rowindex via `collection.rows`, cell typeahead, announcements).
+	#bodyVersion = $state(0);
+	#bodyObserver: MutationObserver | null = null;
+	#orderedRows = $derived.by<RowDescriptor<TData>[]>(() => {
+		// Touch the version so a DOM reorder re-runs this derived.
+		void this.#bodyVersion;
+		return [...this.#rowEntries.values()].sort((a, b) => {
+			const pos = a.el.compareDocumentPosition(b.el);
+			if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
+			if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;
+			return 0;
+		});
+	});
 	#columnEntries = new SvelteMap<string, ColumnDescriptor>();
 
 	// Cell + column-header element registries for 2D keyboard nav. Cells are
@@ -122,6 +163,23 @@ export class TableState<TData> {
 	#focusedColumnHeader: string | null = $state(null);
 
 	#delegate: TableKeyboardDelegate;
+	#cellTypeahead: Typeahead;
+	#layout: TableColumnLayoutState;
+	// The layout operates over the same column list as 2D nav: the synthetic
+	// selection column is the leftmost layout column whenever selection is on,
+	// so its 40px lands in the colgroup alongside the user columns and the
+	// widths sum to exactly `tableWidth`. `ColumnDescriptor` is a structural
+	// superset of `LayoutColumn`, so descriptors feed the layout directly.
+	#layoutColumns = $derived.by<LayoutColumn[]>(() =>
+		this.#opts.selectionMode === 'none'
+			? this.#visibleColumns
+			: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns]
+	);
+
+	// Resizer input elements (one per resizable column). Used so the column
+	// menu's "Resize column" entry can focus the input directly without a
+	// document-wide DOM query.
+	#resizerInputs = new Map<string, HTMLInputElement>();
 
 	constructor(opts: TableStateOptions) {
 		this.#opts = opts;
@@ -143,21 +201,48 @@ export class TableState<TData> {
 		});
 		this.#delegate = new TableKeyboardDelegate({
 			rows: () =>
-				[...this.#rowEntries.entries()].map(([key, entry]) => ({
-					key,
-					disabled: this.#opts.isDisabled || this.#opts.disabledKeys.has(key) || !!entry.isDisabled
+				this.#orderedRows.map((entry) => ({
+					key: entry.key,
+					disabled:
+						this.#opts.isDisabled || this.#opts.disabledKeys.has(entry.key) || !!entry.isDisabled
 				})),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
-			// `SELECTION_COLUMN_ID` doc). The synthetic descriptor is appended
-			// to the registered user columns; cells / headers register under
-			// `SELECTION_COLUMN_ID` so the delegate's index lookups land on
+			// `SELECTION_COLUMN_ID` doc). `#layoutColumns` already prepends the
+			// synthetic descriptor under that condition; cells / headers register
+			// under `SELECTION_COLUMN_ID` so the delegate's index lookups land on
 			// the right elements. Hidden columns drop out of the nav order so
 			// arrow keys skip them — they're not focusable in the DOM either.
-			columns: () =>
-				this.#opts.selectionMode === 'none'
-					? this.#visibleColumns
-					: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns]
+			columns: () => this.#layoutColumns
+		});
+		this.#cellTypeahead = new Typeahead(
+			() =>
+				this.#orderedRows.map((entry) => ({
+					domId: this.#collection.getDomId(entry.key) ?? entry.key,
+					value: entry.key,
+					el: entry.el,
+					disabled:
+						this.#opts.isDisabled || this.#opts.disabledKeys.has(entry.key) || !!entry.isDisabled,
+					textValue: entry.textValue ?? ''
+				})),
+			(domId) => {
+				const rowKey = this.#collection.getValue(domId);
+				const focusedCell = this.#focusedCell;
+				if (!rowKey || !focusedCell) return;
+				this.#focusTarget({ type: 'cell', rowKey, columnId: focusedCell.columnId });
+			}
+		);
+		// Captures `this` for the literal-object getters below — Svelte 5 needs a
+		// lexical alias so each getter re-reads the live value on access.
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const self = this;
+		this.#layout = new TableColumnLayoutState({
+			get tableWidth() {
+				return self.#opts.tableWidth;
+			},
+			get columns() {
+				return self.#layoutColumns;
+			}
 		});
 	}
 
@@ -220,17 +305,17 @@ export class TableState<TData> {
 		return this.#visibleColumns.findIndex((c) => c.id === id);
 	}
 
-	// ── derived collection (Phase 0: rows + columns) ───────────
+	// ── derived collection (rows + columns) ────────────────────
 	// Collection exposes visible columns only — that's what Header iterates
 	// over and what aria-colcount reflects. Cells still resolve their column
 	// via `tableState.columns[markupIndex]` (see `<TableView.Cell>`).
 	get collection(): ITableCollection<TData> {
 		const rowNodes: Node<TData>[] = [];
 		let i = 0;
-		for (const [key, entry] of this.#rowEntries) {
+		for (const entry of this.#orderedRows) {
 			rowNodes.push({
 				type: 'row',
-				key,
+				key: entry.key,
 				index: i++,
 				level: 0,
 				textValue: entry.textValue,
@@ -258,7 +343,8 @@ export class TableState<TData> {
 			key: reg.value,
 			rowData: reg.rowData,
 			textValue: reg.textValue,
-			isDisabled: reg.disabled
+			isDisabled: reg.disabled,
+			el: reg.el
 		});
 		this.#rowMeta.set(reg.value, { href: reg.href, onAction: reg.onAction });
 		const unregister = this.#collection.registerItem({
@@ -292,6 +378,19 @@ export class TableState<TData> {
 		updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>
 	): void {
 		this.#collection.updateItem(domId, updates);
+		// Keep #rowEntries in sync so the ordered-row consumers that read these
+		// fields off the entry — cell-mode typeahead (textValue), keyboard nav
+		// and `collection.rows` (disabled / textValue), `#rowLabel` — see the
+		// scraped/updated label value. The scrape in <TableView.Row> pushes the
+		// rowheader text here when the consumer omits an explicit `textValue`.
+		const rowKey = this.#collection.getValue(domId);
+		if (rowKey !== undefined) {
+			const entry = this.#rowEntries.get(rowKey);
+			if (entry) {
+				if (updates.textValue !== undefined) entry.textValue = updates.textValue;
+				if (updates.disabled !== undefined) entry.isDisabled = updates.disabled;
+			}
+		}
 	}
 
 	// ── column registration (called from <TableView.Column>) ───
@@ -300,6 +399,24 @@ export class TableState<TData> {
 	}
 	unregisterColumn(id: string): void {
 		this.#columnEntries.delete(id);
+	}
+
+	// ── body registration (called from <TableView.Body>) ───────
+	// Observe the `<tbody>`'s direct children so a keyed `{#each}` reorder
+	// (which moves `<tr>` nodes without re-registering them) bumps the version
+	// that `#orderedRows` reads. childList only, no subtree — row content
+	// changes don't affect row order. Browser-only; the body component wires
+	// this from a client `$effect`, so `MutationObserver` is always defined.
+	registerBody(el: HTMLElement): () => void {
+		this.#bodyObserver?.disconnect();
+		this.#bodyObserver = new MutationObserver(() => {
+			this.#bodyVersion++;
+		});
+		this.#bodyObserver.observe(el, { childList: true });
+		return () => {
+			this.#bodyObserver?.disconnect();
+			this.#bodyObserver = null;
+		};
 	}
 
 	// ── cell + column-header element registries ────────────────
@@ -492,11 +609,6 @@ export class TableState<TData> {
 	 * `TableKeyboardDelegate`; Esc returns to row mode; Enter / Space dispatch
 	 * action / selection on the parent row (mirrors row-mode semantics so the
 	 * keyboard contract stays consistent regardless of focus mode).
-	 *
-	 * Letter-key typeahead is NOT handled here — RA's behavior is to hijack
-	 * letter keys in cell mode too, but Phase 4 keeps typeahead row-mode-only
-	 * to avoid stealing input from cell-embedded TextField / NumberField.
-	 * Phase 5 will revisit when announce + textValue improvements land.
 	 */
 	handleCellKeyDown(event: KeyboardEvent, rowKey: string, columnId: string): void {
 		const current: FocusTarget = { type: 'cell', rowKey, columnId };
@@ -559,6 +671,14 @@ export class TableState<TData> {
 				if ((event.ctrlKey || event.metaKey) && this.selectionMode === 'multiple') {
 					event.preventDefault();
 					this.toggleSelectAll();
+					return;
+				}
+			// Plain 'a' falls through to typeahead.
+			// falls through
+			default:
+				if (isPrintable(event)) {
+					event.preventDefault();
+					this.#cellTypeahead.search(event.key);
 				}
 				return;
 		}
@@ -628,7 +748,7 @@ export class TableState<TData> {
 		return this.#rowMeta.get(key)?.href;
 	}
 
-	// ── column filters (Phase 6.2) ─────────────────────────────
+	// ── column filters ──────────────────────────────────────────
 	// Filters are addressed by column id. The state is stored as an array on
 	// the consumer side (matching the public `columnFilters` prop shape), but
 	// internal lookups go through this small map for O(1) `getFilter`.
@@ -677,7 +797,7 @@ export class TableState<TData> {
 		this.#opts.setColumnFilters([]);
 	}
 
-	// ── column visibility (Phase 6) ────────────────────────────
+	// ── column visibility ───────────────────────────────────────
 	hideColumn(id: string): void {
 		const col = this.#columnEntries.get(id);
 		// Refuse to hide when the column hasn't opted in; otherwise the consumer
@@ -699,8 +819,8 @@ export class TableState<TData> {
 	/**
 	 * 2-way toggle (RAC parity): clicking the same column flips ascending ⇄
 	 * descending. Clicking a new column starts at ascending. The "off" state
-	 * is reachable only programmatically (`setSortDescriptor(undefined)`) —
-	 * Phase 6 Column Menu will expose it as an explicit "Clear sort" item.
+	 * is reachable programmatically (`setSortDescriptor(undefined)`) or via
+	 * the Column Menu's explicit "Clear sort" item.
 	 */
 	toggleSort(columnId: string): void {
 		const current = this.#opts.sortDescriptor;
@@ -750,9 +870,6 @@ export class TableState<TData> {
 	// through a shared `aria-live` region. We mirror that contract: the
 	// parent component owns a `$effect` that watches selection / sort and
 	// calls these methods whenever the effective value changes.
-	//
-	// Strings are English-only for now. Phase 6 i18n work will move them to
-	// a string formatter once we settle on a localization story for SSP.
 
 	/**
 	 * Announce filter changes for a single column. Single-column granularity
@@ -760,24 +877,27 @@ export class TableState<TData> {
 	 * the column-menu's Filter… popover only mutates one column at a time.
 	 */
 	announceFilterChange(columnId: string, applied: boolean): void {
-		const label = this.#columnLabel(columnId);
-		this.#getAnnouncer()?.announce(
-			applied ? `Filter applied to ${label}` : `Filter cleared from ${label}`,
-			'polite',
-			500
-		);
+		const columnName = this.#columnLabel(columnId);
+		const message = applied
+			? `Filter applied to ${columnName}`
+			: `Filter cleared from ${columnName}`;
+		this.#getAnnouncer()?.announce(message, 'polite', 500);
 	}
 
 	announceSortChange(desc: SortDescriptor | undefined): void {
 		if (!desc) {
-			// Phase 6: Column Menu's Clear sort lands here. Without an explicit
+			// Column Menu's "Clear sort" lands here. Without an explicit
 			// announcement the column header just silently flips back to
 			// `aria-sort='none'`, which most screen readers ignore.
 			this.#getAnnouncer()?.announce('Sort cleared', 'assertive', 500);
 			return;
 		}
-		const label = this.#columnLabel(desc.column);
-		this.#getAnnouncer()?.announce(`Sorted by ${label}, ${desc.direction}`, 'assertive', 500);
+		const columnName = this.#columnLabel(desc.column);
+		this.#getAnnouncer()?.announce(
+			`sorted by column ${columnName} in ${desc.direction} order`,
+			'assertive',
+			500
+		);
 	}
 
 	/**
@@ -798,11 +918,11 @@ export class TableState<TData> {
 
 		const messages: string[] = [];
 		if (added.length === 1 && removed.length === 0) {
-			const label = this.#rowLabel(added[0]);
-			if (label) messages.push(`${label} selected`);
+			const rowName = this.#rowLabel(added[0]);
+			if (rowName) messages.push(`${rowName} selected`);
 		} else if (removed.length === 1 && added.length === 0) {
-			const label = this.#rowLabel(removed[0]);
-			if (label) messages.push(`${label} not selected`);
+			const rowName = this.#rowLabel(removed[0]);
+			if (rowName) messages.push(`${rowName} not selected`);
 		}
 
 		// In multiple mode also announce the running count, except when the
@@ -825,6 +945,53 @@ export class TableState<TData> {
 		}
 
 		if (messages.length > 0) this.#getAnnouncer()?.announce(messages.join('. '));
+	}
+
+	announceRowFocus(rowKey: string): void {
+		const ordered = this.#orderedRows;
+		const index = ordered.findIndex((r) => r.key === rowKey);
+		if (index === -1) return;
+		const total = ordered.length;
+		const rowName = this.#rowLabel(rowKey) || rowKey;
+		this.#getAnnouncer()?.announce(`${rowName}, row ${index + 1} of ${total}`);
+	}
+
+	// ── column layout ────────────────────────────────────────────
+	columnWidth(id: string): number {
+		return this.#layout.getWidth(id);
+	}
+	columnMinWidth(id: string): number {
+		return this.#layout.getMinWidth(id);
+	}
+	columnMaxWidth(id: string): number {
+		return this.#layout.getMaxWidth(id);
+	}
+	get widths(): readonly number[] {
+		return this.#layout.widths;
+	}
+	get resizingColumn(): string | null {
+		return this.#layout.resizingColumn;
+	}
+	startResize(id: string): void {
+		this.#layout.startResize(id);
+	}
+	endResize(): void {
+		this.#layout.endResize();
+	}
+	resizeColumn(id: string, newWidth: number): void {
+		this.#layout.resize(id, newWidth);
+	}
+
+	registerResizerInput(columnId: string, el: HTMLInputElement): () => void {
+		this.#resizerInputs.set(columnId, el);
+		return () => {
+			if (this.#resizerInputs.get(columnId) === el) {
+				this.#resizerInputs.delete(columnId);
+			}
+		};
+	}
+	focusResizer(columnId: string): void {
+		this.#resizerInputs.get(columnId)?.focus();
 	}
 
 	#columnLabel(columnId: string): string {

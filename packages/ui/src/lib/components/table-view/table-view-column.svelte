@@ -4,17 +4,20 @@
 	import { getTableContext } from './state/context.js';
 	import { Icon, ArrowUpWideNarrow, ArrowDownNarrowWide } from '../icon/index.js';
 	import ColumnMenu from './column-menu.svelte';
+	import ColumnResizer from './column-resizer.svelte';
 
 	let {
 		id,
 		isRowHeader = false,
 		allowsSorting = false,
 		allowsHiding = false,
+		allowsResizing = false,
 		filterType,
 		enumOptions,
 		align,
 		showDivider = false,
 		width,
+		defaultWidth,
 		minWidth,
 		maxWidth,
 		children
@@ -33,9 +36,11 @@
 			isRowHeader,
 			allowsSorting,
 			allowsHiding,
+			allowsResizing,
 			align,
 			showDivider,
 			width,
+			defaultWidth,
 			minWidth,
 			maxWidth,
 			filterType,
@@ -89,10 +94,10 @@
 	const isFiltered = $derived(tableState.hasFilter(id));
 	// RS parity: sort alone doesn't justify a menu — the header click already
 	// toggles sort. The chevron only appears when there are menu-driven
-	// actions (hide / filter / future resize) that have no other affordance.
+	// actions (hide / filter / resize) that have no other affordance.
 	// Sort items are still rendered *inside* the menu when both apply, so
 	// "Clear sort" stays reachable on a column that's also hideable/filterable.
-	const hasMenu = $derived(allowsHiding || allowsFiltering);
+	const hasMenu = $derived(allowsHiding || allowsFiltering || allowsResizing);
 
 	function handleClick(e: MouseEvent) {
 		// Menu / filter popovers render in the top layer but are still DOM
@@ -127,6 +132,7 @@
 		data-filtered={isFiltered || undefined}
 		aria-sort={ariaSort}
 		aria-colindex={ariaColIndex}
+		{...allowsSorting ? { 'aria-description': 'sortable column' } : {}}
 		tabindex={isHeaderFocused ? 0 : -1}
 		onclick={allowsSorting ? handleClick : undefined}
 		onkeydown={handleKeydown}
@@ -149,6 +155,9 @@
 				<ColumnMenu columnId={id} {align} {filterAnchor} />
 			{/if}
 		</div>
+		{#if allowsResizing}
+			<ColumnResizer columnId={id} />
+		{/if}
 	</th>
 {/if}
 

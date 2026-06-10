@@ -20,7 +20,7 @@
 	);
 	const columnId = $derived(column?.id);
 	const isRowHeader = $derived(column?.isRowHeader === true);
-	// Phase 6: when the column is hidden we skip rendering the `<td>` entirely.
+	// When the column is hidden we skip rendering the `<td>` entirely.
 	// Cells stay in markup order — the resolved column lookup uses the full
 	// (markup-order) `tableState.columns`, so subsequent visible cells keep
 	// pointing at the right column even when one in the middle is hidden.
@@ -58,7 +58,7 @@
 	// inside it. With a checkbox column the indicator lives inside that td
 	// (see `<TableView.Row>`), so we skip it here to avoid duplicates.
 	const isLeadingCell = $derived(cellIndex === 0 && tableState.selectionMode === 'none');
-	// `aria-colindex` (Phase 6) is computed against the *visible* column set,
+	// `aria-colindex` is computed against the *visible* column set,
 	// matching W3C ARIA APG semantics. Hidden columns drop out — both because
 	// they're not in the DOM and so AT correctly reports "column N of M".
 	// Selection-mode tables prepend a checkbox column (col 1), so cells start
@@ -79,9 +79,9 @@
 </script>
 
 {#if isHidden}
-	<!-- Hidden via Column Menu (Phase 6). Skipping the `<td>` entirely keeps
-	     the table layout collapsed — `<colgroup>` would still need explicit
-	     coordination here once Phase 7 ships fixed widths. -->
+	<!-- Hidden via Column Menu. Skipping the `<td>` entirely keeps
+	     the table layout collapsed — `<colgroup>` coordinates fixed widths
+	     via the column layout state. -->
 {:else if isRowHeader}
 	<th
 		bind:this={ref}

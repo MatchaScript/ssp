@@ -32,6 +32,7 @@ export {
 	FilterX,
 	FolderOpen,
 	Globe,
+	GripVertical,
 	HardDrive,
 	House as Home,
 	Layers,

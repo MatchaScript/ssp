@@ -30,3 +30,4 @@ export type {
 	TableViewOverflowMode,
 	TableViewLoadingState
 } from './types.js';
+export type { ColumnSize } from './state/column-layout.js';

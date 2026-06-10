@@ -20,6 +20,33 @@
 
 	let triggerEl: HTMLElement | null = $state(null);
 
+	// triggerEl is a display:contents wrapper — its first element child IS the user's
+	// trigger (Button, ActionButton, <a>, etc).
+	function triggerFocusTarget(): HTMLElement | null {
+		const el = triggerEl?.firstElementChild;
+		return el instanceof HTMLElement ? el : null;
+	}
+
+	// On close, return focus to the trigger — but only if nothing else has claimed
+	// it. An item's onAction may move focus deliberately (e.g. the table column
+	// menu's "Resize column" focuses a resizer input); stealing it back would undo
+	// that. Defer one microtask so the popover finishes closing first, then check
+	// whether focus is still inside our trigger/popover (or unset) before restoring.
+	function restoreTriggerFocus() {
+		const popover = triggerEl?.parentElement?.querySelector<HTMLElement>(
+			`[data-spectrum-menu][style*="position-anchor: ${anchorId};"]`
+		);
+		queueMicrotask(() => {
+			const active = document.activeElement;
+			const ours =
+				active === null ||
+				active === document.body ||
+				triggerEl?.contains(active) ||
+				popover?.contains(active);
+			if (ours) triggerFocusTarget()?.focus();
+		});
+	}
+
 	const triggerState = new MenuTriggerState({
 		get anchorId() {
 			return anchorId;
@@ -29,15 +56,7 @@
 		},
 		onOpenChange(value) {
 			open = value;
-			if (!value) {
-				// triggerEl is a display:contents wrapper — its first element child IS the user's
-				// trigger (Button, ActionButton, <a>, etc). Focus it directly rather than relying
-				// on a button-specific selector that misses non-button triggers.
-				queueMicrotask(() => {
-					const el = triggerEl?.firstElementChild;
-					if (el instanceof HTMLElement) el.focus();
-				});
-			}
+			if (!value) restoreTriggerFocus();
 		}
 	});
 

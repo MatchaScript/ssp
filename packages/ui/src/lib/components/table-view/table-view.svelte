@@ -3,6 +3,7 @@
 	import { TableState } from './state/table-state.svelte.js';
 	import { setTableContext } from './state/context.js';
 	import { ProgressCircle } from '../progress-circle/index.js';
+	import TableViewColgroup from './table-view-colgroup.svelte';
 
 	const EMPTY_KEY_SET: ReadonlySet<string> = new Set();
 	const EMPTY_FILTERS: readonly ColumnFilter[] = [];
@@ -129,6 +130,9 @@
 	// ── Disabled keys (memoized as Set for fast lookup) ──────────
 	const effectiveDisabledKeys = $derived(disabledKeys ? toKeySet(disabledKeys) : EMPTY_KEY_SET);
 
+	// ── Table width (drives column layout) ───────────────────────
+	let tableWidth = $state(0);
+
 	// ── TableState ───────────────────────────────────────────────
 	const tableState = new TableState<TData>({
 		get density() {
@@ -170,6 +174,9 @@
 		setColumnFilters,
 		get onAction() {
 			return onAction;
+		},
+		get tableWidth() {
+			return tableWidth;
 		}
 	});
 
@@ -222,6 +229,8 @@
 		if (e.target !== e.currentTarget) return;
 		if (tableState.focusedKey === null) {
 			tableState.focusFirst({ focusVisible: true });
+			const k = tableState.focusedKey;
+			if (k) tableState.announceRowFocus(k);
 		}
 	}
 
@@ -243,8 +252,7 @@
 
 	// ARIA row / col counts. `aria-rowcount` includes the header row; AT
 	// implementations rely on the count for percentage announcements
-	// ("row 5 of 200"). Phase 9 virtualization will revisit when only a
-	// subset of rows is mounted.
+	// ("row 5 of 200"). Row virtualization is out of scope.
 	const ariaRowCount = $derived(1 + tableState.collection.size);
 	const ariaColCount = $derived(totalColumns);
 
@@ -260,6 +268,7 @@
 </script>
 
 <div
+	bind:clientWidth={tableWidth}
 	data-spectrum-table-view-wrapper
 	data-density={density}
 	data-quiet={isQuiet || undefined}
@@ -282,6 +291,7 @@
 		onfocusin={handleFocusIn}
 		{...restProps}
 	>
+		<TableViewColgroup />
 		{@render children()}
 		{#if loadingState === 'loading'}
 			<tbody>

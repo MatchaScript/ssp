@@ -7,6 +7,7 @@
 		EyeOff,
 		Filter,
 		FilterX,
+		GripVertical,
 		XCircle
 	} from '../icon/index.js';
 	import { ActionButton } from '../action-button/index.js';
@@ -16,7 +17,7 @@
 
 	// Per-column dropdown anchored to the column header. Mirrors S2's
 	// `ColumnWithMenu` in spirit — a single menu surface that consolidates
-	// sort / hide / filter / (Phase 7: resize) — but built from the SSP Menu
+	// sort / hide / filter / resize when allowsResizing — but built from the SSP Menu
 	// primitive so we get keyboard nav / focus management for free.
 	//
 	// Visibility rule: the trigger is shown only when the column has at least
@@ -40,6 +41,7 @@
 	const canHide = $derived(column?.allowsHiding === true);
 	const canFilter = $derived(column?.filterType !== undefined);
 	const hasFilter = $derived(tableState.hasFilter(columnId));
+	const canResize = $derived(column?.allowsResizing === true);
 
 	let filterOpen = $state(false);
 
@@ -76,6 +78,14 @@
 			}
 			case 'hide':
 				tableState.hideColumn(columnId);
+				return;
+			case 'resize':
+				// Focus the registered resizer input; it owns edit-mode keyboard
+				// behaviour. queueMicrotask defers past the menu's own click-outside.
+				queueMicrotask(() => {
+					tableState.startResize(columnId);
+					tableState.focusResizer(columnId);
+				});
 				return;
 		}
 	}
@@ -138,13 +148,19 @@
 				</Menu.MenuItem>
 			{/if}
 		{/if}
-		{#if (hasSort || canFilter) && canHide}
+		{#if (hasSort || canFilter) && (canHide || canResize)}
 			<Menu.MenuDivider />
 		{/if}
 		{#if canHide}
 			<Menu.MenuItem id="hide">
 				{#snippet icon()}<Icon icon={EyeOff} size="s" />{/snippet}
 				Hide column
+			</Menu.MenuItem>
+		{/if}
+		{#if canResize}
+			<Menu.MenuItem id="resize">
+				{#snippet icon()}<Icon icon={GripVertical} size="s" />{/snippet}
+				Resize column
 			</Menu.MenuItem>
 		{/if}
 	</Menu.Menu>
