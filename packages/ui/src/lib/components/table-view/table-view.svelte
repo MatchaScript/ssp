@@ -132,18 +132,6 @@
 
 	// ── Table width (drives column layout) ───────────────────────
 	let tableWidth = $state(0);
-	let scrollWrapperEl: HTMLDivElement | null = $state(null);
-
-	$effect(() => {
-		const el = scrollWrapperEl;
-		if (!el) return;
-		// Only one element is observed, so entries[0] is always the wrapper.
-		const ro = new ResizeObserver(([entry]) => {
-			tableWidth = entry.contentBoxSize[0].inlineSize;
-		});
-		ro.observe(el);
-		return () => ro.disconnect();
-	});
 
 	// ── TableState ───────────────────────────────────────────────
 	const tableState = new TableState<TData>({
@@ -280,7 +268,7 @@
 </script>
 
 <div
-	bind:this={scrollWrapperEl}
+	bind:clientWidth={tableWidth}
 	data-spectrum-table-view-wrapper
 	data-density={density}
 	data-quiet={isQuiet || undefined}

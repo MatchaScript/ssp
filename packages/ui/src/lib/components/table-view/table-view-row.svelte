@@ -266,8 +266,6 @@
 		   covers the entire row. `position: relative` on `<tr>` is well-supported
 		   in modern browsers (Chrome, Firefox, Safari since ~2017). */
 		position: relative;
-		content-visibility: auto;
-		contain-intrinsic-size: auto var(--table-view-row-height);
 	}
 
 	/* Linked row: click cursor + the row-link overlay sits in the layer below
