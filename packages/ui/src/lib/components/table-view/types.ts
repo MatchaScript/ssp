@@ -1,6 +1,6 @@
 import type { Snippet } from 'svelte';
 import type { HTMLTableAttributes } from 'svelte/elements';
-import type { ColumnSize } from './state/column-layout.js';
+import type { ColumnSize, ColumnStaticSize } from './state/column-layout.js';
 
 // ── Display ──────────────────────────────────────────────────
 // `size` is intentionally absent — S2 has no equivalent prop. Vertical rhythm
@@ -155,8 +155,8 @@ export type TableViewColumnProps = {
 	// controlled override.
 	width?: ColumnSize;
 	defaultWidth?: ColumnSize;
-	minWidth?: number | string;
-	maxWidth?: number | string;
+	minWidth?: ColumnStaticSize;
+	maxWidth?: ColumnStaticSize;
 
 	// resize — opt-in drag handle on the column's trailing edge. The column
 	// menu's "Resize column" entry also gates on this flag.

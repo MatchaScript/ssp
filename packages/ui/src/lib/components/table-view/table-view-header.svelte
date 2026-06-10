@@ -81,7 +81,6 @@
 	}
 
 	[data-spectrum-table-view-checkbox-header] {
-		width: var(--table-view-checkbox-col-width, 40px);
 		padding: 0;
 		vertical-align: middle;
 		text-align: center;

@@ -7,6 +7,7 @@ import {
 	getMaxWidth,
 	calculateColumnSizes,
 	resizeColumnWidth,
+	type ColumnStaticSize,
 	type LayoutColumn
 } from './column-layout.js';
 
@@ -32,21 +33,22 @@ describe('column-layout parse helpers', () => {
 	});
 
 	it('parseStaticWidth throws on unsupported strings', () => {
-		expect(() => parseStaticWidth('150px', 800)).toThrow();
+		// The cast bypasses the compile-time guard on purpose: this pins the
+		// runtime backstop for values that arrive through untyped call sites.
+		expect(() => parseStaticWidth('150px' as ColumnStaticSize, 800)).toThrow();
 	});
 
-	it('getMinWidth defaults to 0 and getMaxWidth defaults to MAX_SAFE_INTEGER', () => {
-		expect(getMinWidth(undefined, 800)).toBe(0);
-		expect(getMinWidth(75, 800)).toBe(75);
+	it('getMinWidth defaults to 75px and getMaxWidth defaults to MAX_SAFE_INTEGER', () => {
+		expect(getMinWidth(undefined, 800)).toBe(75);
+		expect(getMinWidth(100, 800)).toBe(100);
 		expect(getMaxWidth(undefined, 800)).toBe(Number.MAX_SAFE_INTEGER);
 		expect(getMaxWidth('50%', 800)).toBe(400);
 	});
 });
 
-const COL = (key: string, overrides: Partial<LayoutColumn> = {}): LayoutColumn => ({
-	key,
+const COL = (id: string, overrides: Partial<LayoutColumn> = {}): LayoutColumn => ({
+	id,
 	defaultWidth: '1fr',
-	defaultMinWidth: 75,
 	...overrides
 });
 
@@ -95,6 +97,36 @@ describe('calculateColumnSizes', () => {
 			calculateColumnSizes(1000, [COL('a', { width: '25%' }), COL('b'), COL('c')], new Map())
 		).toEqual([250, 375, 375]);
 	});
+
+	it('applies the 75px default min width when no minWidth is declared', () => {
+		// Two 1fr columns against 100px would be 50px each, but the default min
+		// floors each at 75 — total overflows the table rather than collapsing.
+		expect(calculateColumnSizes(100, [COL('a'), COL('b')], new Map())).toEqual([75, 75]);
+	});
+
+	it('keeps a fixed selection column at 40 and distributes the rest', () => {
+		// The synthetic selection column is a static 40px column pinned by
+		// min=max=40. The remaining width (900-40 = 860) flexes across the user
+		// columns and the whole layout sums to the table width.
+		const selection: LayoutColumn = { id: 'sel', width: 40, minWidth: 40, maxWidth: 40 };
+		const widths = calculateColumnSizes(
+			900,
+			[selection, COL('a'), COL('b'), COL('c')],
+			new Map()
+		);
+		expect(widths[0]).toBe(40);
+		expect(widths.slice(1).reduce((a, b) => a + b, 0)).toBe(860);
+		expect(widths.reduce((a, b) => a + b, 0)).toBe(900);
+	});
+
+	it('does not let a static selection column inflate to the default min width', () => {
+		// Without the explicit min=max=40, the 75px default would widen the
+		// selection column. The pin keeps it at exactly 40.
+		const selection: LayoutColumn = { id: 'sel', width: 40, minWidth: 40, maxWidth: 40 };
+		const widths = calculateColumnSizes(900, [selection, COL('a')], new Map());
+		expect(widths[0]).toBe(40);
+		expect(widths[1]).toBe(860);
+	});
 });
 
 describe('resizeColumnWidth', () => {
@@ -135,5 +167,23 @@ describe('resizeColumnWidth', () => {
 	it('floors fractional pixel inputs', () => {
 		const next = resizeColumnWidth(900, [COL('a'), COL('b'), COL('c')], new Map(), 'b', 317.7);
 		expect(next.get('b')).toBe(317);
+	});
+
+	it('clamps a resize to the 75px default min width', () => {
+		const next = resizeColumnWidth(900, [COL('a'), COL('b'), COL('c')], new Map(), 'b', 10);
+		expect(next.get('b')).toBe(75);
+	});
+
+	it('keeps the selection column at exactly 40 when resizing the first user column', () => {
+		// The selection column sits left of the resize target, so freeze-left
+		// pins it at its current pixel width — which the min=max=40 pin holds
+		// at exactly 40 both in the override map and after recalculation.
+		const selection: LayoutColumn = { id: 'sel', width: 40, minWidth: 40, maxWidth: 40 };
+		const cols = [selection, COL('a'), COL('b'), COL('c')];
+		const next = resizeColumnWidth(900, cols, new Map(), 'a', 400);
+		expect(next.get('sel')).toBe(40);
+		const widths = calculateColumnSizes(900, cols, next);
+		expect(widths[0]).toBe(40);
+		expect(widths.reduce((a, b) => a + b, 0)).toBe(900);
 	});
 });

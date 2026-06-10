@@ -1,12 +1,20 @@
 /**
- * Column width as accepted on the public API:
+ * Statically resolvable column width:
  *   • `number`         → pixels
  *   • `${number}%`     → percentage of the table's available width
- *   • `${number}fr`    → fractional unit (shares of the remainder)
+ *
+ * Mirrors `ColumnStaticSize` in react-stately/src/table/Column.ts. The only
+ * shape `minWidth` / `maxWidth` accept — `fr` is meaningless as a bound.
+ */
+export type ColumnStaticSize = number | `${number}%`;
+
+/**
+ * Column width as accepted on the public API: a static size, or
+ * `${number}fr` — fractional unit (shares of the remainder).
  *
  * Mirrors `ColumnSize` in react-stately/src/table/Column.ts.
  */
-export type ColumnSize = number | `${number}%` | `${number}fr`;
+export type ColumnSize = ColumnStaticSize | `${number}fr`;
 
 export function isStatic(width: ColumnSize | null | undefined): boolean {
 	if (width == null) return false;
@@ -21,7 +29,7 @@ export function parseFractionalUnit(width: ColumnSize | null | undefined): numbe
 	return parseFloat(match[1]);
 }
 
-export function parseStaticWidth(width: number | string, tableWidth: number): number {
+export function parseStaticWidth(width: ColumnStaticSize, tableWidth: number): number {
 	if (typeof width === 'number') return width;
 	const match = width.match(/^(\d+(?:\.\d+)?)%$/);
 	if (!match) {
@@ -32,27 +40,33 @@ export function parseStaticWidth(width: number | string, tableWidth: number): nu
 	return tableWidth * (parseFloat(match[1]) / 100);
 }
 
+/**
+ * Default minimum column width in pixels. Applied to any column that doesn't
+ * declare `minWidth`, so columns can't be dragged to nothing. Mirrors
+ * react-stately's `getDefaultMinWidth` (= 75).
+ */
+export const DEFAULT_MIN_WIDTH = 75;
+
 export function getMinWidth(
-	minWidth: number | string | null | undefined,
+	minWidth: ColumnStaticSize | null | undefined,
 	tableWidth: number
 ): number {
-	return minWidth != null ? parseStaticWidth(minWidth, tableWidth) : 0;
+	return parseStaticWidth(minWidth ?? DEFAULT_MIN_WIDTH, tableWidth);
 }
 
 export function getMaxWidth(
-	maxWidth: number | string | null | undefined,
+	maxWidth: ColumnStaticSize | null | undefined,
 	tableWidth: number
 ): number {
 	return maxWidth != null ? parseStaticWidth(maxWidth, tableWidth) : Number.MAX_SAFE_INTEGER;
 }
 
 export interface LayoutColumn {
-	key: string;
+	id: string;
 	width?: ColumnSize;
 	defaultWidth?: ColumnSize;
-	minWidth?: number | string;
-	defaultMinWidth?: number | string;
-	maxWidth?: number | string;
+	minWidth?: ColumnStaticSize;
+	maxWidth?: ColumnStaticSize;
 }
 
 interface FlexItem {
@@ -82,12 +96,12 @@ export function calculateColumnSizes(
 	changedColumns: ReadonlyMap<string, ColumnSize>
 ): number[] {
 	const items: FlexItem[] = columns.map((col) => {
-		const resolved = changedColumns.get(col.key) ?? col.width ?? col.defaultWidth ?? '1fr';
-		const min = getMinWidth(col.minWidth ?? col.defaultMinWidth, availableWidth);
+		const resolved = changedColumns.get(col.id) ?? col.width ?? col.defaultWidth ?? '1fr';
+		const min = getMinWidth(col.minWidth, availableWidth);
 		const max = getMaxWidth(col.maxWidth, availableWidth);
 		const isStaticWidth = isStatic(resolved);
 		const baseSize = isStaticWidth
-			? parseStaticWidth(resolved as number | string, availableWidth)
+			? parseStaticWidth(resolved as ColumnStaticSize, availableWidth)
 			: 0;
 		const flex = isStaticWidth ? 0 : parseFractionalUnit(resolved);
 		const hypothetical = Math.max(min, Math.min(max, baseSize));
@@ -167,10 +181,10 @@ export function resizeColumnWidth(
 	key: string,
 	newWidth: number
 ): Map<string, ColumnSize> {
-	const target = columns.find((c) => c.key === key);
+	const target = columns.find((c) => c.id === key);
 	if (!target) return new Map(currentSizes);
 
-	const min = getMinWidth(target.minWidth ?? target.defaultMinWidth, availableWidth);
+	const min = getMinWidth(target.minWidth, availableWidth);
 	const max = getMaxWidth(target.maxWidth, availableWidth);
 	const clamped = Math.max(min, Math.min(max, Math.floor(newWidth)));
 
@@ -180,13 +194,13 @@ export function resizeColumnWidth(
 
 	for (let i = 0; i < columns.length; i++) {
 		const col = columns[i];
-		if (col.key === key) {
-			next.set(col.key, clamped);
+		if (col.id === key) {
+			next.set(col.id, clamped);
 			frozen = false;
 		} else if (frozen) {
-			next.set(col.key, pixelWidths[i]);
+			next.set(col.id, pixelWidths[i]);
 		} else {
-			next.set(col.key, col.width ?? currentSizes.get(col.key) ?? col.defaultWidth ?? '1fr');
+			next.set(col.id, col.width ?? currentSizes.get(col.id) ?? col.defaultWidth ?? '1fr');
 		}
 	}
 	return next;

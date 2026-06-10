@@ -52,12 +52,23 @@ const FOCUS_OPTS = { focusVisible: true } as FocusOptions;
  */
 export const SELECTION_COLUMN_ID = '__ssp_table_selection__';
 
+/**
+ * Fixed pixel width of the synthetic selection (checkbox) column. The
+ * descriptor pins `minWidth` / `maxWidth` to the same value so the column
+ * neither flexes nor picks up the 75px default min width — it always occupies
+ * exactly this width in the layout.
+ */
+const SELECTION_COLUMN_WIDTH = 40;
+
 const SELECTION_COLUMN_DESCRIPTOR: ColumnDescriptor = {
 	id: SELECTION_COLUMN_ID,
 	isRowHeader: false,
 	allowsSorting: false,
 	allowsHiding: false,
-	allowsResizing: false
+	allowsResizing: false,
+	width: SELECTION_COLUMN_WIDTH,
+	minWidth: SELECTION_COLUMN_WIDTH,
+	maxWidth: SELECTION_COLUMN_WIDTH
 };
 
 export interface TableStateOptions {
@@ -132,14 +143,15 @@ export class TableState<TData> {
 	#delegate: TableKeyboardDelegate;
 	#cellTypeahead: Typeahead;
 	#layout: TableColumnLayoutState;
-	#visibleLayoutColumns = $derived.by<LayoutColumn[]>(() =>
-		this.#visibleColumns.map((c) => ({
-			key: c.id,
-			width: c.width,
-			defaultWidth: c.defaultWidth,
-			minWidth: c.minWidth,
-			maxWidth: c.maxWidth
-		}))
+	// The layout operates over the same column list as 2D nav: the synthetic
+	// selection column is the leftmost layout column whenever selection is on,
+	// so its 40px lands in the colgroup alongside the user columns and the
+	// widths sum to exactly `tableWidth`. `ColumnDescriptor` is a structural
+	// superset of `LayoutColumn`, so descriptors feed the layout directly.
+	#layoutColumns = $derived.by<LayoutColumn[]>(() =>
+		this.#opts.selectionMode === 'none'
+			? this.#visibleColumns
+			: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns]
 	);
 
 	// Resizer input elements (one per resizable column). Used so the column
@@ -173,15 +185,12 @@ export class TableState<TData> {
 				})),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
-			// `SELECTION_COLUMN_ID` doc). The synthetic descriptor is appended
-			// to the registered user columns; cells / headers register under
-			// `SELECTION_COLUMN_ID` so the delegate's index lookups land on
+			// `SELECTION_COLUMN_ID` doc). `#layoutColumns` already prepends the
+			// synthetic descriptor under that condition; cells / headers register
+			// under `SELECTION_COLUMN_ID` so the delegate's index lookups land on
 			// the right elements. Hidden columns drop out of the nav order so
 			// arrow keys skip them — they're not focusable in the DOM either.
-			columns: () =>
-				this.#opts.selectionMode === 'none'
-					? this.#visibleColumns
-					: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns]
+			columns: () => this.#layoutColumns
 		});
 		this.#cellTypeahead = new Typeahead(
 			() =>
@@ -208,7 +217,7 @@ export class TableState<TData> {
 				return self.#opts.tableWidth;
 			},
 			get columns() {
-				return self.#visibleLayoutColumns;
+				return self.#layoutColumns;
 			}
 		});
 	}

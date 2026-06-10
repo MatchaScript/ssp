@@ -347,7 +347,6 @@
 	/* ── Root Table ──────────────────────────────────────────── */
 
 	[data-spectrum-table-view] {
-		--table-view-checkbox-col-width: 40px;
 		--table-row-hover-color: var(--gray-900);
 		/* S2 uses the same controlFont() for both cells and column headers;
 		   the header is differentiated by font-weight: bold only. */

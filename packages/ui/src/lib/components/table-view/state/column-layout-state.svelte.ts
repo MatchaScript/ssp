@@ -37,7 +37,7 @@ export class TableColumnLayoutState {
 			// Local membership-check Set: lives only for this tick, not observed
 			// reactively. Plain Set is correct here; SvelteSet would waste tracking.
 			// eslint-disable-next-line svelte/prefer-svelte-reactivity
-			const live = new Set(this.#opts.columns.map((c) => c.key));
+			const live = new Set(this.#opts.columns.map((c) => c.id));
 			// `untrack` so deleting an obsolete key doesn't re-subscribe this
 			// effect to its own writes (would re-fire once per delete otherwise).
 			untrack(() => {
@@ -57,18 +57,18 @@ export class TableColumnLayoutState {
 	}
 
 	getWidth(key: string): number {
-		const idx = this.#opts.columns.findIndex((c) => c.key === key);
+		const idx = this.#opts.columns.findIndex((c) => c.id === key);
 		return idx === -1 ? 0 : this.#widths[idx];
 	}
 
 	getMinWidth(key: string): number {
-		const col = this.#opts.columns.find((c) => c.key === key);
+		const col = this.#opts.columns.find((c) => c.id === key);
 		if (!col) return 0;
-		return getMinWidth(col.minWidth ?? col.defaultMinWidth, this.#opts.tableWidth);
+		return getMinWidth(col.minWidth, this.#opts.tableWidth);
 	}
 
 	getMaxWidth(key: string): number {
-		const col = this.#opts.columns.find((c) => c.key === key);
+		const col = this.#opts.columns.find((c) => c.id === key);
 		if (!col) return Number.MAX_SAFE_INTEGER;
 		return getMaxWidth(col.maxWidth, this.#opts.tableWidth);
 	}
@@ -79,12 +79,6 @@ export class TableColumnLayoutState {
 
 	startResize(key: string): void {
 		this.#resizing = key;
-		// Seed the override with the current pixel width so the freeze-left
-		// math runs against a known anchor even on a zero-distance drag.
-		const current = this.getWidth(key);
-		if (current > 0 && !this.#changedSizes.has(key)) {
-			this.#changedSizes.set(key, current);
-		}
 	}
 
 	endResize(): void {

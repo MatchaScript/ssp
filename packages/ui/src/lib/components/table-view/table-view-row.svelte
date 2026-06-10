@@ -344,7 +344,6 @@
 	/* ── Checkbox Cell ─────────────────────────────────────────── */
 
 	[data-spectrum-table-view-checkbox-cell] {
-		width: var(--table-view-checkbox-col-width, 40px);
 		padding: 0;
 		vertical-align: middle;
 		text-align: center;

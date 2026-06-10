@@ -19,7 +19,7 @@ describe('TableColumnLayoutState', () => {
 					return 900;
 				},
 				get columns() {
-					return [{ key: 'a' }, { key: 'b' }, { key: 'c' }];
+					return [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
 				}
 			});
 			flushSync();
@@ -36,7 +36,7 @@ describe('TableColumnLayoutState', () => {
 					return 900;
 				},
 				get columns() {
-					return [{ key: 'a' }, { key: 'b' }, { key: 'c' }];
+					return [{ id: 'a' }, { id: 'b' }, { id: 'c' }];
 				}
 			});
 			layout.resize('b', 400);
@@ -54,7 +54,7 @@ describe('TableColumnLayoutState', () => {
 					return 800;
 				},
 				get columns() {
-					return [{ key: 'a', minWidth: 100, maxWidth: '50%' as const }, { key: 'b' }];
+					return [{ id: 'a', minWidth: 100, maxWidth: '50%' as const }, { id: 'b' }];
 				}
 			});
 			flushSync();
@@ -70,7 +70,7 @@ describe('TableColumnLayoutState', () => {
 					return 900;
 				},
 				get columns() {
-					return [{ key: 'a' }, { key: 'b' }];
+					return [{ id: 'a' }, { id: 'b' }];
 				}
 			});
 			expect(layout.resizingColumn).toBe(null);
@@ -81,8 +81,38 @@ describe('TableColumnLayoutState', () => {
 		});
 	});
 
+	it('start/endResize without a resize leaves widths flexing on tableWidth change', () => {
+		let width = $state(900);
+		withRoot(() => {
+			const layout = new TableColumnLayoutState({
+				get tableWidth() {
+					return width;
+				},
+				get columns() {
+					return [{ id: 'a' }, { id: 'b' }];
+				}
+			});
+			flushSync();
+			expect(layout.getWidth('a')).toBe(450);
+
+			// Opening and closing resize mode with no resize() in between must
+			// not convert the fr column to a fixed px override.
+			layout.startResize('a');
+			layout.endResize();
+			flushSync();
+			expect(layout.getWidth('a')).toBe(450);
+			expect(layout.getWidth('b')).toBe(450);
+
+			// The column still reflows when the table width changes afterwards.
+			width = 600;
+			flushSync();
+			expect(layout.getWidth('a')).toBe(300);
+			expect(layout.getWidth('b')).toBe(300);
+		});
+	});
+
 	it('drops overrides for columns that have been removed', () => {
-		let cols = $state<{ key: string }[]>([{ key: 'a' }, { key: 'b' }]);
+		let cols = $state<{ id: string }[]>([{ id: 'a' }, { id: 'b' }]);
 		withRoot(() => {
 			const layout = new TableColumnLayoutState({
 				get tableWidth() {
@@ -94,7 +124,7 @@ describe('TableColumnLayoutState', () => {
 			});
 			layout.resize('a', 500);
 			flushSync();
-			cols = [{ key: 'b' }];
+			cols = [{ id: 'b' }];
 			flushSync();
 			expect(layout.getWidth('b')).toBe(800);
 		});
