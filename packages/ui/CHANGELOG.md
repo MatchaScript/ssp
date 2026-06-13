@@ -1,5 +1,14 @@
 # @matchalatte/ssp-ui
 
+## 0.1.0-next.6
+
+### Minor Changes
+
+- TableView reaches feature parity with React Spectrum S2 (sans virtualization). ([#44](https://github.com/MatchaScript/ssp/pull/44))
+  - **Column resize**: `allowsResizing` on `<TableView.Column>` enables a drag handle and a keyboard-driven "Resize column" menu entry. Width is specified as `number` (px), `${number}%`, or `${number}fr`; freeze-left semantics during drag mirror RS S2. Hidden range input owns a11y; pointer drag uses page-relative deltas with window-level listeners for robustness. RTL flips direction.
+  - **Cell-mode typeahead**: typing a letter while a cell is focused jumps to the matching row (matched on the row's `textValue` or rowheader cell text) and lands on the cell in the current column.
+  - **Row focus announcement**: tabbing into the table announces the row's position ("Alice, row 2 of 12").
+
 ## 0.0.2-next.5
 
 ### Patch Changes
