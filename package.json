@@ -28,7 +28,7 @@
 		"eslint-plugin-svelte": "^3.19.0",
 		"globals": "^17.6.0",
 		"prettier": "^3.8.2",
-		"prettier-plugin-svelte": "^3.5.1",
+		"prettier-plugin-svelte": "^4.1.0",
 		"svelte": "catalog:",
 		"turbo": "^2.9.16",
 		"typescript": "catalog:",
