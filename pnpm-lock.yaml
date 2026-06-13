@@ -164,8 +164,8 @@ importers:
         version: 4.0.2
     devDependencies:
       '@adobe/spectrum-tokens':
-        specifier: ^14.11.0
-        version: 14.11.0
+        specifier: ^14.12.0
+        version: 14.12.0
       vite:
         specifier: 'catalog:'
         version: 8.0.16(@types/node@25.9.1)(esbuild@0.27.7)(jiti@2.6.1)
@@ -251,8 +251,8 @@ packages:
   '@adobe/leonardo-contrast-colors@1.1.0':
     resolution: {integrity: sha512-URFR8vNgNsE/rnXqljVrx6OyZV3nQXTfbDDWZwTUYfOkmBr9hRB7ENK8f7pT7gHDjSuCf2bjJ227u4PUHUXHHg==}
 
-  '@adobe/spectrum-tokens@14.11.0':
-    resolution: {integrity: sha512-evxysgY6hrkampOVl/3Z3ErpRrZrRkO/ZqaKAsTJZ9axvjDJE7/wi7wCxCGtmKIITNN6BBW5gzUTDaJjijonCg==}
+  '@adobe/spectrum-tokens@14.12.0':
+    resolution: {integrity: sha512-MWYoQOESphc0tJ0DrFzttBmOH4ZaxeL8IiAvFfJC62Ob8KmRrTM7H7g+4mlzT8cF51ATkNwV9eWB37k0oLFI0A==}
 
   '@babel/code-frame@7.29.7':
     resolution: {integrity: sha512-Aup7aUOfpbAUg2ROOJN6Iw5f9DMBlzu0mIkm/malLQFN/YQgO48wCj0Kxa3sEHJvPVFg7siR+qRInwXd2qhQKw==}
@@ -3223,7 +3223,7 @@ snapshots:
       ciecam02: 0.4.6
       hsluv: 1.0.1
 
-  '@adobe/spectrum-tokens@14.11.0': {}
+  '@adobe/spectrum-tokens@14.12.0': {}
 
   '@babel/code-frame@7.29.7':
     dependencies:
