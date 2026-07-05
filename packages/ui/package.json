@@ -59,7 +59,7 @@
 	},
 	"dependencies": {
 		"bits-ui": "^2.18.1",
-		"lucide": "^1.21.0"
+		"lucide": "^1.22.0"
 	},
 	"devDependencies": {
 		"@chromatic-com/storybook": "^5.1.2",
