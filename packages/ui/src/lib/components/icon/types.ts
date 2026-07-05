@@ -6,13 +6,7 @@ export type IconNode = LucideIconNode;
 export type IconSize = 'xs' | 's' | 'm' | 'l' | 'xl';
 
 export type IconColor =
-	| 'default'
-	| 'negative'
-	| 'positive'
-	| 'notice'
-	| 'informative'
-	| 'accent'
-	| 'gray';
+	'default' | 'negative' | 'positive' | 'notice' | 'informative' | 'accent' | 'gray';
 
 type OwnProps = {
 	/**

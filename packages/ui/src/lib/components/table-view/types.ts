@@ -32,12 +32,7 @@ export type SortDescriptor = {
 export type ColumnFilterType = 'text' | 'number' | 'enum';
 
 export type ColumnFilterOperator =
-	| 'contains'
-	| 'equals'
-	| 'startsWith'
-	| 'endsWith'
-	| 'between'
-	| 'in';
+	'contains' | 'equals' | 'startsWith' | 'endsWith' | 'between' | 'in';
 
 export type ColumnFilter =
 	| { column: string; type: 'text'; operator: 'contains'; value: string }

@@ -62,8 +62,7 @@
 			data-multiline
 			data-auto-resize={isAutoResize || undefined}
 			style:--textarea-rows={rows}
-			{...restProps}
-		></textarea>
+			{...restProps}></textarea>
 		{#if showIcon}
 			<div data-spectrum-textarea-validation-icon>
 				<Icon
