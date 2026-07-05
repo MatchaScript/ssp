@@ -9,7 +9,7 @@ catalog:
   '@sveltejs/vite-plugin-svelte': ^7.1.2
   '@types/node': ^26.1.0
   '@vitest/browser-playwright': ^4.1.9
-  '@vitest/coverage-v8': ^4.1.8
+  '@vitest/coverage-v8': ^4.1.9
   playwright: ^1.61.0
   svelte: ^5.56.4
   svelte-check: ^4.7.1
