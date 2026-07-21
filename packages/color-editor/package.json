@@ -46,7 +46,7 @@
 	},
 	"devDependencies": {
 		"@adobe/leonardo-contrast-colors": "^1.1.0",
-		"@inlang/paraglide-js": "^2.20.2",
+		"@inlang/paraglide-js": "^2.22.0",
 		"@matchalatte/ssp-theme": "workspace:*",
 		"@matchalatte/ssp-ui": "workspace:*",
 		"@sveltejs/adapter-static": "catalog:",
@@ -55,7 +55,7 @@
 		"culori": "^4.0.2",
 		"d3-scale": "^4.0.2",
 		"d3-shape": "^3.2.0",
-		"monaco-editor": "^0.55.1",
+		"monaco-editor": "^0.56.0",
 		"svelte-check": "catalog:"
 	}
 }
