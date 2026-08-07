@@ -81,14 +81,14 @@ export interface SpectrumTokens {
 
 // ── Palette Types ─────────────────────────────────────────────────────────────
 
-interface PaletteColor {
+export interface PaletteColor {
 	hex: string;
 	l: number;
 	c: number;
 	h: number;
 }
 
-interface Palette {
+export interface Palette {
 	colors: Record<string, PaletteColor[]>;
 	grays: Record<string | number, PaletteColor>;
 }
@@ -161,57 +161,35 @@ function createTokenResolver(aliasColorMap: Record<string, string>) {
 // ── Public API ───────────────────────────────────────────────────────────────
 
 /**
- * Render the full Spectrum theme stylesheet for a given config.
- * Pure: no filesystem or network. Caller supplies the static token JSON.
+ * The Leonardo `colorKeys` for a config color: its anchors in level order, with
+ * the base hex prepended unless an anchor already carries it.
  */
-export function generateSpectrumCss(config: SpectrumConfig, tokens: SpectrumTokens): string {
-	const { semantic: semanticTokens, palette: paletteTokens } = tokens;
+export function colorKeysFor(color: ColorConfig): CssColor[] {
+	const anchors = color.scaleAnchors;
+	if (!anchors) return [color.baseHex as CssColor];
 
-	const { levels, grayLevels, colors, gray, themes, colorContrastTargets } = config;
-	const accentColor = config.accentColor ?? 'blue';
-	const colorFormat: ColorFormat = config.colorFormat ?? 'oklch';
-	const staticLevels = config.staticLevels ?? [900, 1000, 1100, 1200];
-	const transparentLevels = [25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+	const anchorValues = Object.keys(anchors)
+		.map(Number)
+		.sort((a, b) => a - b)
+		.map((level) => anchors[level.toString()] as CssColor);
+	const baseAlreadyIncluded = anchorValues.some(
+		(v) => v.toLowerCase() === color.baseHex.toLowerCase()
+	);
 
-	const aliasColorMap = buildAliasColorMap(accentColor);
-	const resolveTokenRef = createTokenResolver(aliasColorMap);
+	return baseAlreadyIncluded ? anchorValues : [color.baseHex as CssColor, ...anchorValues];
+}
 
-	function resolveTokenSets(sets: TokenSets): string | null {
-		const light = sets.light?.value ?? sets.light?.ref;
-		const dark = sets.dark?.value ?? sets.dark?.ref;
-		if (light !== undefined && dark !== undefined) {
-			const lightVal = resolveTokenRef(String(light));
-			const darkVal = resolveTokenRef(String(dark));
-			if (lightVal === darkVal) return lightVal;
-			return `light-dark(${lightVal}, ${darkVal})`;
-		}
-		if (light !== undefined) return resolveTokenRef(String(light));
-		if (dark !== undefined) return resolveTokenRef(String(dark));
-		return null;
-	}
-
-	function resolveTokenEntry(entry: TokenEntry): string | null {
-		if (entry.sets && (entry.sets.light?.ref || entry.sets.dark?.ref)) {
-			return resolveTokenSets(entry.sets);
-		}
-		if (entry.ref) return resolveTokenRef(entry.ref);
-		if (entry.sets) return resolveTokenSets(entry.sets);
-		if (entry.value !== undefined && !Array.isArray(entry.value)) {
-			return resolveTokenRef(String(entry.value));
-		}
-		return null;
-	}
-
-	function resolveShadowColor(color: string | ShadowColor | undefined): string {
-		if (!color) return '';
-		if (typeof color === 'string') return resolveTokenRef(color);
-		if (color.sets) return resolveTokenSets(color.sets) ?? '';
-		if (color.value) return resolveTokenRef(color.value);
-		if (color.ref) return resolveTokenRef(color.ref);
-		return '';
-	}
-
-	// --- Generate Palettes via Leonardo ---
+/**
+ * Build the Leonardo-derived palettes for every theme in the config.
+ *
+ * This is the single source of truth for the generated color values: the
+ * stylesheet, and any UI that previews it, must read from here rather than
+ * calling Leonardo again.
+ *
+ * Pure: no filesystem or network.
+ */
+export function generatePalettes(config: SpectrumConfig): Record<string, Palette> {
+	const { grayLevels, colors, gray, themes, colorContrastTargets } = config;
 	const palettes: Record<string, Palette> = {};
 
 	withSuppressedLeonardoWarnings(() => {
@@ -260,24 +238,9 @@ export function generateSpectrumCss(config: SpectrumConfig, tokens: SpectrumToke
 					colorSpace: 'OKLCH',
 					ratios: [1]
 				});
-				let colorKeys: CssColor[] = [hueConfig.baseHex as CssColor];
-				if (hueConfig.scaleAnchors) {
-					const anchors = hueConfig.scaleAnchors;
-					const sortedKeys = Object.keys(anchors)
-						.map(Number)
-						.sort((a, b) => a - b);
-					const anchorValues = sortedKeys.map((k) => anchors[k.toString()] as CssColor);
-					const baseAlreadyIncluded = anchorValues.some(
-						(v) => v.toLowerCase() === hueConfig.baseHex.toLowerCase()
-					);
-					colorKeys = baseAlreadyIncluded
-						? anchorValues
-						: [hueConfig.baseHex as CssColor, ...anchorValues];
-				}
-
 				const colorHue = new Color({
 					name: hueName,
-					colorKeys,
+					colorKeys: colorKeysFor(hueConfig),
 					colorSpace: 'CAM02',
 					ratios: colorContrastTargets
 				});
@@ -301,6 +264,62 @@ export function generateSpectrumCss(config: SpectrumConfig, tokens: SpectrumToke
 			}
 		}
 	});
+
+	return palettes;
+}
+
+/**
+ * Render the full Spectrum theme stylesheet for a given config.
+ * Pure: no filesystem or network. Caller supplies the static token JSON.
+ */
+export function generateSpectrumCss(config: SpectrumConfig, tokens: SpectrumTokens): string {
+	const { semantic: semanticTokens, palette: paletteTokens } = tokens;
+
+	const { levels, grayLevels, colors } = config;
+	const accentColor = config.accentColor ?? 'blue';
+	const colorFormat: ColorFormat = config.colorFormat ?? 'oklch';
+	const staticLevels = config.staticLevels ?? [900, 1000, 1100, 1200];
+	const transparentLevels = [25, 50, 75, 100, 200, 300, 400, 500, 600, 700, 800, 900, 1000];
+
+	const aliasColorMap = buildAliasColorMap(accentColor);
+	const resolveTokenRef = createTokenResolver(aliasColorMap);
+
+	function resolveTokenSets(sets: TokenSets): string | null {
+		const light = sets.light?.value ?? sets.light?.ref;
+		const dark = sets.dark?.value ?? sets.dark?.ref;
+		if (light !== undefined && dark !== undefined) {
+			const lightVal = resolveTokenRef(String(light));
+			const darkVal = resolveTokenRef(String(dark));
+			if (lightVal === darkVal) return lightVal;
+			return `light-dark(${lightVal}, ${darkVal})`;
+		}
+		if (light !== undefined) return resolveTokenRef(String(light));
+		if (dark !== undefined) return resolveTokenRef(String(dark));
+		return null;
+	}
+
+	function resolveTokenEntry(entry: TokenEntry): string | null {
+		if (entry.sets && (entry.sets.light?.ref || entry.sets.dark?.ref)) {
+			return resolveTokenSets(entry.sets);
+		}
+		if (entry.ref) return resolveTokenRef(entry.ref);
+		if (entry.sets) return resolveTokenSets(entry.sets);
+		if (entry.value !== undefined && !Array.isArray(entry.value)) {
+			return resolveTokenRef(String(entry.value));
+		}
+		return null;
+	}
+
+	function resolveShadowColor(color: string | ShadowColor | undefined): string {
+		if (!color) return '';
+		if (typeof color === 'string') return resolveTokenRef(color);
+		if (color.sets) return resolveTokenSets(color.sets) ?? '';
+		if (color.value) return resolveTokenRef(color.value);
+		if (color.ref) return resolveTokenRef(color.ref);
+		return '';
+	}
+
+	const palettes = generatePalettes(config);
 
 	const staticLevelIndices = staticLevels.map((l) => {
 		const idx = levels.indexOf(l);

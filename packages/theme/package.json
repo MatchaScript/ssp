@@ -34,7 +34,8 @@
 	],
 	"scripts": {
 		"build": "tsc -p tsconfig.json",
-		"extract-tokens": "node --experimental-strip-types scripts/extract-tokens.ts"
+		"extract-tokens": "node --experimental-strip-types scripts/extract-tokens.ts",
+		"test": "vitest run"
 	},
 	"dependencies": {
 		"@adobe/leonardo-contrast-colors": "^1.1.0",
@@ -42,6 +43,7 @@
 	},
 	"devDependencies": {
 		"@adobe/spectrum-tokens": "^14.13.2",
-		"vite": "catalog:"
+		"vite": "catalog:",
+		"vitest": "catalog:"
 	}
 }
