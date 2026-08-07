@@ -1,7 +1,7 @@
 {
 	"name": "@matchalatte/ssp-color-editor",
-	"version": "0.0.2-next.2",
-	"description": "ssp color editor \u2014 launch with `npx @matchalatte/ssp-color-editor`",
+	"version": "0.1.0-next.3",
+	"description": "ssp color editor — launch with `npx @matchalatte/ssp-color-editor`",
 	"license": "MIT",
 	"author": "MatchaScript",
 	"homepage": "https://github.com/MatchaScript/ssp#readme",

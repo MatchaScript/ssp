@@ -9,6 +9,7 @@
   "changesets": [
     "card-s2-alignment",
     "clear-button-and-tag-keyboard",
+    "color-editor-shared-palette",
     "list-view-quiet-dividers",
     "rename-core-to-theme",
     "select-box-spacing",
