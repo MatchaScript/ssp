@@ -15,8 +15,8 @@
 
 	const column = $derived(
 		explicitColumnId
-			? tableState.columns.find((c) => c.id === explicitColumnId)
-			: tableState.columns[cellIndex]
+			? tableState.columns.get(explicitColumnId)
+			: tableState.columns.items[cellIndex]
 	);
 	const columnId = $derived(column?.id);
 	const isRowHeader = $derived(column?.isRowHeader === true);
@@ -63,11 +63,7 @@
 	// they're not in the DOM and so AT correctly reports "column N of M".
 	// Selection-mode tables prepend a checkbox column (col 1), so cells start
 	// at col 2 in that case.
-	const ariaColIndex = $derived(
-		columnId
-			? (tableState.selectionMode === 'none' ? 1 : 2) + tableState.visibleColumnIndex(columnId)
-			: 0
-	);
+	const ariaColIndex = $derived(columnId ? tableState.navColumns.indexOf(columnId) + 1 : 0);
 
 	function handleKeydown(e: KeyboardEvent) {
 		if (!columnId) return;

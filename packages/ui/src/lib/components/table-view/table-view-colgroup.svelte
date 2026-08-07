@@ -8,19 +8,16 @@
 	// the measured table width. The colgroup must be the first child of <table>
 	// per HTML spec, before <thead>.
 	const tableState = getTableContext();
-	const showCheckboxColumn = $derived(tableState.selectionMode !== 'none');
 </script>
 
 <colgroup>
-	{#if showCheckboxColumn}
-		{@const w = tableState.columnWidth(SELECTION_COLUMN_ID)}
-		<col data-spectrum-table-view-checkbox-col style:width={w > 0 ? `${w}px` : undefined} />
-	{/if}
-	{#each tableState.visibleColumns as col (col.id)}
+	{#each tableState.navColumns.items as col (col.id)}
 		{@const w = tableState.columnWidth(col.id)}
+		{@const isSelection = col.id === SELECTION_COLUMN_ID}
 		<col
-			data-spectrum-table-view-col
-			data-column-id={col.id}
+			data-spectrum-table-view-checkbox-col={isSelection ? '' : undefined}
+			data-spectrum-table-view-col={isSelection ? undefined : ''}
+			data-column-id={isSelection ? undefined : col.id}
 			style:width={w > 0 ? `${w}px` : undefined}
 		/>
 	{/each}

@@ -88,8 +88,7 @@
 	// `aria-colindex` reflects the visible column set (RAC + W3C ARIA APG):
 	// hidden columns drop out of the index. The checkbox column, when present,
 	// is always col 1, so declared columns start at col 2 in that case.
-	const visibleIndex = $derived(tableState.visibleColumnIndex(id));
-	const ariaColIndex = $derived((tableState.selectionMode === 'none' ? 1 : 2) + visibleIndex);
+	const ariaColIndex = $derived(tableState.navColumns.indexOf(id) + 1);
 	const allowsFiltering = $derived(filterType !== undefined);
 	const isFiltered = $derived(tableState.hasFilter(id));
 	// RS parity: sort alone doesn't justify a menu — the header click already

@@ -20,13 +20,7 @@ import type {
 	TableViewOverflowMode,
 	TableViewSelectionMode
 } from '../types.js';
-import type {
-	ColumnDescriptor,
-	ITableCollection,
-	Node,
-	RowDescriptor,
-	RowMeta
-} from './collection.js';
+import { order, type ColumnDescriptor, type Ordered, type RowDescriptor, type RowMeta } from './collection.js';
 import {
 	TableKeyboardDelegate,
 	type FocusTarget
@@ -34,7 +28,6 @@ import {
 import { Typeahead } from '$lib/utils/selectable-collection/typeahead.js';
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
 import { TableColumnLayoutState } from './column-layout-state.svelte.js';
-import type { LayoutColumn } from './column-layout.js';
 
 // Hint Safari (and modern Chromium / Firefox) to keep `:focus-visible`
 // matching after a programmatic focus — without it, arrow-key driven moves
@@ -113,17 +106,17 @@ export interface TableStateOptions {
  * Selection, roving focus, keyboard nav and typeahead are delegated to a shared
  * `SelectableCollection` (the same primitive ListView and Menu use). TableState
  * adds table-specific concerns on top: column registry, sort descriptor, row
- * metadata (rowData / Node tree), and the `onAction` dispatch on Enter.
+ * metadata, and the `onAction` dispatch on Enter.
  *
- * Both rows and columns are markup compositional — the corresponding
- * components register themselves on mount and unregister on unmount. The
- * SvelteMap insertion order is the source-order of the consumer's markup.
+ * Rows and columns are exposed as two independent `Ordered` lists. They are
+ * deliberately not bundled into one collection object: a single façade makes
+ * every row-side reader subscribe to column changes as well.
  */
-export class TableState<TData> {
+export class TableState {
 	#opts: TableStateOptions;
 	#collection: SelectableCollection;
 
-	#rowEntries = new SvelteMap<string, RowDescriptor<TData>>();
+	#rowEntries = new SvelteMap<string, RowDescriptor>();
 	// Non-reactive per-row metadata (href / onAction). See `RowMeta` doc for
 	// why these are deliberately kept out of the reactive registry.
 	#rowMeta = new Map<string, RowMeta>();
@@ -138,7 +131,7 @@ export class TableState<TData> {
 	// nav, aria-rowindex via `collection.rows`, cell typeahead, announcements).
 	#bodyVersion = $state(0);
 	#bodyObserver: MutationObserver | null = null;
-	#orderedRows = $derived.by<RowDescriptor<TData>[]>(() => {
+	#orderedRows = $derived.by<RowDescriptor[]>(() => {
 		// Touch the version so a DOM reorder re-runs this derived.
 		void this.#bodyVersion;
 		return [...this.#rowEntries.values()].sort((a, b) => {
@@ -170,10 +163,18 @@ export class TableState<TData> {
 	// so its 40px lands in the colgroup alongside the user columns and the
 	// widths sum to exactly `tableWidth`. `ColumnDescriptor` is a structural
 	// superset of `LayoutColumn`, so descriptors feed the layout directly.
-	#layoutColumns = $derived.by<LayoutColumn[]>(() =>
-		this.#opts.selectionMode === 'none'
-			? this.#visibleColumns
-			: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns]
+	//
+	// Nav order: the same list 2D navigation, the colgroup and `aria-colindex`
+	// all read. Index 0 is the leading edge, so `aria-colindex` is uniformly
+	// `navColumns.indexOf(id) + 1` with no selection-mode arithmetic at the
+	// call sites.
+	#navColumns = $derived.by<Ordered<ColumnDescriptor>>(() =>
+		order(
+			this.#opts.selectionMode === 'none'
+				? this.#visibleColumns.items
+				: [SELECTION_COLUMN_DESCRIPTOR, ...this.#visibleColumns.items],
+			(c) => c.id
+		)
 	);
 
 	// Resizer input elements (one per resizable column). Used so the column
@@ -208,12 +209,12 @@ export class TableState<TData> {
 				})),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
-			// `SELECTION_COLUMN_ID` doc). `#layoutColumns` already prepends the
+			// `SELECTION_COLUMN_ID` doc). `#navColumns` already prepends the
 			// synthetic descriptor under that condition; cells / headers register
 			// under `SELECTION_COLUMN_ID` so the delegate's index lookups land on
 			// the right elements. Hidden columns drop out of the nav order so
 			// arrow keys skip them — they're not focusable in the DOM either.
-			columns: () => this.#layoutColumns
+			columns: () => this.#navColumns.items
 		});
 		this.#cellTypeahead = new Typeahead(
 			() =>
@@ -241,7 +242,7 @@ export class TableState<TData> {
 				return self.#opts.tableWidth;
 			},
 			get columns() {
-				return self.#layoutColumns;
+				return self.#navColumns.items;
 			}
 		});
 	}
@@ -276,19 +277,33 @@ export class TableState<TData> {
 	}
 
 	// ── columns (registry) ─────────────────────────────────────
-	// `#columns` is the canonical markup-order list. `#visibleColumns` filters
+	// `#columns` is the canonical registration-order list. `#visibleColumns` filters
 	// out columns the consumer has hidden — that's what AT and Header iterate
 	// over, while `#columns` stays the source of truth for cell-to-column
 	// resolution (cells are rendered in markup order regardless of hide state).
-	#columns = $derived.by<ColumnDescriptor[]>(() => [...this.#columnEntries.values()]);
-	#visibleColumns = $derived.by<ColumnDescriptor[]>(() =>
-		this.#columns.filter((c) => !this.#opts.hiddenColumns.has(c.id))
+	#columns = $derived.by<Ordered<ColumnDescriptor>>(() =>
+		order([...this.#columnEntries.values()], (c) => c.id)
 	);
-	get columns(): readonly ColumnDescriptor[] {
+	#visibleColumns = $derived.by<Ordered<ColumnDescriptor>>(() =>
+		order(
+			this.#columns.items.filter((c) => !this.#opts.hiddenColumns.has(c.id)),
+			(c) => c.id
+		)
+	);
+	/** Every declared column, in registration order. */
+	get columns(): Ordered<ColumnDescriptor> {
 		return this.#columns;
 	}
-	get visibleColumns(): readonly ColumnDescriptor[] {
+	/** Declared columns the consumer has not hidden. */
+	get visibleColumns(): Ordered<ColumnDescriptor> {
 		return this.#visibleColumns;
+	}
+	/**
+	 * Visible columns plus the synthetic selection column when selection is on.
+	 * The single list behind 2D nav, the colgroup and `aria-colindex`.
+	 */
+	get navColumns(): Ordered<ColumnDescriptor> {
+		return this.#navColumns;
 	}
 	getColumn(id: string): ColumnDescriptor | undefined {
 		return this.#columnEntries.get(id);
@@ -296,52 +311,24 @@ export class TableState<TData> {
 	isColumnHidden(id: string): boolean {
 		return this.#opts.hiddenColumns.has(id);
 	}
-	/**
-	 * 0-based index of `id` among the *visible* columns. Returns -1 when the
-	 * column is hidden or unknown. Used to compute `aria-colindex` (which is
-	 * defined against the visible column set, not markup order).
-	 */
-	visibleColumnIndex(id: string): number {
-		return this.#visibleColumns.findIndex((c) => c.id === id);
-	}
 
-	// ── derived collection (rows + columns) ────────────────────
-	// Collection exposes visible columns only — that's what Header iterates
-	// over and what aria-colcount reflects. Cells still resolve their column
-	// via `tableState.columns[markupIndex]` (see `<TableView.Cell>`).
-	get collection(): ITableCollection<TData> {
-		const rowNodes: Node<TData>[] = [];
-		let i = 0;
-		for (const entry of this.#orderedRows) {
-			rowNodes.push({
-				type: 'row',
-				key: entry.key,
-				index: i++,
-				level: 0,
-				textValue: entry.textValue,
-				rowData: entry.rowData
-			});
-		}
-		const columns = this.#visibleColumns;
-		return {
-			size: rowNodes.length,
-			rows: rowNodes,
-			columns,
-			getRow: (key) => rowNodes.find((r) => r.key === key),
-			getColumn: (id) => this.#columnEntries.get(id)
-		};
+	// ── rows ───────────────────────────────────────────────────
+	// Kept separate from the column lists on purpose: bundling them would make
+	// every per-row derived subscribe to column changes too.
+	#rows = $derived.by<Ordered<RowDescriptor>>(() => order(this.#orderedRows, (r) => r.key));
+	get rows(): Ordered<RowDescriptor> {
+		return this.#rows;
 	}
 
 	// ── row registration (called from <TableView.Row>) ─────────
 	// Two parallel registries:
-	//   • #rowEntries: TableView-specific metadata (rowData, textValue) used by
-	//     the collection getter and the select-all helper.
+	//   • #rowEntries: TableView-specific metadata (textValue, disabled) read by
+	//     the `rows` list and the select-all helper.
 	//   • SelectableCollection: the focusable element + selection / keyboard /
 	//     typeahead state (shared with Menu / ListView).
-	registerRow(reg: RowRegistration<TData>): () => void {
+	registerRow(reg: RowRegistration): () => void {
 		this.#rowEntries.set(reg.value, {
 			key: reg.value,
-			rowData: reg.rowData,
 			textValue: reg.textValue,
 			isDisabled: reg.disabled,
 			el: reg.el
@@ -1046,13 +1033,12 @@ function isEmptyFilter(filter: ColumnFilter): boolean {
 	}
 }
 
-export interface RowRegistration<T> {
+export interface RowRegistration {
 	domId: string;
 	value: string;
 	el: HTMLElement;
 	disabled: boolean;
 	textValue: string;
-	rowData: T;
 	href?: string;
 	onAction?: () => void;
 }

@@ -70,14 +70,16 @@
 	// rowheader column is registered (e.g. transient state during column
 	// registration) `aria-labelledby` is omitted and SR falls back to the
 	// row's textual content.
-	const rowHeaderColumnId = $derived(tableState.collection.columns.find((c) => c.isRowHeader)?.id);
+	const rowHeaderColumnId = $derived(
+		tableState.visibleColumns.items.find((c) => c.isRowHeader)?.id
+	);
 	const ariaLabelledBy = $derived(
 		rowHeaderColumnId ? `${domId}-cell-${rowHeaderColumnId}` : undefined
 	);
 	// 1-based; the header row is always row 1, so body rows start at 2.
 	// Reads from the collection's row order so it tracks dynamic
 	// add/remove and any future sort/filter pipeline.
-	const ariaRowIndex = $derived(tableState.collection.rows.findIndex((r) => r.key === key) + 2);
+	const ariaRowIndex = $derived(tableState.rows.indexOf(key) + 2);
 
 	$effect(() => {
 		const el = ref;
@@ -89,7 +91,6 @@
 				el,
 				disabled: isDisabled,
 				textValue: resolvedTextValue,
-				rowData: undefined as unknown,
 				href,
 				onAction: onRowAction
 			})

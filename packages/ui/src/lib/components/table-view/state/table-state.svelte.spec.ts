@@ -20,8 +20,8 @@ const COLUMN = (id: string): ColumnDescriptor => ({
 	allowsResizing: false
 });
 
-function createState(overrides: Partial<TableStateOptions> = {}): TableState<unknown> {
-	return new TableState<unknown>({
+function createState(overrides: Partial<TableStateOptions> = {}): TableState {
+	return new TableState({
 		density: 'regular',
 		isQuiet: false,
 		overflowMode: 'truncate',

@@ -2,8 +2,7 @@ import { createContext } from 'svelte';
 import type { TableState } from './table-state.svelte.js';
 
 // Table-level context: shared by Header / Row / Cell.
-// `unknown` here so Root can use any TData; consumers cast at the boundary.
-export const [getTableContext, setTableContext] = createContext<TableState<unknown>>();
+export const [getTableContext, setTableContext] = createContext<TableState>();
 
 // Row-level context: shared by Cell (looks up its column index, and learns
 // whether the rowheader cell needs to render the stretched `<a>` overlay

@@ -1,23 +1,38 @@
 import type { ColumnFilterType, EnumFilterOption } from '../types.js';
 import type { ColumnSize, ColumnStaticSize } from './column-layout.js';
 
-// React Aria's `Node<T>` is the canonical shape for collections. Only 'row'
-// nodes are built; the others are reserved for future shapes.
-export type NodeType = 'row' | 'column' | 'cell' | 'header' | 'body';
-
-export type Node<T> = {
-	type: NodeType;
-	key: string;
-	index: number;
-	parentKey?: string;
-	level: number;
-	textValue?: string;
-	rowData?: T;
+/**
+ * An ordered list plus its key index. `items` is the array itself (never
+ * copied); `indexOf` / `get` are the only ways position and lookup enter the
+ * rest of the code, so no caller has to write `findIndex` or handle a -1
+ * subscript. Rows and columns use the same shape.
+ */
+export type Ordered<T> = {
+	readonly items: readonly T[];
+	/** Position of `key`, or -1 when unknown. */
+	indexOf(key: string): number;
+	/** The entry for `key`, or undefined when unknown. */
+	get(key: string): T | undefined;
 };
 
-export type RowDescriptor<T> = {
+export function order<T>(items: readonly T[], keyOf: (item: T) => string): Ordered<T> {
+	const index = new Map<string, number>();
+	for (let i = 0; i < items.length; i++) index.set(keyOf(items[i]), i);
+	return {
+		items,
+		indexOf: (key) => index.get(key) ?? -1,
+		get: (key) => {
+			const i = index.get(key);
+			return i === undefined ? undefined : items[i];
+		}
+	};
+}
+
+export const EMPTY_ORDERED: Ordered<never> = order([], () => '');
+
+// Runtime descriptor for a `<TableView.Row>` instance.
+export type RowDescriptor = {
 	key: string;
-	rowData: T;
 	textValue?: string;
 	isDisabled?: boolean;
 	// The row's `<tr>` element. Carried so the canonical row order can be
@@ -31,7 +46,7 @@ export type RowDescriptor<T> = {
  * the reactive `RowDescriptor` because `onAction` is typically an inline
  * closure that gets a fresh identity on every parent render — storing it in
  * a SvelteMap would close a feedback loop with anything that derives from
- * the row registry (`collection`, `selectableKeys`, etc).
+ * the row registry (`rows`, `selectableKeys`, etc).
  */
 export type RowMeta = {
 	href?: string;
@@ -59,12 +74,3 @@ export type ColumnDescriptor = {
 	filterType?: ColumnFilterType;
 	enumOptions?: EnumFilterOption[];
 };
-
-// Collection surface consumed by TableState.
-export interface ITableCollection<T> {
-	readonly size: number;
-	readonly rows: ReadonlyArray<Node<T>>;
-	readonly columns: ReadonlyArray<ColumnDescriptor>;
-	getRow(key: string): Node<T> | undefined;
-	getColumn(id: string): ColumnDescriptor | undefined;
-}

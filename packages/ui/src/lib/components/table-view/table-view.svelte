@@ -1,4 +1,4 @@
-<script lang="ts" generics="TData">
+<script lang="ts">
 	import type { ColumnFilter, SortDescriptor, TableViewRootProps } from './types.js';
 	import { TableState } from './state/table-state.svelte.js';
 	import { setTableContext } from './state/context.js';
@@ -134,7 +134,7 @@
 	let tableWidth = $state(0);
 
 	// ── TableState ───────────────────────────────────────────────
-	const tableState = new TableState<TData>({
+	const tableState = new TableState({
 		get density() {
 			return density;
 		},
@@ -237,23 +237,19 @@
 	const isInteractive = $derived(!isDisabled && selectionMode !== 'none');
 	const tableTabIndex = $derived(isInteractive && tableState.focusedKey === null ? 0 : -1);
 
-	// Cast at the boundary — context stores TableState<unknown>.
-	setTableContext(tableState as unknown as TableState<unknown>);
+	setTableContext(tableState);
 
 	// ── Empty state / loading: how many columns to colspan ───────
 	// Columns are markup-registered, so the count is read from state.
-	// S2 hardcodes selectionBehavior='toggle' → checkbox column always present
-	// when selection is enabled.
-	const showCheckboxColumn = $derived(selectionMode !== 'none');
-	const totalColumns = $derived(
-		tableState.collection.columns.length + (showCheckboxColumn ? 1 : 0)
-	);
-	const isEmpty = $derived(tableState.collection.size === 0);
+	// `navColumns` already carries the synthetic selection column when
+	// selection is on, so the count needs no mode arithmetic.
+	const totalColumns = $derived(tableState.navColumns.items.length);
+	const isEmpty = $derived(tableState.rows.items.length === 0);
 
 	// ARIA row / col counts. `aria-rowcount` includes the header row; AT
 	// implementations rely on the count for percentage announcements
 	// ("row 5 of 200"). Row virtualization is out of scope.
-	const ariaRowCount = $derived(1 + tableState.collection.size);
+	const ariaRowCount = $derived(1 + tableState.rows.items.length);
 	const ariaColCount = $derived(totalColumns);
 
 	// ── Scroll → onLoadMore ──────────────────────────────────────
