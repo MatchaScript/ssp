@@ -5,7 +5,6 @@
  * Plain Map/Set are used for registries read only from event handlers;
  * reactive consumers go through SvelteMap.
  */
-import { SvelteMap } from 'svelte/reactivity';
 import {
 	SelectableCollection,
 	isPrintable,
@@ -20,7 +19,7 @@ import type {
 	TableViewOverflowMode,
 	TableViewSelectionMode
 } from '../types.js';
-import { order, type ColumnDescriptor, type Ordered, type RowDescriptor, type RowMeta } from './collection.js';
+import { order, type ColumnDescriptor, type Ordered, type RowMeta } from './collection.js';
 import {
 	TableKeyboardDelegate,
 	type FocusTarget
@@ -56,10 +55,7 @@ const SELECTION_COLUMN_WIDTH = 40;
 
 const SELECTION_COLUMN_DESCRIPTOR: ColumnDescriptor = {
 	id: SELECTION_COLUMN_ID,
-	isRowHeader: false,
-	allowsSorting: false,
-	allowsHiding: false,
-	allowsResizing: false,
+	label: '',
 	width: SELECTION_COLUMN_WIDTH,
 	minWidth: SELECTION_COLUMN_WIDTH,
 	maxWidth: SELECTION_COLUMN_WIDTH
@@ -69,6 +65,7 @@ export interface TableStateOptions {
 	// display
 	readonly density: TableViewDensity;
 	readonly isQuiet: boolean;
+	readonly hideHeader: boolean;
 	readonly overflowMode: TableViewOverflowMode;
 
 	// disabled
@@ -116,32 +113,21 @@ export class TableState {
 	#opts: TableStateOptions;
 	#collection: SelectableCollection;
 
-	#rowEntries = new SvelteMap<string, RowDescriptor>();
 	// Non-reactive per-row metadata (href / onAction). See `RowMeta` doc for
 	// why these are deliberately kept out of the reactive registry.
 	#rowMeta = new Map<string, RowMeta>();
+	// Row and cell label text, read only from event handlers and announcements.
+	#rowText = new Map<string, string>();
+	#cellText = new Map<string, string>();
+	// Dev-only: how many cells currently claim each (row, column) slot.
+	#cellSlotClaims = new Map<string, number>();
 
-	// Canonical row order is DOM order, not mount order. A keyed `{#each}` lets
-	// the consumer reorder rows (e.g. after a sort) by moving `<tr>` nodes
-	// without re-registering them, so `#rowEntries`' insertion order goes stale.
-	// `#bodyVersion` ticks whenever the `<tbody>`'s direct children change; the
-	// observer is wired by `registerBody`. `#orderedRows` re-sorts entries by
-	// `compareDocumentPosition` only when the version or the registry changes,
-	// and is the single source every position-aware consumer reads (keyboard
-	// nav, aria-rowindex via `collection.rows`, cell typeahead, announcements).
-	#bodyVersion = $state(0);
-	#bodyObserver: MutationObserver | null = null;
-	#orderedRows = $derived.by<RowDescriptor[]>(() => {
-		// Touch the version so a DOM reorder re-runs this derived.
-		void this.#bodyVersion;
-		return [...this.#rowEntries.values()].sort((a, b) => {
-			const pos = a.el.compareDocumentPosition(b.el);
-			if (pos & Node.DOCUMENT_POSITION_FOLLOWING) return -1;
-			if (pos & Node.DOCUMENT_POSITION_PRECEDING) return 1;
-			return 0;
-		});
-	});
-	#columnEntries = new SvelteMap<string, ColumnDescriptor>();
+	// Row order and row identity come from `<TableView.Body items>`, never from
+	// the DOM: the consumer's array is the order, so a re-sort needs no
+	// observation to be picked up. `#rowSource` is registered synchronously by
+	// Body (not from an `$effect`) so the rows are there on the server too.
+	#rowSource: RowSource | null = $state.raw(null);
+	#columnSource: ColumnSource | null = $state.raw(null);
 
 	// Cell + column-header element registries for 2D keyboard nav. Cells are
 	// keyed by `${rowKey}|${columnId}`. The maps stay non-reactive — only
@@ -195,18 +181,18 @@ export class TableState {
 			// column is shown whenever selection is on, and clicks always toggle.
 			selectionBehavior: 'toggle',
 			shouldFocusWrap: false,
+			// Ctrl+A is handled by TableState in both row and cell mode so the
+			// select-all population is decided in one place. The collection's own
+			// implementation would use its registered items, which is a different
+			// set from `items` whenever a row is declared but not rendered.
+			allowsSelectAll: false,
 			get disallowEmptySelection() {
 				return opts.disallowEmptySelection;
 			},
 			onSelectionChange: (keys) => opts.setSelectedKeys(keys)
 		});
 		this.#delegate = new TableKeyboardDelegate({
-			rows: () =>
-				this.#orderedRows.map((entry) => ({
-					key: entry.key,
-					disabled:
-						this.#opts.isDisabled || this.#opts.disabledKeys.has(entry.key) || !!entry.isDisabled
-				})),
+			rows: () => this.#rowKeys.map((key) => ({ key, disabled: this.isRowDisabled(key) })),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
 			// `SELECTION_COLUMN_ID` doc). `#navColumns` already prepends the
@@ -218,14 +204,20 @@ export class TableState {
 		});
 		this.#cellTypeahead = new Typeahead(
 			() =>
-				this.#orderedRows.map((entry) => ({
-					domId: this.#collection.getDomId(entry.key) ?? entry.key,
-					value: entry.key,
-					el: entry.el,
-					disabled:
-						this.#opts.isDisabled || this.#opts.disabledKeys.has(entry.key) || !!entry.isDisabled,
-					textValue: entry.textValue ?? ''
-				})),
+				this.#rowKeys.flatMap((key) => {
+					const domId = this.#collection.getDomId(key);
+					const el = domId ? this.#collection.getElement(domId) : undefined;
+					if (!domId || !el) return [];
+					return [
+						{
+							domId,
+							value: key,
+							el,
+							disabled: this.isRowDisabled(key),
+							textValue: this.#rowLabel(key)
+						}
+					];
+				}),
 			(domId) => {
 				const rowKey = this.#collection.getValue(domId);
 				const focusedCell = this.#focusedCell;
@@ -253,6 +245,9 @@ export class TableState {
 	}
 	get isQuiet() {
 		return this.#opts.isQuiet;
+	}
+	get hideHeader() {
+		return this.#opts.hideHeader;
 	}
 	get overflowMode() {
 		return this.#opts.overflowMode;
@@ -282,7 +277,7 @@ export class TableState {
 	// over, while `#columns` stays the source of truth for cell-to-column
 	// resolution (cells are rendered in markup order regardless of hide state).
 	#columns = $derived.by<Ordered<ColumnDescriptor>>(() =>
-		order([...this.#columnEntries.values()], (c) => c.id)
+		order(this.#columnSource?.columns ?? [], (c) => c.id)
 	);
 	#visibleColumns = $derived.by<Ordered<ColumnDescriptor>>(() =>
 		order(
@@ -299,6 +294,20 @@ export class TableState {
 		return this.#visibleColumns;
 	}
 	/**
+	 * Ids of the visible rowheader columns. When none is declared this falls back
+	 * to the first visible column, matching upstream `TableCollection`, so a row
+	 * always has something to take its accessible name from.
+	 */
+	#rowHeaderColumnIds = $derived.by<readonly string[]>(() => {
+		const declared = this.#visibleColumns.items.filter((c) => c.isRowHeader).map((c) => c.id);
+		if (declared.length > 0) return declared;
+		const first = this.#visibleColumns.items[0];
+		return first ? [first.id] : [];
+	});
+	get rowHeaderColumnIds(): readonly string[] {
+		return this.#rowHeaderColumnIds;
+	}
+	/**
 	 * Visible columns plus the synthetic selection column when selection is on.
 	 * The single list behind 2D nav, the colgroup and `aria-colindex`.
 	 */
@@ -306,7 +315,7 @@ export class TableState {
 		return this.#navColumns;
 	}
 	getColumn(id: string): ColumnDescriptor | undefined {
-		return this.#columnEntries.get(id);
+		return this.#columns.get(id);
 	}
 	isColumnHidden(id: string): boolean {
 		return this.#opts.hiddenColumns.has(id);
@@ -315,25 +324,40 @@ export class TableState {
 	// ── rows ───────────────────────────────────────────────────
 	// Kept separate from the column lists on purpose: bundling them would make
 	// every per-row derived subscribe to column changes too.
-	#rows = $derived.by<Ordered<RowDescriptor>>(() => order(this.#orderedRows, (r) => r.key));
-	get rows(): Ordered<RowDescriptor> {
+	#rowKeys = $derived.by<readonly string[]>(() => this.#rowSource?.keys ?? []);
+	#rows = $derived.by<Ordered<string>>(() => order(this.#rowKeys, (k) => k));
+	/** Row keys in consumer order. */
+	get rows(): Ordered<string> {
 		return this.#rows;
 	}
 
+	// ── data sources (registered synchronously by Body / Header) ─
+	// Registration happens in the component body rather than an `$effect` so
+	// rows and columns exist during server rendering too — the colgroup and the
+	// rowheader `<th>`s depend on them.
+	// Both return a release function. The identity check matters because a
+	// replacement source can register before the outgoing one releases, and the
+	// stale release must not wipe the live source.
+	setRowSource(source: RowSource): () => void {
+		this.#rowSource = source;
+		return () => {
+			if (this.#rowSource === source) this.#rowSource = null;
+		};
+	}
+	setColumnSource(source: ColumnSource): () => void {
+		this.#columnSource = source;
+		return () => {
+			if (this.#columnSource === source) this.#columnSource = null;
+		};
+	}
+
 	// ── row registration (called from <TableView.Row>) ─────────
-	// Two parallel registries:
-	//   • #rowEntries: TableView-specific metadata (textValue, disabled) read by
-	//     the `rows` list and the select-all helper.
-	//   • SelectableCollection: the focusable element + selection / keyboard /
-	//     typeahead state (shared with Menu / ListView).
+	// Order and identity come from the row source; this registers the parts
+	// only the rendered row knows: its element (focus, typeahead) and the
+	// non-reactive metadata behind `onAction` / `href`.
 	registerRow(reg: RowRegistration): () => void {
-		this.#rowEntries.set(reg.value, {
-			key: reg.value,
-			textValue: reg.textValue,
-			isDisabled: reg.disabled,
-			el: reg.el
-		});
 		this.#rowMeta.set(reg.value, { href: reg.href, onAction: reg.onAction });
+		if (reg.textValue) this.#rowText.set(reg.value, reg.textValue);
 		const unregister = this.#collection.registerItem({
 			domId: reg.domId,
 			value: reg.value,
@@ -342,8 +366,8 @@ export class TableState {
 			textValue: reg.textValue
 		});
 		return () => {
-			this.#rowEntries.delete(reg.value);
 			this.#rowMeta.delete(reg.value);
+			this.#rowText.delete(reg.value);
 			unregister();
 		};
 	}
@@ -364,46 +388,60 @@ export class TableState {
 		domId: string,
 		updates: Partial<Pick<ItemRegistration, 'disabled' | 'textValue'>>
 	): void {
-		this.#collection.updateItem(domId, updates);
-		// Keep #rowEntries in sync so the ordered-row consumers that read these
-		// fields off the entry — cell-mode typeahead (textValue), keyboard nav
-		// and `collection.rows` (disabled / textValue), `#rowLabel` — see the
-		// scraped/updated label value. The scrape in <TableView.Row> pushes the
-		// rowheader text here when the consumer omits an explicit `textValue`.
 		const rowKey = this.#collection.getValue(domId);
-		if (rowKey !== undefined) {
-			const entry = this.#rowEntries.get(rowKey);
-			if (entry) {
-				if (updates.textValue !== undefined) entry.textValue = updates.textValue;
-				if (updates.disabled !== undefined) entry.isDisabled = updates.disabled;
-			}
+		if (rowKey !== undefined && updates.textValue !== undefined) {
+			// Store only what the row itself declared; the rowheader-cell text and
+			// the DOM scrape stay resolve-on-read, so a later change reaches the
+			// label without the row re-registering.
+			if (updates.textValue) this.#rowText.set(rowKey, updates.textValue);
+			else this.#rowText.delete(rowKey);
 		}
-	}
-
-	// ── column registration (called from <TableView.Column>) ───
-	registerColumn(descriptor: ColumnDescriptor): void {
-		this.#columnEntries.set(descriptor.id, descriptor);
-	}
-	unregisterColumn(id: string): void {
-		this.#columnEntries.delete(id);
-	}
-
-	// ── body registration (called from <TableView.Body>) ───────
-	// Observe the `<tbody>`'s direct children so a keyed `{#each}` reorder
-	// (which moves `<tr>` nodes without re-registering them) bumps the version
-	// that `#orderedRows` reads. childList only, no subtree — row content
-	// changes don't affect row order. Browser-only; the body component wires
-	// this from a client `$effect`, so `MutationObserver` is always defined.
-	registerBody(el: HTMLElement): () => void {
-		this.#bodyObserver?.disconnect();
-		this.#bodyObserver = new MutationObserver(() => {
-			this.#bodyVersion++;
+		// The shared collection has no view of cells, so it gets the resolved
+		// label — that is what row-mode typeahead matches against.
+		this.#collection.updateItem(domId, {
+			...updates,
+			...(rowKey === undefined ? {} : { textValue: this.#rowLabel(rowKey) })
 		});
-		this.#bodyObserver.observe(el, { childList: true });
+	}
+
+	// ── cell text (called from <TableView.Cell>) ────────────────
+	// Cells in a rowheader column supply the row's accessible name, matching
+	// upstream `TableCollection.getTextValue`, which joins the rowheader cells'
+	// own text rather than reading the DOM.
+	registerCellText(rowKey: string, columnId: string, text: string): () => void {
+		const key = this.#cellKey(rowKey, columnId);
+		this.#cellText.set(key, text);
+		return () => this.#cellText.delete(key);
+	}
+	/**
+	 * Dev-only duplicate detection: a second cell claiming the same
+	 * `(row, column)` slot warns instead of silently producing two keyboard
+	 * targets for one cell.
+	 */
+	claimCellSlot(rowKey: string, columnId: string): () => void {
+		const key = this.#cellKey(rowKey, columnId);
+		const count = (this.#cellSlotClaims.get(key) ?? 0) + 1;
+		this.#cellSlotClaims.set(key, count);
+		if (count > 1) {
+			console.warn(
+				`[TableView] row "${rowKey}" renders more than one cell for column "${columnId}".`
+			);
+		}
 		return () => {
-			this.#bodyObserver?.disconnect();
-			this.#bodyObserver = null;
+			const next = (this.#cellSlotClaims.get(key) ?? 1) - 1;
+			if (next > 0) this.#cellSlotClaims.set(key, next);
+			else this.#cellSlotClaims.delete(key);
 		};
+	}
+
+	/** Joined text of this row's rowheader cells, or '' when none supplied one. */
+	rowHeaderCellText(rowKey: string): string {
+		const parts: string[] = [];
+		for (const id of this.#rowHeaderColumnIds) {
+			const text = this.#cellText.get(this.#cellKey(rowKey, id));
+			if (text) parts.push(text);
+		}
+		return parts.join(' ');
 	}
 
 	// ── cell + column-header element registries ────────────────
@@ -535,6 +573,19 @@ export class TableState {
 	 * Enter (RAC `linkBehavior='override'` semantics).
 	 */
 	handleRowKeyDown(event: KeyboardEvent, rowKey: string): void {
+		// Ctrl/Cmd+A. Handled here rather than in the shared collection (which is
+		// constructed with `allowsSelectAll: false`) so row mode and cell mode
+		// select the same set — the one derived from `items`, not from whichever
+		// rows happen to be registered.
+		if (
+			(event.key === 'a' || event.key === 'A') &&
+			(event.ctrlKey || event.metaKey) &&
+			this.selectionMode === 'multiple'
+		) {
+			event.preventDefault();
+			this.toggleSelectAll();
+			return;
+		}
 		// ArrowRight on a row → enter cell mode at the first cell.
 		if (event.key === 'ArrowRight') {
 			const target = this.#delegate.getKeyRight({ type: 'row', rowKey });
@@ -786,7 +837,7 @@ export class TableState {
 
 	// ── column visibility ───────────────────────────────────────
 	hideColumn(id: string): void {
-		const col = this.#columnEntries.get(id);
+		const col = this.#columns.get(id);
 		// Refuse to hide when the column hasn't opted in; otherwise the consumer
 		// gets a hidden column they can't restore through any first-class UI.
 		if (!col?.allowsHiding) return;
@@ -827,7 +878,7 @@ export class TableState {
 
 	// ── select-all helpers (used by checkbox header) ───────────
 	#selectableKeys = $derived.by(() =>
-		[...this.#rowEntries.keys()].filter((k) => !this.#opts.disabledKeys.has(k))
+		this.#opts.isDisabled ? [] : this.#rowKeys.filter((k) => !this.#opts.disabledKeys.has(k))
 	);
 	get selectableKeys(): readonly string[] {
 		return this.#selectableKeys;
@@ -935,10 +986,9 @@ export class TableState {
 	}
 
 	announceRowFocus(rowKey: string): void {
-		const ordered = this.#orderedRows;
-		const index = ordered.findIndex((r) => r.key === rowKey);
+		const index = this.#rows.indexOf(rowKey);
 		if (index === -1) return;
-		const total = ordered.length;
+		const total = this.#rowKeys.length;
 		const rowName = this.#rowLabel(rowKey) || rowKey;
 		this.#getAnnouncer()?.announce(`${rowName}, row ${index + 1} of ${total}`);
 	}
@@ -982,17 +1032,17 @@ export class TableState {
 	}
 
 	#columnLabel(columnId: string): string {
-		const el = this.#columnHeaderElements.get(columnId);
-		const text = el?.textContent?.trim();
-		// Fall back to the id when the column header hasn't rendered yet
-		// (e.g. announce fired before $effect ran) or when the header is
-		// hidden — the id is at least somewhat meaningful to the consumer.
-		return text || columnId;
+		// The declared label, never the rendered `<th>` text: the header hosts
+		// the column menu and the filter popover, so scraping it concatenates
+		// whatever UI happens to be open.
+		return this.#columns.get(columnId)?.label || columnId;
 	}
 
 	#rowLabel(rowKey: string): string {
-		const entry = this.#rowEntries.get(rowKey);
-		if (entry?.textValue) return entry.textValue;
+		const explicit = this.#rowText.get(rowKey);
+		if (explicit) return explicit;
+		const fromCells = this.rowHeaderCellText(rowKey);
+		if (fromCells) return fromCells;
 		// Fall back to scraping the rowheader cell text. SelectableCollection
 		// already stores `textValue` when Row passes it; this branch covers
 		// the common case where the consumer didn't bother with an explicit
@@ -1041,4 +1091,14 @@ export interface RowRegistration {
 	textValue: string;
 	href?: string;
 	onAction?: () => void;
+}
+
+/** Row order + identity, supplied by `<TableView.Body>`. */
+export interface RowSource {
+	readonly keys: readonly string[];
+}
+
+/** Column order + definitions, supplied by `<TableView.Header>`. */
+export interface ColumnSource {
+	readonly columns: readonly ColumnDescriptor[];
 }

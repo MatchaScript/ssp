@@ -14,6 +14,7 @@ function withRoot<T>(fn: () => T): T {
 
 const COLUMN = (id: string): ColumnDescriptor => ({
 	id,
+	label: id,
 	isRowHeader: false,
 	allowsSorting: false,
 	allowsHiding: false,
@@ -24,6 +25,7 @@ function createState(overrides: Partial<TableStateOptions> = {}): TableState {
 	return new TableState({
 		density: 'regular',
 		isQuiet: false,
+		hideHeader: false,
 		overflowMode: 'truncate',
 		isDisabled: false,
 		disabledKeys: new Set<string>(),
@@ -46,9 +48,7 @@ describe('TableState column layout integration', () => {
 	it('sizes the selection column in the layout so widths sum to the table width', () => {
 		withRoot(() => {
 			const state = createState({ selectionMode: 'multiple' });
-			state.registerColumn(COLUMN('a'));
-			state.registerColumn(COLUMN('b'));
-			state.registerColumn(COLUMN('c'));
+			state.setColumnSource({ columns: [COLUMN('a'), COLUMN('b'), COLUMN('c')] });
 			flushSync();
 
 			expect(state.columnWidth(SELECTION_COLUMN_ID)).toBe(40);
@@ -60,9 +60,7 @@ describe('TableState column layout integration', () => {
 	it('gives user columns the full table width when selection is off', () => {
 		withRoot(() => {
 			const state = createState({ selectionMode: 'none' });
-			state.registerColumn(COLUMN('a'));
-			state.registerColumn(COLUMN('b'));
-			state.registerColumn(COLUMN('c'));
+			state.setColumnSource({ columns: [COLUMN('a'), COLUMN('b'), COLUMN('c')] });
 			flushSync();
 
 			expect(state.columnWidth('a')).toBe(300);

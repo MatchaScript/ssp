@@ -3,33 +3,25 @@
 	import type { TableViewCellProps } from './types.js';
 	import { getRowContext, getTableContext } from './state/context.js';
 
-	let { column: explicitColumnId, children }: TableViewCellProps = $props();
+	let { column: columnId, textValue, children }: TableViewCellProps = $props();
 
 	const tableState = getTableContext();
 	const row = getRowContext();
 
-	// Markup-order column resolution. The closure increments per row instance,
-	// so each cell gets its source-order index. An explicit `column="id"` prop
-	// overrides this for cases where the consumer wants to skip / reorder cells.
-	const cellIndex = row.getNextCellIndex();
-
-	const column = $derived(
-		explicitColumnId
-			? tableState.columns.get(explicitColumnId)
-			: tableState.columns.items[cellIndex]
-	);
-	const columnId = $derived(column?.id);
+	// The cell names its column; nothing is inferred from markup position, so a
+	// row may render its cells in any order or skip some entirely.
+	const column = $derived(tableState.columns.get(columnId));
 	const isRowHeader = $derived(column?.isRowHeader === true);
 	// When the column is hidden we skip rendering the `<td>` entirely.
 	// Cells stay in markup order — the resolved column lookup uses the full
 	// (markup-order) `tableState.columns`, so subsequent visible cells keep
 	// pointing at the right column even when one in the middle is hidden.
-	const isHidden = $derived(columnId ? tableState.isColumnHidden(columnId) : false);
+	const isHidden = $derived(tableState.isColumnHidden(columnId));
 	// Deterministic cell id, kept in sync with the pattern Row uses to
 	// compute its `aria-labelledby`. Falling back to the markup-order index
 	// when the column hasn't registered yet keeps the id non-empty during
 	// the brief mount window.
-	const cellDomId = $derived(`${row.rowDomId}-cell-${columnId ?? cellIndex}`);
+	const cellDomId = $derived(`${row.rowDomId}-cell-${columnId}`);
 	// Stretched-link is hosted in the rowheader cell only, even if the row
 	// has multiple isRowHeader columns we use the first one we encounter.
 	const isLink = $derived(isRowHeader && row.href !== undefined);
@@ -47,26 +39,58 @@
 	let ref: HTMLTableCellElement | null = $state(null);
 	$effect(() => {
 		const el = ref;
-		if (!el || !columnId) return;
-		const cleanup = untrack(() => tableState.registerCell(row.rowKey, columnId, el));
-		return cleanup;
+		const id = columnId;
+		if (!el) return;
+		return untrack(() => tableState.registerCell(row.rowKey, id, el));
 	});
 
-	const isCellFocused = $derived(columnId ? tableState.isCellFocused(row.rowKey, columnId) : false);
+	// Cells in a rowheader column supply the row's accessible name and its
+	// typeahead text (upstream `TableCollection.getTextValue` joins the same
+	// thing). Registered separately from the element so it survives a value
+	// change without re-registering the focus target.
+	$effect(() => {
+		const text = textValue;
+		const id = columnId;
+		if (text === undefined) return;
+		return untrack(() => tableState.registerCellText(row.rowKey, id, text));
+	});
+
+	// Binding by id makes two mistakes possible that the type system cannot
+	// catch, and both fail quietly: an unknown id leaves the cell out of the nav
+	// order (and, for a rowheader column, leaves the row unnamed), and a
+	// duplicate id inside one row puts `tabindex=0` on two cells because the
+	// focus comparison is a plain id match. Client-only: on the server no column
+	// has registered yet, so every cell would look unknown.
+	if (import.meta.env.DEV) {
+		$effect(() => {
+			const id = columnId;
+			if (tableState.navColumns.indexOf(id) === -1) {
+				console.warn(
+					`[TableView] <TableView.Cell column="${id}"> does not match any declared column.`
+				);
+				return;
+			}
+			return untrack(() => tableState.claimCellSlot(row.rowKey, id));
+		});
+	}
+
+	const isCellFocused = $derived(tableState.isCellFocused(row.rowKey, columnId));
 	// Leading-cell marker: when there's no checkbox column, the very first cell
 	// of each row is the row's leading edge — render the row focus indicator
 	// inside it. With a checkbox column the indicator lives inside that td
 	// (see `<TableView.Row>`), so we skip it here to avoid duplicates.
-	const isLeadingCell = $derived(cellIndex === 0 && tableState.selectionMode === 'none');
+	// The leading cell paints the row's focus / selection accent, so it is
+	// whichever cell sits at the leading edge — the selection column takes that
+	// job whenever selection is on.
+	const isLeadingCell = $derived(tableState.navColumns.indexOf(columnId) === 0);
 	// `aria-colindex` is computed against the *visible* column set,
 	// matching W3C ARIA APG semantics. Hidden columns drop out — both because
 	// they're not in the DOM and so AT correctly reports "column N of M".
 	// Selection-mode tables prepend a checkbox column (col 1), so cells start
 	// at col 2 in that case.
-	const ariaColIndex = $derived(columnId ? tableState.navColumns.indexOf(columnId) + 1 : 0);
+	const ariaColIndex = $derived(tableState.navColumns.indexOf(columnId) + 1);
 
 	function handleKeydown(e: KeyboardEvent) {
-		if (!columnId) return;
 		// Bubbles from cell descendants (Button / TextField inside a cell) must
 		// not drive grid navigation; only keys fired *on* the cell itself do.
 		if (e.target !== e.currentTarget) return;

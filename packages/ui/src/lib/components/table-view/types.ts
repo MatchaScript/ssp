@@ -1,6 +1,6 @@
 import type { Snippet } from 'svelte';
 import type { HTMLTableAttributes } from 'svelte/elements';
-import type { ColumnSize, ColumnStaticSize } from './state/column-layout.js';
+import type { ColumnDescriptor } from './state/collection.js';
 
 // ── Display ──────────────────────────────────────────────────
 // `size` is intentionally absent — S2 has no equivalent prop. Vertical rhythm
@@ -50,15 +50,20 @@ export type EnumFilterOption = {
 };
 
 // ── Root props ───────────────────────────────────────────────
-// API is markup compositional throughout (RS S2 parity): consumers declare
-// columns / rows / cells as JSX-style children, not as data passed via props.
-// Hide the header by omitting <TableView.Header>; provide an empty state by
-// passing `renderEmptyState` and an empty body.
+// Columns come from `<TableView.Header columns>` and rows from
+// `<TableView.Body items>`; cells are still written as markup and bind to a
+// column by id. Provide an empty state by passing `renderEmptyState` and an
+// empty `items`.
 export type TableViewRootProps = Omit<HTMLTableAttributes, 'role' | 'children'> & {
 	// display
 	density?: TableViewDensity;
 	isQuiet?: boolean;
 	overflowMode?: TableViewOverflowMode;
+	/**
+	 * Hide the header row visually. The `<thead>` stays in the DOM so column
+	 * names remain available to assistive technology.
+	 */
+	hideHeader?: boolean;
 
 	// disabled
 	isDisabled?: boolean;
@@ -104,62 +109,31 @@ export type TableViewRootProps = Omit<HTMLTableAttributes, 'role' | 'children'> 
 };
 
 // ── Header props ─────────────────────────────────────────────
-// Hosts <TableView.Column> children inside a <thead><tr>. The select-all
-// checkbox column is injected automatically when selectionMode !== 'none'.
+// `columns` is the column order: the header cells, the `<colgroup>` and
+// `aria-colindex` all read this one array, so they cannot disagree. The
+// select-all checkbox column is injected automatically when
+// selectionMode !== 'none'.
 export type TableViewHeaderProps = {
-	children: Snippet;
+	columns: readonly TableViewColumn[];
+	/** Header cell content. Defaults to the column's `label`. */
+	column?: Snippet<[TableViewColumn]>;
 };
 
 // ── Body props ───────────────────────────────────────────────
-// Wraps row markup in <tbody>. `children` is optional so consumers can render
-// an empty body (the empty-state snippet on Root will fill in).
-export type TableViewBodyProps = {
-	children?: Snippet;
+// `items` is the row order and the row identity: `getKey` names each row, and
+// the `row` snippet renders it. Position-aware behavior (arrow keys, range
+// selection, announcements) reads the array, never the DOM.
+export type TableViewBodyProps<TItem> = {
+	items: readonly TItem[];
+	getKey: (item: TItem, index: number) => string;
+	row: Snippet<[TItem, number]>;
 };
 
-// ── Column props ─────────────────────────────────────────────
-// Children render the column header label. Sort UI is opt-in via
+// ── Column ───────────────────────────────────────────────────
+// One entry of `<TableView.Header columns>`. Sort UI is opt-in via
 // `allowsSorting`; the consumer is responsible for actually sorting their data
 // in response to `onSortChange` on Root (RS pattern — see docs).
-export type TableViewColumnProps = {
-	id: string;
-
-	// a11y
-	isRowHeader?: boolean;
-
-	// display
-	align?: 'start' | 'center' | 'end';
-	showDivider?: boolean;
-
-	// sorting
-	allowsSorting?: boolean;
-
-	// column menu — opt-in surface area exposed on the column's
-	// dropdown menu. Each flag adds the corresponding menu item.
-	allowsHiding?: boolean;
-
-	// filtering — declares the column as filterable and picks the UI
-	// dispatcher (text input, two number inputs, or a checkbox list of
-	// `enumOptions`). The consumer still owns applying the filter to data;
-	// the table only stores + emits the descriptor.
-	filterType?: ColumnFilterType;
-	enumOptions?: EnumFilterOption[];
-
-	// sizing — width can be a number (px), `${number}%`, or `${number}fr`.
-	// `defaultWidth` is the initial value when uncontrolled; `width` is the
-	// controlled override.
-	width?: ColumnSize;
-	defaultWidth?: ColumnSize;
-	minWidth?: ColumnStaticSize;
-	maxWidth?: ColumnStaticSize;
-
-	// resize — opt-in drag handle on the column's trailing edge. The column
-	// menu's "Resize column" entry also gates on this flag.
-	allowsResizing?: boolean;
-
-	// content
-	children: Snippet;
-};
+export type TableViewColumn = ColumnDescriptor;
 
 // ── Row props ────────────────────────────────────────────────
 // `href` turns the row into a link. We render a stretched `<a>` inside the
@@ -170,8 +144,6 @@ export type TableViewColumnProps = {
 // `linkBehavior='override'` default for tables) — the checkbox column is
 // still the way to select linked rows.
 export type TableViewRowProps = {
-	key: string;
-	isDisabled?: boolean;
 	textValue?: string;
 
 	// link behavior
@@ -189,9 +161,12 @@ export type TableViewRowProps = {
 
 // ── Cell props ───────────────────────────────────────────────
 export type TableViewCellProps = {
-	// Override the default markup-order column resolution. Useful when a row
-	// reorders or skips cells relative to the column declaration order.
-	column?: string;
+	/** Id of the column this cell belongs to. */
+	column: string;
+	/**
+	 * Text for this cell. Cells in a rowheader column supply the row's
+	 * accessible name and its typeahead text.
+	 */
 	textValue?: string;
 	children: Snippet;
 };

@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { TableViewRowProps } from './types.js';
-	import { getTableContext, setRowContext } from './state/context.js';
+	import { getTableContext, getRowScope, setRowContext } from './state/context.js';
 	import { SELECTION_COLUMN_ID } from './state/table-state.svelte.js';
 	import { CheckboxBox } from '../checkbox/index.js';
 
 	let {
-		key,
-		isDisabled: isDisabledProp,
 		textValue,
 		href,
 		target,
@@ -18,22 +16,19 @@
 	}: TableViewRowProps = $props();
 
 	const tableState = getTableContext();
+	const scope = getRowScope();
+	const key = $derived(scope.key);
 	const domId = $props.id();
 	let ref: HTMLTableRowElement | null = $state(null);
 
-	// Per-row cell index counter. Each <TableView.Cell> increments this on init,
-	// resolving its column by markup order. Closure captures `cellCounter` per
-	// row instance, so the count starts at 0 for every row.
-	let cellCounter = 0;
-	// `key` / `domId` are stable for the component instance (Svelte recreates the
-	// component when the `{#each (key)}` key changes), so they're stored by value.
-	// Link / a11y props (href / target / rel / download / textValue) use getters
-	// so descendant <TableView.Cell> sees the live value — without these, changing
-	// `href` after mount leaves the stretched <a> overlay (and aria-label) stale.
+	// All getters: identity comes from the row scope, and the link / a11y props
+	// must stay live for descendant <TableView.Cell> — a value copy would leave
+	// the stretched <a> overlay (and aria-label) stale when `href` changes.
 	setRowContext({
-		rowKey: key,
+		get rowKey() {
+			return key;
+		},
 		rowDomId: domId,
-		getNextCellIndex: () => cellCounter++,
 		get href() {
 			return href;
 		},
@@ -52,7 +47,7 @@
 	});
 
 	const isSelected = $derived(tableState.isSelected(key));
-	const isDisabled = $derived(!!isDisabledProp || tableState.isRowDisabled(key));
+	const isDisabled = $derived(tableState.isRowDisabled(key));
 	const isFocused = $derived(tableState.isFocused(domId));
 	// Roving tabindex hands off to the cell / column-header when 2D nav is
 	// active. The row stays the *highlight* target (selection anchor, aria),
@@ -70,16 +65,16 @@
 	// rowheader column is registered (e.g. transient state during column
 	// registration) `aria-labelledby` is omitted and SR falls back to the
 	// row's textual content.
-	const rowHeaderColumnId = $derived(
-		tableState.visibleColumns.items.find((c) => c.isRowHeader)?.id
-	);
+	// All rowheader cells, space-joined — a table may declare more than one, and
+	// naming the row from only the first splits its accessible name.
 	const ariaLabelledBy = $derived(
-		rowHeaderColumnId ? `${domId}-cell-${rowHeaderColumnId}` : undefined
+		tableState.rowHeaderColumnIds.length > 0
+			? tableState.rowHeaderColumnIds.map((id) => `${domId}-cell-${id}`).join(' ')
+			: undefined
 	);
-	// 1-based; the header row is always row 1, so body rows start at 2.
-	// Reads from the collection's row order so it tracks dynamic
-	// add/remove and any future sort/filter pipeline.
-	const ariaRowIndex = $derived(tableState.rows.indexOf(key) + 2);
+	// 1-based; the header row is always row 1, so body rows start at 2. The
+	// position comes from the row scope, i.e. the consumer's array index.
+	const ariaRowIndex = $derived(scope.index + 2);
 
 	$effect(() => {
 		const el = ref;
@@ -99,20 +94,21 @@
 	// Push reactive updates to the row's `textValue` so typeahead /
 	// announcement labels stay in sync. When the consumer omits
 	// `textValue`, scrape it from the rowheader cell's textContent — this
-	// makes `<TableView.Row key={u.id}>` "just work" for typeahead without
+	// makes a row "just work" for typeahead without
 	// requiring every consumer to mirror their data into a `textValue`
 	// prop. We only run the scrape lazily (when no explicit textValue is
 	// provided) and only post-mount, so child cells have already rendered.
+	// Label resolution, in the same order as upstream `getTextValue`: the row's
+	// own `textValue`, then its rowheader cells' `textValue`. Scraping the
+	// rendered `<th>` is the last resort, kept so a consumer who supplies
+	// neither still gets working typeahead and announcements.
 	$effect(() => {
-		let value = resolvedTextValue;
-		if (textValue === undefined && ref) {
-			const rowheader = ref.querySelector<HTMLElement>('th[scope="row"]');
-			const scraped = rowheader?.textContent?.trim();
-			if (scraped) value = scraped;
-		}
+		// Only the row's own `textValue` is stored. The rowheader-cell text and
+		// the DOM scrape are resolved on read (`#rowLabel`), so a cell whose text
+		// changes after mount is reflected without the row having to re-register.
 		tableState.updateRow(domId, {
 			disabled: isDisabled,
-			textValue: value
+			textValue: textValue ?? ''
 		});
 	});
 	// `href` and per-row `onAction` may change after mount (e.g. consumer
@@ -201,6 +197,9 @@
 	});
 
 	const isCheckboxCellFocused = $derived(tableState.isCellFocused(key, SELECTION_COLUMN_ID));
+	// Same expression every other column index uses — the selection column is
+	// simply the one that sits at index 0 of the nav order.
+	const checkboxColIndex = $derived(tableState.navColumns.indexOf(SELECTION_COLUMN_ID) + 1);
 
 	function handleCheckboxKeydown(e: KeyboardEvent) {
 		if (isDisabled) return;
@@ -237,7 +236,7 @@
 			role="gridcell"
 			data-spectrum-table-view-checkbox-cell
 			data-focused={isCheckboxCellFocused || undefined}
-			aria-colindex={1}
+			aria-colindex={checkboxColIndex}
 			tabindex={isCheckboxCellFocused ? 0 : -1}
 			onclick={handleCheckboxClick}
 			onkeydown={handleCheckboxKeydown}

@@ -1,7 +1,6 @@
 export { default as Root } from './table-view.svelte';
 export { default as Header } from './table-view-header.svelte';
 export { default as Body } from './table-view-body.svelte';
-export { default as Column } from './table-view-column.svelte';
 export { default as Row } from './table-view-row.svelte';
 export { default as Cell } from './table-view-cell.svelte';
 
@@ -12,8 +11,8 @@ export type {
 	TableViewHeaderProps as HeaderProps,
 	TableViewBodyProps,
 	TableViewBodyProps as BodyProps,
-	TableViewColumnProps,
-	TableViewColumnProps as ColumnProps,
+	TableViewColumn,
+	TableViewColumn as Column,
 	TableViewRowProps,
 	TableViewRowProps as RowProps,
 	TableViewCellProps,

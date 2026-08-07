@@ -30,17 +30,6 @@ export function order<T>(items: readonly T[], keyOf: (item: T) => string): Order
 
 export const EMPTY_ORDERED: Ordered<never> = order([], () => '');
 
-// Runtime descriptor for a `<TableView.Row>` instance.
-export type RowDescriptor = {
-	key: string;
-	textValue?: string;
-	isDisabled?: boolean;
-	// The row's `<tr>` element. Carried so the canonical row order can be
-	// derived from DOM position (`compareDocumentPosition`) rather than mount
-	// order — a keyed `{#each}` reorders the DOM without re-registering.
-	el: HTMLElement;
-};
-
 /**
  * Non-reactive per-row metadata used only inside event handlers. Kept out of
  * the reactive `RowDescriptor` because `onAction` is typically an inline
@@ -53,15 +42,21 @@ export type RowMeta = {
 	onAction?: () => void;
 };
 
-// Runtime descriptor for a `<TableView.Column>` instance. Children (= header
-// label) are rendered by the Column component itself; only metadata flows into
-// state for cells / rows / sort UI to consume.
+// One column. Supplied as an array on `<TableView.Header columns>`; the array
+// order is the column order for the header, the colgroup and `aria-colindex`
+// alike.
 export type ColumnDescriptor = {
 	id: string;
-	isRowHeader: boolean;
-	allowsSorting: boolean;
-	allowsHiding: boolean;
-	allowsResizing: boolean;
+	/**
+	 * Header text. Also the name the live region announces for this column, so
+	 * it is a string rather than markup — scraping the `<th>` would pick up the
+	 * column menu and filter UI that render inside it.
+	 */
+	label: string;
+	isRowHeader?: boolean;
+	allowsSorting?: boolean;
+	allowsHiding?: boolean;
+	allowsResizing?: boolean;
 	align?: 'start' | 'center' | 'end';
 	showDivider?: boolean;
 	width?: ColumnSize;

@@ -13,6 +13,7 @@
 	let {
 		density = 'regular',
 		isQuiet = false,
+		hideHeader = false,
 		overflowMode = 'truncate',
 		isDisabled = false,
 		disabledKeys,
@@ -140,6 +141,9 @@
 		},
 		get isQuiet() {
 			return isQuiet;
+		},
+		get hideHeader() {
+			return hideHeader;
 		},
 		get overflowMode() {
 			return overflowMode;
@@ -274,6 +278,7 @@
 		role="grid"
 		data-spectrum-table-view
 		data-density={density}
+		data-hide-header={hideHeader || undefined}
 		data-quiet={isQuiet || undefined}
 		data-disabled={isDisabled || undefined}
 		data-selection-mode={selectionMode}
@@ -424,5 +429,17 @@
 		outline-offset: -2px;
 		border-radius: var(--corner-radius-300);
 		z-index: 2;
+	}
+
+	/* `hideHeader` keeps the header row in the DOM — the column names are the
+	   grid's semantics — but takes it out of the visual layout. clip-path plus
+	   zero block-size, rather than `display: none`, so AT still reaches it. */
+	[data-spectrum-table-view][data-hide-header] :global([data-spectrum-table-view-header-row]) {
+		position: absolute;
+		block-size: 1px;
+		inline-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 </style>

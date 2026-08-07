@@ -4,10 +4,27 @@
 	import { getTableContext } from './state/context.js';
 	import { SELECTION_COLUMN_ID } from './state/table-state.svelte.js';
 	import { CheckboxBox } from '../checkbox/index.js';
+	import TableViewColumn from './table-view-column.svelte';
 
-	let { children }: TableViewHeaderProps = $props();
+	let { columns, column }: TableViewHeaderProps = $props();
 
 	const tableState = getTableContext();
+
+	// Registered here, in the component body rather than an `$effect`, so the
+	// columns are available as soon as Header renders. This array is also the
+	// column order: header cells, `<col>` elements and `aria-colindex` all read
+	// it, so they cannot disagree.
+	//
+	// `<colgroup>` is still empty on the server: HTML requires it to precede
+	// `<thead>`, so Root emits it before this component has run. Column-dependent
+	// output is a client-side result, as it was before.
+	const release = tableState.setColumnSource({
+		get columns() {
+			return columns;
+		}
+	});
+	// See <TableView.Body>: registration is synchronous, release is not.
+	$effect(() => release);
 
 	const showCheckboxColumn = $derived(tableState.selectionMode !== 'none');
 
@@ -49,13 +66,13 @@
 				data-spectrum-table-view-checkbox-header
 				data-focused={isCheckboxHeaderFocused || undefined}
 				role={tableState.selectionMode === 'multiple' ? 'columnheader' : 'presentation'}
-				aria-colindex={1}
+				aria-colindex={tableState.navColumns.indexOf(SELECTION_COLUMN_ID) + 1}
 				aria-label={tableState.selectionMode === 'multiple' ? 'Select all' : undefined}
 				tabindex={isCheckboxHeaderFocused ? 0 : -1}
 				onclick={tableState.selectionMode === 'multiple' ? handleCheckboxClick : undefined}
 				onkeydown={handleCheckboxKeydown}
 			>
-				{#if tableState.selectionMode === 'multiple'}
+				{#if tableState.selectionMode === 'multiple' && !tableState.hideHeader}
 					<CheckboxBox
 						checked={tableState.isAllSelected}
 						indeterminate={tableState.isSomeSelected}
@@ -65,7 +82,9 @@
 				{/if}
 			</th>
 		{/if}
-		{@render children()}
+		{#each columns as col (col.id)}
+			<TableViewColumn column={col} content={column} />
+		{/each}
 	</tr>
 </thead>
 
