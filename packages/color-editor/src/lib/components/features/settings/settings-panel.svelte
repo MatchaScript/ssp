@@ -9,6 +9,7 @@
 		SegmentedControl,
 		SegmentedControlItem
 	} from '@matchalatte/ssp-ui/components/segmented-control';
+	import { PageHeader } from '$lib/components/layout';
 	import { m } from '$lib/paraglide/messages';
 	import { getLocale, setLocale } from '$lib/paraglide/runtime';
 	import { themeState } from '$lib/stores/theme.svelte';
@@ -34,9 +35,9 @@
 	}
 </script>
 
-<div class="settings-page">
-	<h1>{m.settings_title()}</h1>
+<PageHeader title={m.settings_title()} />
 
+<div class="settings-page">
 	<!-- Language -->
 	<section class="settings-section">
 		<h2>{m.settings_language()}</h2>
@@ -79,17 +80,10 @@
 		padding-inline: var(--space-6);
 	}
 
-	h1 {
-		font-size: var(--text-400);
-		font-weight: 700;
-		color: var(--neutral-content-color-default);
-		margin: 0;
-	}
-
 	h2 {
-		font-size: var(--text-200);
+		font-size: var(--text-100);
 		font-weight: 600;
-		color: var(--neutral-content-color-default);
+		color: var(--neutral-subdued-content-color-default);
 		margin: 0;
 	}
 

@@ -1,5 +1,4 @@
 <script lang="ts">
-	import { resolve } from '$app/paths';
 	import { page } from '$app/state';
 	import { onDestroy, untrack } from 'svelte';
 	import {
@@ -9,42 +8,18 @@
 		ChartSpline,
 		Sun,
 		Settings,
-		Menu as MenuIcon,
-		Save,
-		Download
+		Menu as MenuIcon
 	} from '@matchalatte/ssp-ui/components/icon';
-	import { Icon, ActionButton, SideNav, Divider, Text } from '@matchalatte/ssp-ui';
-	import {
-		Picker,
-		PickerTrigger,
-		PickerContent,
-		PickerItem
-	} from '@matchalatte/ssp-ui/components/picker';
+	import { Icon, ActionButton, SideNav, Text } from '@matchalatte/ssp-ui';
 	import { m } from '$lib/paraglide/messages';
 	import { themeState } from '$lib/stores/theme.svelte';
-	import { configState } from '$lib/stores/config.svelte';
-	import { colorSpaceState } from '$lib/stores/color-space.svelte';
-	import { downloadSpectrumCss } from '$lib/utils/export-css';
-	import { COLOR_SPACES, COLOR_SPACE_IDS, type ColorSpaceId } from '$lib/types/color-space';
 
-	function handleSave() {
-		configState.save();
-	}
-
-	function handleReset() {
-		configState.reset();
-	}
-
-	function handleExportCss() {
-		downloadSpectrumCss(configState.raw);
-	}
+	let { children } = $props();
 
 	function matchPath(href: string, { exact }: { exact?: boolean } = {}) {
 		const path = page.url.pathname;
 		return exact ? path === href : path.startsWith(href);
 	}
-
-	let { children } = $props();
 
 	const cleanupTheme = untrack(() => themeState.init());
 	onDestroy(cleanupTheme);
@@ -54,7 +29,7 @@
 </script>
 
 <div class="app-layout" class:app-layout--collapsed={navCollapsed}>
-	<!-- Col 1: デスクトップ用トグルボタン -->
+	<!-- Col 1: desktop collapse toggle -->
 	<div class="app-toggle">
 		<ActionButton
 			isQuiet
@@ -67,7 +42,7 @@
 		</ActionButton>
 	</div>
 
-	<!-- Col 1-2: ナビ -->
+	<!-- Col 1-2: navigation -->
 	<div class="app-nav-wrapper">
 		<SideNav.Root bind:open={navOpen} activeMatcher={matchPath}>
 			<SideNav.Section grow heading={m.nav_main()}>
@@ -102,7 +77,7 @@
 		</SideNav.Root>
 	</div>
 
-	<!-- Col 3: コンテンツエリア -->
+	<!-- Col 3: content area. Each page renders its own PageHeader as the top row. -->
 	<div class="app-content">
 		<div class="app-menu-btn">
 			<ActionButton
@@ -116,39 +91,6 @@
 			</ActionButton>
 		</div>
 
-		<header class="app-header">
-			<a href={resolve('/')} class="header-logo">Color Editor</a>
-			<div class="header-actions">
-				<ActionButton size="s" onclick={handleSave} aria-label={m.header_save()}>
-					<Icon icon={Save} />
-					<Text>{m.header_save()}</Text>
-				</ActionButton>
-				<ActionButton size="s" onclick={handleExportCss} aria-label={m.header_export_css()}>
-					<Icon icon={Download} />
-					<Text>{m.header_export_css()}</Text>
-				</ActionButton>
-				<ActionButton size="s" isQuiet onclick={handleReset} aria-label={m.header_reset()}>
-					<Text>{m.header_reset()}</Text>
-				</ActionButton>
-			</div>
-			<div class="header-color-space">
-				<Picker
-					selectedKey={colorSpaceState.id}
-					onSelectionChange={(v) => colorSpaceState.setId(v as ColorSpaceId)}
-					label={COLOR_SPACES[colorSpaceState.id].label}
-					selectionMode="single"
-					size="s"
-				>
-					<PickerTrigger />
-					<PickerContent>
-						{#each COLOR_SPACE_IDS as id (id)}
-							<PickerItem value={id} label={COLOR_SPACES[id].label} />
-						{/each}
-					</PickerContent>
-				</Picker>
-			</div>
-		</header>
-		<Divider size="s" />
 		<main class="app-main">
 			{@render children()}
 		</main>
@@ -171,12 +113,14 @@
 		grid-template-columns: var(--space-16) 0px 1fr;
 	}
 
+	/* Row 1 exists only to line the toggle up with each page's header bar. */
 	.app-toggle {
 		grid-column: 1;
 		grid-row: 1;
 		display: flex;
 		align-items: center;
 		justify-content: center;
+		height: 3rem;
 		background-color: var(--background-layer-1-color);
 	}
 
@@ -189,7 +133,6 @@
 		grid-column: 3;
 		grid-row: 1 / -1;
 		display: grid;
-		grid-template-rows: subgrid;
 		min-height: 0;
 		background-color: var(--background-base-color);
 		border-top-left-radius: var(--corner-radius-medium-default);
@@ -205,37 +148,7 @@
 		display: none;
 	}
 
-	.app-header {
-		grid-row: 1;
-		display: flex;
-		align-items: center;
-		gap: var(--space-2);
-		height: 3.5rem;
-		padding-inline: var(--space-4);
-		z-index: 1;
-	}
-
-	.header-color-space {
-		width: 8rem;
-	}
-
-	.header-actions {
-		display: flex;
-		align-items: center;
-		gap: var(--space-1);
-	}
-
-	.header-logo {
-		flex: 1;
-		font-size: var(--text-200);
-		font-weight: 700;
-		letter-spacing: -0.025em;
-		color: var(--neutral-content-color-default);
-		text-decoration: none;
-	}
-
 	.app-main {
-		grid-row: 2;
 		overflow-y: auto;
 		min-height: 0;
 	}
@@ -259,12 +172,8 @@
 			position: absolute;
 			top: 0;
 			inset-inline-start: var(--space-2);
-			height: 3.5rem;
+			height: 3rem;
 			z-index: 1;
-		}
-
-		.app-header {
-			padding-inline-start: calc(var(--space-2) + var(--space-10));
 		}
 
 		.app-nav-wrapper {

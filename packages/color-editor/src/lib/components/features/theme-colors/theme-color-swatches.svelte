@@ -1,5 +1,7 @@
 <script lang="ts">
 	import { parse, oklch } from 'culori';
+	import { stripScaleName } from '$lib/utils/scale-label';
+	import { m } from '$lib/paraglide/messages';
 
 	interface ColorValue {
 		name: string;
@@ -25,10 +27,6 @@
 		return lch?.l ?? 0.5;
 	}
 
-	function stopLabel(valueName: string): string {
-		return valueName.replace(new RegExp(`^${name}\\s*`, 'i'), '');
-	}
-
 	function formatContrast(contrast: number): string {
 		if (contrastFormula === 'wcag3') {
 			return `Lc ${contrast.toFixed(1)}`;
@@ -36,8 +34,14 @@
 		return `${contrast.toFixed(2)}:1`;
 	}
 
+	let copiedValue = $state<string | undefined>();
+	let copiedTimer: ReturnType<typeof setTimeout> | undefined;
+
 	async function copyToClipboard(value: string) {
 		await navigator.clipboard.writeText(value);
+		copiedValue = value;
+		clearTimeout(copiedTimer);
+		copiedTimer = setTimeout(() => (copiedValue = undefined), 1500);
 	}
 </script>
 
@@ -57,8 +61,12 @@
 				title={colorValue.value}
 				onclick={() => copyToClipboard(colorValue.value)}
 			>
-				<span class="swatch-stop">{stopLabel(colorValue.name)}</span>
-				<span class="swatch-contrast">{formatContrast(colorValue.contrast)}</span>
+				<span class="swatch-stop">{stripScaleName(colorValue.name, name)}</span>
+				<span class="swatch-contrast">
+					{copiedValue === colorValue.value
+						? m.theme_colors_copied()
+						: formatContrast(colorValue.contrast)}
+				</span>
 			</button>
 		{/each}
 	</div>

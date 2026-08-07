@@ -153,6 +153,9 @@ importers:
       svelte-check:
         specifier: 'catalog:'
         version: 4.7.4(picomatch@4.0.5)(svelte@5.56.8(@typescript-eslint/types@8.62.1))(typescript@6.0.3)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@26.1.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@26.1.1)(esbuild@0.27.7)(jiti@2.6.1))
 
   packages/theme:
     dependencies:
@@ -169,6 +172,9 @@ importers:
       vite:
         specifier: 'catalog:'
         version: 8.2.0(@types/node@26.1.1)(esbuild@0.27.7)(jiti@2.6.1)
+      vitest:
+        specifier: 'catalog:'
+        version: 4.1.10(@types/node@26.1.1)(@vitest/browser-playwright@4.1.10)(@vitest/coverage-v8@4.1.10)(vite@8.2.0(@types/node@26.1.1)(esbuild@0.27.7)(jiti@2.6.1))
 
   packages/ui:
     dependencies:

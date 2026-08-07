@@ -1,4 +1,4 @@
-import type { ColorSpaceId } from '$lib/types/color-space';
+import { getWheelRenderer, type ColorSpaceId } from '$lib/types/color-space';
 
 const VERT = /* glsl */ `#version 300 es
 in vec2 a_position;
@@ -391,21 +391,6 @@ function buildLineStrip(
 	return { pos, arclen, count: n * 2 };
 }
 
-const COLOR_SPACE_MAP: Record<string, { index: number; maxChroma: number }> = {
-	cam02p: { index: 0, maxChroma: 120 },
-	oklch: { index: 1, maxChroma: 0.322 },
-	lch: { index: 2, maxChroma: 100 },
-	hsl: { index: 3, maxChroma: 1 },
-	hsv: { index: 4, maxChroma: 1 }
-};
-
-function getWheelSpaceId(id: ColorSpaceId): string {
-	if (id === 'oklab') return 'oklch';
-	if (id === 'lab') return 'lch';
-	if (id === 'cam02p') return 'cam02p';
-	return id;
-}
-
 export class WheelGLRenderer {
 	private gl: WebGL2RenderingContext;
 	private program: WebGLProgram;
@@ -551,9 +536,7 @@ export class WheelGLRenderer {
 		showGamutBoundary = false
 	) {
 		const gl = this.gl;
-		const wheelId = getWheelSpaceId(colorSpace);
-		const space = COLOR_SPACE_MAP[wheelId];
-		if (!space) return;
+		const wheel = getWheelRenderer(colorSpace);
 
 		if (this.supportsP3) {
 			(gl as unknown as Record<string, string>).drawingBufferColorSpace =
@@ -568,9 +551,9 @@ export class WheelGLRenderer {
 
 		gl.useProgram(this.program);
 		gl.uniform1f(this.uniforms.u_lightness, lightness / 100);
-		gl.uniform1i(this.uniforms.u_colorSpace, space.index);
+		gl.uniform1i(this.uniforms.u_colorSpace, wheel.shaderIndex);
 		gl.uniform1i(this.uniforms.u_outputGamut, outputGamut === 'display-p3' ? 1 : 0);
-		gl.uniform1f(this.uniforms.u_maxChroma, space.maxChroma);
+		gl.uniform1f(this.uniforms.u_maxChroma, wheel.maxChroma);
 		gl.uniform1i(this.uniforms.u_showGamutBoundary, showGamutBoundary ? 1 : 0);
 
 		gl.bindVertexArray(this.vao);
