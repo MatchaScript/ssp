@@ -99,7 +99,7 @@
 		data-quiet={state.isQuiet || undefined}
 		data-highlight={isHighlightStyle && isSelected ? '' : undefined}
 		class={className}
-		tabindex={isFocused ? 0 : -1}
+		tabindex={state.itemTabIndex(domId)}
 		onclick={handleClick}
 		ondblclick={handleDoubleClick}
 		onfocus={handleFocus}

@@ -52,7 +52,6 @@
 	const menuState = getMenuContext();
 	const submenuCtx = getSubmenuTriggerContext();
 
-	const isHighlighted = $derived(menuState.highlightedId === domId);
 	const isSelected = $derived(menuState.isSelected(id));
 	const showCheckmark = $derived(menuState.selectionMode !== 'none');
 	const isSubmenuTrigger = !!submenuCtx;
@@ -134,7 +133,7 @@
 	this={tag}
 	bind:this={ref}
 	{role}
-	tabindex={isHighlighted ? 0 : -1}
+	tabindex={menuState.itemTabIndex(domId)}
 	href={isLink ? href : undefined}
 	target={isLink ? target : undefined}
 	rel={isLink ? resolvedRel : undefined}

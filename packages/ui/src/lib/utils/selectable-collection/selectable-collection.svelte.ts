@@ -165,6 +165,12 @@ export class SelectableCollection {
 	 * Used by `extendSelection` to compute a range.
 	 */
 	lastSelectedKey: string | null = $state(null);
+	// Far end of the range the current shift-gesture owns. Set only by
+	// `extendSelection`; every other mutator clears it through `#commit`. Without
+	// it the previous range cannot be subtracted, and extending would have to
+	// rebuild the selection from scratch — which is what discards the keys the
+	// user selected outside the range.
+	#extendedToKey: string | null = null;
 
 	constructor(props: SelectableCollectionProps) {
 		this.#props = props;
@@ -241,6 +247,26 @@ export class SelectableCollection {
 		}
 	}
 
+	// ── Roving tabindex ──
+	//
+	// One rule for every collection built on this primitive. The container owns
+	// the tab stop while nothing inside is focused; once an item is focused it
+	// owns the stop and the container drops out, so the widget is always exactly
+	// one tab stop. Disabled items get no attribute at all rather than -1, so
+	// they are not focusable even programmatically. Mirrors react-aria's
+	// `useSelectableCollection` (tabIndex = focusedKey == null ? 0 : -1) and
+	// `useSelectableItem` (tabIndex = key === focusedKey ? 0 : -1, omitted when
+	// disabled).
+
+	get containerTabIndex(): 0 | -1 {
+		return this.highlightedId === null ? 0 : -1;
+	}
+
+	itemTabIndex(domId: string): 0 | -1 | undefined {
+		if (this.#items.get(domId)?.disabled) return undefined;
+		return this.highlightedId === domId ? 0 : -1;
+	}
+
 	/**
 	 * Sync `highlightedId` without calling `.focus()`. Use this from a `focus` event
 	 * handler when the element already received focus externally (Tab, click, AT).
@@ -288,6 +314,7 @@ export class SelectableCollection {
 
 	#commit(next: Set<string>, anchor: string | null) {
 		this.lastSelectedKey = anchor;
+		this.#extendedToKey = null;
 		this.#props.onSelectionChange?.(next);
 	}
 
@@ -345,14 +372,27 @@ export class SelectableCollection {
 			return;
 		}
 
+		// Build on the existing selection rather than replacing it: shift-clicking
+		// must not discard rows the user selected outside the range. Only the
+		// range this gesture previously covered is taken back, so shrinking the
+		// range deselects what it passes over.
+		const next = new Set(this.selectedKeys);
+		const prevIdx = this.#extendedToKey === null
+			? -1
+			: ordered.findIndex((i) => i.value === this.#extendedToKey);
+		if (prevIdx !== -1) {
+			const [prevStart, prevEnd] = fromIdx <= prevIdx ? [fromIdx, prevIdx] : [prevIdx, fromIdx];
+			for (let i = prevStart; i <= prevEnd; i++) next.delete(ordered[i].value);
+		}
 		const [start, end] = fromIdx <= toIdx ? [fromIdx, toIdx] : [toIdx, fromIdx];
-		const next = new Set<string>();
 		for (let i = start; i <= end; i++) {
 			const item = ordered[i];
 			if (!item.disabled) next.add(item.value);
 		}
 		// Anchor stays at lastSelectedKey so subsequent shifts pivot from the same point.
-		this.#commit(next, this.lastSelectedKey);
+		const anchor = this.lastSelectedKey;
+		this.#commit(next, anchor);
+		this.#extendedToKey = value;
 	}
 
 	/** Add every enabled item to the selection. multiple-mode only. */

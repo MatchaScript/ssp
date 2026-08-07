@@ -102,7 +102,7 @@
 	data-selection-style={selectionStyle}
 	data-empty={!children && !isLoading ? '' : undefined}
 	class={className}
-	tabindex={isDisabled ? -1 : 0}
+	tabindex={isDisabled ? -1 : listViewState.containerTabIndex}
 	onkeydown={handleKeydown}
 	onscroll={handleScroll}
 	onfocusin={handleFocusIn}

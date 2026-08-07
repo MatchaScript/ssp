@@ -74,6 +74,12 @@ export class ListViewState {
 
 	// ── Collection delegation ──
 
+	get containerTabIndex() {
+		return this.#collection.containerTabIndex;
+	}
+	itemTabIndex(domId: string) {
+		return this.#collection.itemTabIndex(domId);
+	}
 	get highlightedId() {
 		return this.#collection.highlightedId;
 	}
