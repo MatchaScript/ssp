@@ -12,6 +12,8 @@
 		PickerItem
 	} from '@matchalatte/ssp-ui/components/picker';
 	import { LineChart } from '$lib/components/features/line-chart';
+	import { evenlySpacedRatios, ratiosForEvenLightness } from '$lib/utils/contrast-targets';
+	import { PageHeader } from '$lib/components/layout';
 	import { m } from '$lib/paraglide/messages';
 
 	const toLch = converter('lch');
@@ -79,29 +81,11 @@
 	}
 
 	function distributeRatios() {
-		if (targets.length < 2) return;
-		const min = Math.min(...targets);
-		const max = Math.max(...targets);
-		const distributed = targets.map((_, i) => {
-			const t = i / (targets.length - 1);
-			return Math.round((min * (1 - t) + max * t) * 1000) / 1000;
-		});
-		configState.setContrastTargets(distributed);
+		configState.setContrastTargets(evenlySpacedRatios(targets));
 	}
 
 	function distributeLightness() {
-		if (stops.length < 2) return;
-
-		// Approximate evenly-distributed lightness by linearly interpolating between
-		// the smallest and largest contrast ratios in the current targets.
-		const sortedRatios = [...targets].sort((a, b) => a - b);
-		const minR = sortedRatios[0];
-		const maxR = sortedRatios[sortedRatios.length - 1];
-		const distributed = targets.map((_, i) => {
-			const t = i / (targets.length - 1);
-			return Math.round((minR * (1 - t) + maxR * t) * 1000) / 1000;
-		});
-		configState.setContrastTargets(distributed);
+		configState.setContrastTargets(ratiosForEvenLightness(stops));
 	}
 
 	// ── Chart data ──
@@ -147,10 +131,8 @@
 </script>
 
 <div class="lightness-page">
-	<!-- Header -->
-	<div class="page-header">
-		<h1 class="page-title">{m.lightness_title()}</h1>
-		<div class="header-controls">
+	<PageHeader title={m.lightness_title()}>
+		{#snippet actions()}
 			<div class="header-picker">
 				<Picker
 					bind:selectedKey={previewColorName}
@@ -166,8 +148,8 @@
 					</PickerContent>
 				</Picker>
 			</div>
-		</div>
-	</div>
+		{/snippet}
+	</PageHeader>
 
 	<div class="page-body">
 		<!-- Left: Stop list -->
@@ -263,28 +245,6 @@
 		grid-template-rows: auto 1fr;
 		height: 100%;
 		min-height: 0;
-	}
-
-	.page-header {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-300);
-		padding: var(--spacing-200) var(--spacing-400);
-		border-bottom: 1px solid var(--gray-200);
-	}
-
-	.page-title {
-		flex: 1;
-		font-size: var(--text-200);
-		font-weight: 600;
-		color: var(--neutral-content-color-default);
-		margin: 0;
-	}
-
-	.header-controls {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-200);
 	}
 
 	.header-picker {

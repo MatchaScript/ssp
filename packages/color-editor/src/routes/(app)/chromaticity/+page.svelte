@@ -1,8 +1,7 @@
 <script lang="ts">
 	import { configState } from '$lib/stores/config.svelte';
 	import { colorSpaceState } from '$lib/stores/color-space.svelte';
-	import { Theme, Color, BackgroundColor } from '@adobe/leonardo-contrast-colors';
-	import { buildColorKeys } from '$lib/utils/color-keys';
+	import { palettesState } from '$lib/stores/palettes.svelte';
 	import { LineChart } from '$lib/components/features/line-chart';
 	import {
 		Picker,
@@ -14,54 +13,10 @@
 	import { Switch } from '@matchalatte/ssp-ui/components/switch';
 	import { m } from '$lib/paraglide/messages';
 	import ColorWheel from '$lib/components/features/color-wheel/color-wheel.svelte';
+	import { PageHeader } from '$lib/components/layout';
 	import { COLOR_SPACES } from '$lib/types/color-space';
-	import type { CssColor } from '@adobe/leonardo-contrast-colors';
-
-	const bg = new BackgroundColor({
-		name: 'bg',
-		colorKeys: ['#888888' as CssColor],
-		colorSpace: 'OKLCH',
-		ratios: [1]
-	});
-	const STORAGE_KEY = 'chromaticity-settings';
-
-	type DotMode = 'keyColors' | 'crossSection';
-
-	interface SavedSettings {
-		dotMode?: DotMode;
-		showPaths?: boolean;
-		showHarmonyLines?: boolean;
-		showGamutBoundary?: boolean;
-		snapLightness?: boolean;
-	}
-
-	function loadSettings(): SavedSettings {
-		try {
-			return JSON.parse(localStorage.getItem(STORAGE_KEY) ?? '{}');
-		} catch {
-			return {};
-		}
-	}
-
-	const saved = loadSettings();
-
-	let wheelLightness = $state(70);
-	let showPaths = $state(typeof saved.showPaths === 'boolean' ? saved.showPaths : true);
-	let showHarmonyLines = $state(
-		typeof saved.showHarmonyLines === 'boolean' ? saved.showHarmonyLines : false
-	);
-	let showGamutBoundary = $state(
-		typeof saved.showGamutBoundary === 'boolean' ? saved.showGamutBoundary : false
-	);
-	let snapLightness = $state(typeof saved.snapLightness === 'boolean' ? saved.snapLightness : true);
-	let dotMode = $state<DotMode>(saved.dotMode === 'crossSection' ? 'crossSection' : 'keyColors');
-
-	$effect(() => {
-		localStorage.setItem(
-			STORAGE_KEY,
-			JSON.stringify({ dotMode, showPaths, showHarmonyLines, showGamutBoundary, snapLightness })
-		);
-	});
+	import { wheelSettings } from '$lib/stores/wheel-settings.svelte';
+	import { crossSectionTicks, nearestTickIndex } from '$lib/utils/cross-section';
 
 	const colorSpaceLabel = $derived(COLOR_SPACES[colorSpaceState.id].label);
 	const spaceConfig = $derived(COLOR_SPACES[colorSpaceState.id]);
@@ -75,101 +30,47 @@
 		swatches: string[];
 	}
 
-	const contrastTargets = $derived(configState.raw.colorContrastTargets);
-	const previewLightness = $derived(configState.raw.themes.light.lightness);
-	const levelCount = $derived(contrastTargets?.length ?? 16);
+	const levelCount = $derived(configState.raw.colorContrastTargets?.length ?? 16);
 
-	const scales = $derived.by<ScaleData[]>(() => {
-		if (!contrastTargets?.length) return [];
-		return configState.colors.map((entry) => {
-			const colorHue = new Color({
-				name: entry.name,
-				colorKeys: buildColorKeys(entry),
-				colorSpace: 'CAM02',
-				ratios: [...contrastTargets]
-			});
-			const theme = new Theme({
-				colors: [bg, colorHue],
-				backgroundColor: bg,
-				lightness: previewLightness,
-				output: 'HEX',
-				formula: 'wcag2'
-			});
-			const [, ...colorEntries] = theme.contrastColors;
-			const match = colorEntries.find((c) => c.name === entry.name);
-			const swatches = match ? match.values.map((v) => v.value) : [];
-			return { name: entry.name, baseHex: entry.baseHex, swatches };
-		});
-	});
+	const scales = $derived.by<ScaleData[]>(() =>
+		configState.colors.map((entry) => ({
+			name: entry.name,
+			baseHex: entry.baseHex,
+			swatches: palettesState.swatches(entry.name)
+		}))
+	);
 
 	// ── Color wheel dots ──
 
 	const dotModeLabel = $derived(
-		dotMode === 'keyColors' ? m.chromaticity_dots_keys() : m.chromaticity_dots_cross()
+		wheelSettings.dotMode === 'keyColors' ? m.chromaticity_dots_keys() : m.chromaticity_dots_cross()
 	);
 
-	// Tick positions (0–100) derived from each swatch level's actual lightness
-	// in the current display color space, averaged across scales. Non-uniform
-	// because Leonardo picks per-hue lightness per contrast ratio.
-	const crossSectionTicks = $derived.by<number[]>(() => {
-		if (!scales.length || !levelCount) return [];
-		const lMax = spaceConfig.channels[2].max;
-		const ticks: number[] = [];
-		for (let i = 0; i < levelCount; i++) {
-			let sum = 0;
-			let n = 0;
-			for (const s of scales) {
-				const hex = s.swatches[i];
-				if (!hex) continue;
-				sum += spaceConfig.extract(hex)[2];
-				n++;
-			}
-			if (n > 0) ticks.push((sum / n / lMax) * 100);
-		}
-		return ticks;
-	});
+	const ticks = $derived(crossSectionTicks(scales, levelCount, spaceConfig));
 
-	function nearestTickIdx(value: number, ticks: number[]): number {
-		let best = 0;
-		let bestD = Infinity;
-		for (let i = 0; i < ticks.length; i++) {
-			const d = Math.abs(ticks[i] - value);
-			if (d < bestD) {
-				bestD = d;
-				best = i;
-			}
-		}
-		return best;
-	}
-
-	// Snap the slider to the nearest tick in cross-section mode (opt-in)
+	// Snap the slider to the nearest level in cross-section mode (opt-in)
 	$effect(() => {
-		if (!snapLightness || dotMode !== 'crossSection' || crossSectionTicks.length === 0) return;
-		const idx = nearestTickIdx(wheelLightness, crossSectionTicks);
-		const snapped = crossSectionTicks[idx];
-		if (Math.abs(snapped - wheelLightness) > 1e-6) {
-			wheelLightness = snapped;
+		if (!wheelSettings.snapLightness || wheelSettings.dotMode !== 'crossSection') return;
+		if (ticks.length === 0) return;
+
+		const snapped = ticks[nearestTickIndex(wheelSettings.lightness, ticks)];
+		if (Math.abs(snapped - wheelSettings.lightness) > 1e-6) {
+			wheelSettings.lightness = snapped;
 		}
 	});
 
 	const wheelDots = $derived.by(() => {
-		if (dotMode === 'keyColors') {
-			return configState.colors.flatMap((entry) => {
-				const dots = [{ hex: entry.baseHex, name: entry.name }];
-				for (const hex of Object.values(entry.scaleAnchors)) {
-					dots.push({ hex, name: entry.name });
-				}
-				return dots;
-			});
+		if (wheelSettings.dotMode === 'keyColors') {
+			return configState.colors.flatMap((entry) => [
+				{ hex: entry.baseHex, name: entry.name },
+				...Object.values(entry.scaleAnchors).map((hex) => ({ hex, name: entry.name }))
+			]);
 		}
 		// crossSection: pick the swatch whose actual L matches the slider.
-		// Ticks are built from swatches[i] directly, so tickIdx === swatch index.
-		if (!crossSectionTicks.length) return [];
-		const idx = nearestTickIdx(wheelLightness, crossSectionTicks);
-		return scales.map((s) => ({
-			hex: s.swatches[idx],
-			name: s.name
-		}));
+		// Ticks are built from swatches[i] directly, so tick index === swatch index.
+		if (!ticks.length) return [];
+		const level = nearestTickIndex(wheelSettings.lightness, ticks);
+		return scales.map((s) => ({ hex: s.swatches[level], name: s.name }));
 	});
 
 	// ── Color wheel interpolation paths ──
@@ -220,24 +121,26 @@
 </script>
 
 <div class="chromaticity-page">
-	<div class="chromaticity-header">
-		<h1 class="chromaticity-title">{m.chromaticity_title()}</h1>
-	</div>
+	<PageHeader title={m.chromaticity_title()} />
 
 	<div class="chromaticity-body">
 		<!-- Left: Color Wheel -->
 		<div class="wheel-panel">
 			<ColorWheel
 				colorSpace={colorSpaceState.id}
-				lightness={wheelLightness}
+				lightness={wheelSettings.lightness}
 				dots={wheelDots}
 				paths={wheelPaths}
-				{showPaths}
-				{showHarmonyLines}
-				{showGamutBoundary}
+				showPaths={wheelSettings.showPaths}
+				showHarmonyLines={wheelSettings.showHarmonyLines}
+				showGamutBoundary={wheelSettings.showGamutBoundary}
 			/>
 			<div class="wheel-controls">
-				<Picker bind:selectedKey={dotMode} label={dotModeLabel} selectionMode="single">
+				<Picker
+					bind:selectedKey={wheelSettings.dotMode}
+					label={dotModeLabel}
+					selectionMode="single"
+				>
 					<PickerTrigger />
 					<PickerContent>
 						<PickerItem value="keyColors" label={m.chromaticity_dots_keys()} />
@@ -245,23 +148,26 @@
 					</PickerContent>
 				</Picker>
 				<Slider
-					bind:value={wheelLightness}
-					isDisabled={dotMode === 'keyColors'}
+					bind:value={wheelSettings.lightness}
+					isDisabled={wheelSettings.dotMode === 'keyColors'}
 					min={0}
 					max={100}
 					label={m.chromaticity_wheel_lightness()}
 				/>
 				<div class="wheel-toggles">
-					<Switch bind:checked={showPaths}>
+					<Switch bind:checked={wheelSettings.showPaths}>
 						{m.chromaticity_show_paths()}
 					</Switch>
-					<Switch bind:checked={showHarmonyLines}>
+					<Switch bind:checked={wheelSettings.showHarmonyLines}>
 						{m.chromaticity_show_harmony()}
 					</Switch>
-					<Switch bind:checked={showGamutBoundary}>
+					<Switch bind:checked={wheelSettings.showGamutBoundary}>
 						{m.chromaticity_show_gamut_boundary()}
 					</Switch>
-					<Switch bind:checked={snapLightness} isDisabled={dotMode !== 'crossSection'}>
+					<Switch
+						bind:checked={wheelSettings.snapLightness}
+						isDisabled={wheelSettings.dotMode !== 'crossSection'}
+					>
 						{m.chromaticity_snap_lightness()}
 					</Switch>
 				</div>
@@ -291,22 +197,6 @@
 		height: 100%;
 		min-height: 0;
 	}
-	.chromaticity-header {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-300);
-		padding: var(--spacing-200) var(--spacing-400);
-		border-bottom: 1px solid var(--gray-200);
-	}
-
-	.chromaticity-title {
-		flex: 1;
-		font-size: var(--text-200);
-		font-weight: 600;
-		color: var(--neutral-content-color-default);
-		margin: 0;
-	}
-
 	.chromaticity-body {
 		display: grid;
 		grid-template-columns: auto 1fr;

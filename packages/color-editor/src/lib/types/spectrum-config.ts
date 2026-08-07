@@ -1,39 +1,18 @@
-export interface ColorConfig {
+export type {
+	ColorConfig,
+	ColorFormat,
+	GrayConfig,
+	SpectrumConfig
+} from '@matchalatte/ssp-theme/generate';
+
+/**
+ * A config color paired with the key it is stored under.
+ *
+ * `scaleAnchors` is optional in the config but always present here — the store
+ * normalises it so list and wheel code never has to special-case its absence.
+ */
+export interface ColorEntry {
+	name: string;
 	baseHex: string;
 	scaleAnchors: Record<string, string>;
-}
-
-export interface ColorEntry extends ColorConfig {
-	name: string;
-}
-
-export interface GrayContrastTargets {
-	lightness: number;
-	ratios: number[];
-}
-
-export interface GrayConfig {
-	baseHex: string;
-	contrastTargets: {
-		light: GrayContrastTargets;
-		dark: GrayContrastTargets;
-	};
-}
-
-export interface ThemesConfig {
-	light: { lightness: number };
-	dark: { lightness: number };
-}
-
-export type ColorFormat = 'hex' | 'oklch';
-
-/** Full spectrum.config.json shape — typed where the UI needs it, open elsewhere. */
-export interface SpectrumConfig {
-	colors: Record<string, ColorConfig>;
-	accentColor?: string;
-	colorFormat?: ColorFormat;
-	gray: GrayConfig;
-	themes: ThemesConfig;
-	colorContrastTargets: number[];
-	[key: string]: unknown;
 }

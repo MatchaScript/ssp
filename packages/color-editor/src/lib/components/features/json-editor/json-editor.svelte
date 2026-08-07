@@ -10,7 +10,7 @@
 	let { value, onchange }: Props = $props();
 
 	let container: HTMLDivElement | undefined = $state();
-	let editor: Monaco.editor.IStandaloneCodeEditor | undefined;
+	let editor: Monaco.editor.IStandaloneCodeEditor | undefined = $state();
 	let monaco: typeof Monaco | undefined;
 
 	const monacoTheme = $derived(themeState.resolvedTheme === 'dark' ? 'vs-dark' : 'vs');
@@ -72,10 +72,13 @@
 		};
 	});
 
-	/** Imperatively replace editor content (e.g. after file import). */
-	export function setValue(newValue: string) {
-		editor?.setValue(newValue);
-	}
+	// Pull in changes made elsewhere (another page editing the config, a reset).
+	// Skipped while the text already matches, so typing here is not interrupted.
+	$effect(() => {
+		if (editor && editor.getValue() !== value) {
+			editor.setValue(value);
+		}
+	});
 </script>
 
 <div bind:this={container} class="json-editor"></div>

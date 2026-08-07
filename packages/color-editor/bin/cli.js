@@ -5,6 +5,7 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { existsSync } from 'node:fs';
 import sirv from 'sirv';
+import { parseArgs, HELP } from './args.js';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 const buildDir = resolve(__dirname, '..', 'build');
@@ -14,35 +15,18 @@ if (!existsSync(buildDir)) {
 	process.exit(1);
 }
 
-const args = process.argv.slice(2);
-let port = Number(process.env.PORT) || 4321;
-let host = process.env.HOST || '127.0.0.1';
-let openBrowser = true;
+const options = parseArgs(process.argv.slice(2), process.env);
 
-for (let i = 0; i < args.length; i++) {
-	const a = args[i];
-	if (a === '--port' || a === '-p') port = Number(args[++i]);
-	else if (a.startsWith('--port=')) port = Number(a.split('=')[1]);
-	else if (a === '--host') host = args[++i];
-	else if (a.startsWith('--host=')) host = a.split('=')[1];
-	else if (a === '--no-open') openBrowser = false;
-	else if (a === '--help' || a === '-h') {
-		console.log(
-			`Usage: ssp-color-editor [options]\n\n` +
-				`Options:\n` +
-				`  -p, --port <port>  Port to listen on (default: 4321, env PORT)\n` +
-				`      --host <host>  Host to bind (default: 127.0.0.1, env HOST)\n` +
-				`      --no-open      Do not open the browser\n` +
-				`  -h, --help         Show help`
-		);
-		process.exit(0);
-	}
+if (options.help) {
+	console.log(HELP);
+	process.exit(0);
 }
-
-if (!Number.isFinite(port) || port < 0 || port > 65535) {
-	console.error(`[ssp-color-editor] invalid port: ${port}`);
+if (options.error) {
+	console.error(`[ssp-color-editor] ${options.error}`);
 	process.exit(1);
 }
+
+const { port, host, openBrowser } = options;
 
 const handler = sirv(buildDir, {
 	single: 'index.html',

@@ -1,7 +1,7 @@
 {
 	"name": "@matchalatte/ssp-color-editor",
 	"version": "0.0.2-next.2",
-	"description": "ssp color editor — launch with `npx @matchalatte/ssp-color-editor`",
+	"description": "ssp color editor \u2014 launch with `npx @matchalatte/ssp-color-editor`",
 	"license": "MIT",
 	"author": "MatchaScript",
 	"homepage": "https://github.com/MatchaScript/ssp#readme",
@@ -26,17 +26,20 @@
 	},
 	"files": [
 		"bin",
-		"build"
+		"build",
+		"!bin/**/*.test.*"
 	],
 	"scripts": {
 		"dev": "vite dev",
 		"build": "vite build",
 		"start": "node bin/cli.js",
 		"preview": "vite preview",
-		"prepare": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide && svelte-kit sync || echo ''",
+		"prepare": "paraglide-js compile --project ./project.inlang --outdir ./src/lib/paraglide && svelte-kit sync",
 		"prepublishOnly": "vite build",
 		"check": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json",
-		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch"
+		"check:watch": "svelte-kit sync && svelte-check --tsconfig ./tsconfig.json --watch",
+		"test": "vitest run",
+		"test:watch": "vitest"
 	},
 	"publishConfig": {
 		"access": "public"
@@ -56,6 +59,7 @@
 		"d3-scale": "^4.0.2",
 		"d3-shape": "^3.2.0",
 		"monaco-editor": "^0.56.0",
-		"svelte-check": "catalog:"
+		"svelte-check": "catalog:",
+		"vitest": "catalog:"
 	}
 }

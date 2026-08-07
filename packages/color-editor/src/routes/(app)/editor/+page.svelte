@@ -3,18 +3,18 @@
 	import { configState } from '$lib/stores/config.svelte';
 	import { ActionButton, Icon, Text } from '@matchalatte/ssp-ui';
 	import { Copy, Check } from '@matchalatte/ssp-ui/components/icon';
+	import { PageHeader } from '$lib/components/layout';
 	import { m } from '$lib/paraglide/messages';
 
-	let editorRef: ReturnType<typeof JsonEditor> | undefined = $state();
 	let copied = $state(false);
 	let copyTimer: ReturnType<typeof setTimeout> | undefined;
+	let invalid = $state(false);
 
 	function handleChange(value: string) {
-		try {
-			configState.updateFromJSON(value);
-		} catch {
-			// Invalid JSON — let Monaco show the syntax error, don't update store
-		}
+		// Monaco flags syntax errors itself; this covers JSON that parses but is
+		// missing keys the palette needs, which would otherwise apply and break
+		// every other page.
+		invalid = !configState.updateFromJSON(value);
 	}
 
 	async function handleCopy() {
@@ -28,16 +28,20 @@
 </script>
 
 <div class="editor-page">
-	<div class="editor-toolbar">
-		<h1 class="editor-title">{m.editor_title()}</h1>
-		<ActionButton size="s" isQuiet onclick={handleCopy} aria-label={m.editor_copy()}>
-			<Icon icon={copied ? Check : Copy} />
-			<Text>{copied ? m.editor_copied() : m.editor_copy()}</Text>
-		</ActionButton>
-	</div>
+	<PageHeader title={m.editor_title()}>
+		{#snippet actions()}
+			{#if invalid}
+				<span class="editor-invalid">{m.editor_invalid_config()}</span>
+			{/if}
+			<ActionButton size="s" isQuiet onclick={handleCopy} aria-label={m.editor_copy()}>
+				<Icon icon={copied ? Check : Copy} />
+				<Text>{copied ? m.editor_copied() : m.editor_copy()}</Text>
+			</ActionButton>
+		{/snippet}
+	</PageHeader>
 
 	<div class="editor-area">
-		<JsonEditor bind:this={editorRef} value={configState.json} onchange={handleChange} />
+		<JsonEditor value={configState.json} onchange={handleChange} />
 	</div>
 </div>
 
@@ -49,20 +53,9 @@
 		min-height: 0;
 	}
 
-	.editor-toolbar {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-200);
-		padding: var(--spacing-200) var(--spacing-400);
-		border-bottom: 1px solid var(--gray-200);
-	}
-
-	.editor-title {
-		flex: 1;
-		font-size: var(--text-200);
-		font-weight: 600;
-		color: var(--neutral-content-color-default);
-		margin: 0;
+	.editor-invalid {
+		font-size: var(--text-75);
+		color: var(--negative-content-color-default);
 	}
 
 	.editor-area {

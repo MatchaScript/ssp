@@ -12,6 +12,7 @@
 	import { ActionButton } from '@matchalatte/ssp-ui';
 	import { Icon } from '@matchalatte/ssp-ui/components/icon';
 	import { Settings } from '@matchalatte/ssp-ui/components/icon';
+	import { PageHeader } from '$lib/components/layout';
 	import { m } from '$lib/paraglide/messages';
 
 	let settingsOpen = $state(false);
@@ -29,9 +30,8 @@
 </script>
 
 <div class="theme-colors-page">
-	<div class="page-header">
-		<h1 class="page-title">{m.theme_colors_title()}</h1>
-		<div class="header-controls">
+	<PageHeader title={m.theme_colors_title()}>
+		{#snippet actions()}
 			<div class="header-picker">
 				<Picker
 					selectedKey={themeColorsState.previewTheme}
@@ -120,8 +120,8 @@
 					</div>
 				{/if}
 			</div>
-		</div>
-	</div>
+		{/snippet}
+	</PageHeader>
 
 	<div class="swatches-area" style:background-color={themeColorsState.output.background}>
 		{#each themeColorsState.output.colorScales as scale (scale.name)}
@@ -141,28 +141,6 @@
 		grid-template-rows: auto 1fr;
 		height: 100%;
 		min-height: 0;
-	}
-
-	.page-header {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-300);
-		padding: var(--spacing-200) var(--spacing-400);
-		border-bottom: 1px solid var(--gray-200);
-	}
-
-	.page-title {
-		flex: 1;
-		font-size: var(--text-200);
-		font-weight: 600;
-		color: var(--neutral-content-color-default);
-		margin: 0;
-	}
-
-	.header-controls {
-		display: flex;
-		align-items: center;
-		gap: var(--spacing-200);
 	}
 
 	.header-picker {
@@ -201,7 +179,7 @@
 		margin: 0;
 		font-size: var(--text-100);
 		font-weight: 600;
-		color: var(--neutral-content-color-default);
+		color: var(--neutral-subdued-content-color-default);
 	}
 
 	.settings-fields {

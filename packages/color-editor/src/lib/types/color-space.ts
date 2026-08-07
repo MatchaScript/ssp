@@ -1,4 +1,4 @@
-import { converter, formatHex } from 'culori';
+import { converter } from 'culori';
 import { convertColorValue } from '@adobe/leonardo-contrast-colors';
 
 // ── Converters ──────────────────────────────────────────────
@@ -36,17 +36,15 @@ export interface ColorSpaceConfig {
 }
 
 /**
- * Config for rendering the color wheel canvas gradient.
- * Only polar color spaces have a wheel renderer.
+ * How the color wheel draws and reads a polar color space.
+ * Cartesian spaces borrow their polar equivalent's renderer.
  */
 export interface WheelRenderer {
-	/** Maximum chroma/saturation for gradient edge. */
+	/** Chroma/saturation at the wheel's rim, in the space's own unit. */
 	maxChroma: number;
-	/** Convert lightness slider (0–100) to the color space's lightness unit. */
-	lightnessFromPercent(pct: number): number;
-	/** Create gradient stop hex colors for a given hue and lightness. */
-	gradientStops(hue: number, lightness: number): string[];
-	/** Extract polar coordinates {h: 0–360, c: 0–100 normalized} from a hex color. */
+	/** Branch index for the wheel fragment shader's `u_colorSpace` switch. */
+	shaderIndex: number;
+	/** Polar coordinates from a hex color: hue in degrees, chroma as 0–100 of the rim. */
 	extractPolar(hex: string): { h: number; c: number };
 }
 
@@ -56,88 +54,46 @@ function nan0(v: number | undefined): number {
 	return v != null && !Number.isNaN(v) ? v : 0;
 }
 
-function hexSafe(color: Record<string, unknown>): string {
-	return formatHex(color as unknown as Parameters<typeof formatHex>[0]) ?? '#000000';
+function toCam02p(hex: string): { J: number; C: number; h: number } {
+	return convertColorValue(hex, 'CAM02p', true) as { J: number; C: number; h: number };
 }
 
-const STOP_COUNT = 17;
-
-function linspace(min: number, max: number, n: number): number[] {
-	const out: number[] = [];
-	for (let i = 0; i < n; i++) out.push(min + (max - min) * (i / (n - 1)));
-	return out;
-}
-
-function makeStops(
-	mode: string,
-	build: (chroma: number) => Record<string, unknown>,
-	max: number
-): string[] {
-	return linspace(0, max, STOP_COUNT).map((c) => hexSafe({ mode, ...build(c) }));
+/**
+ * Build a renderer that normalises chroma against the rim, so each space only
+ * has to say how to read its own hue and chroma.
+ */
+function wheelRenderer(
+	shaderIndex: number,
+	maxChroma: number,
+	polar: (hex: string) => { h?: number; c?: number }
+): WheelRenderer {
+	return {
+		shaderIndex,
+		maxChroma,
+		extractPolar(hex) {
+			const { h, c } = polar(hex);
+			return { h: nan0(h), c: (nan0(c) / maxChroma) * 100 };
+		}
+	};
 }
 
 // ── Wheel renderers (polar spaces only) ─────────────────────
 
 export const WHEEL_RENDERERS: Partial<Record<ColorSpaceId, WheelRenderer>> = {
-	cam02p: {
-		maxChroma: 120,
-		lightnessFromPercent: (pct) => pct,
-		gradientStops(hue, l) {
-			return makeStops('lch', (c) => ({ l, c, h: hue }), 100);
-		},
-		extractPolar(hex) {
-			const c = convertColorValue(hex, 'CAM02p', true) as {
-				J: number;
-				C: number;
-				h: number;
-			};
-			return { h: nan0(c.h), c: (nan0(c.C) / 120) * 100 };
-		}
-	},
-	oklch: {
-		maxChroma: 0.322,
-		lightnessFromPercent: (pct) => pct / 100,
-		gradientStops(hue, l) {
-			return makeStops('oklch', (c) => ({ l, c, h: hue }), 0.322);
-		},
-		extractPolar(hex) {
-			const c = toOklch(hex);
-			return { h: nan0(c?.h), c: (nan0(c?.c) / 0.322) * 100 };
-		}
-	},
-	lch: {
-		maxChroma: 100,
-		lightnessFromPercent: (pct) => pct,
-		gradientStops(hue, l) {
-			return makeStops('lch', (c) => ({ l, c, h: hue }), 100);
-		},
-		extractPolar(hex) {
-			const c = toLch(hex);
-			return { h: nan0(c?.h), c: nan0(c?.c) };
-		}
-	},
-	hsl: {
-		maxChroma: 1,
-		lightnessFromPercent: (pct) => pct / 100,
-		gradientStops(hue, l) {
-			return makeStops('hsl', (s) => ({ h: hue, s, l }), 1);
-		},
-		extractPolar(hex) {
-			const c = toHsl(hex);
-			return { h: nan0(c?.h), c: nan0(c?.s) * 100 };
-		}
-	},
-	hsv: {
-		maxChroma: 1,
-		lightnessFromPercent: (pct) => pct / 100,
-		gradientStops(hue, l) {
-			return makeStops('hsv', (s) => ({ h: hue, s, v: l }), 1);
-		},
-		extractPolar(hex) {
-			const c = toHsv(hex);
-			return { h: nan0(c?.h), c: nan0(c?.s) * 100 };
-		}
-	}
+	cam02p: wheelRenderer(0, 120, (hex) => {
+		const c = toCam02p(hex);
+		return { h: c.h, c: c.C };
+	}),
+	oklch: wheelRenderer(1, 0.322, (hex) => toOklch(hex) ?? {}),
+	lch: wheelRenderer(2, 100, (hex) => toLch(hex) ?? {}),
+	hsl: wheelRenderer(3, 1, (hex) => {
+		const c = toHsl(hex);
+		return { h: c?.h, c: c?.s };
+	}),
+	hsv: wheelRenderer(4, 1, (hex) => {
+		const c = toHsv(hex);
+		return { h: c?.h, c: c?.s };
+	})
 };
 
 // ── Color space configs ─────────────────────────────────────
@@ -236,11 +192,7 @@ export const COLOR_SPACES: Record<ColorSpaceId, ColorSpaceConfig> = {
 			{ key: 'J', label: 'Lightness', min: 0, max: 100 }
 		],
 		extract(hex) {
-			const c = convertColorValue(hex, 'CAM02p', true) as {
-				J: number;
-				C: number;
-				h: number;
-			};
+			const c = toCam02p(hex);
 			return [nan0(c.h), nan0(c.C), nan0(c.J)];
 		},
 		wheelFallback: null
@@ -259,11 +211,14 @@ export const COLOR_SPACE_IDS: ColorSpaceId[] = [
 ];
 
 /**
- * Resolve which wheel renderer to use for a given color space.
- * Falls back to the polar equivalent for cartesian spaces.
+ * The polar space a wheel draws for a given color space — itself when it is
+ * already polar, its polar equivalent when it is cartesian.
  */
+export function getWheelSpaceId(id: ColorSpaceId): ColorSpaceId {
+	return COLOR_SPACES[id].wheelFallback ?? id;
+}
+
+/** Resolve which wheel renderer to use for a given color space. */
 export function getWheelRenderer(id: ColorSpaceId): WheelRenderer {
-	const config = COLOR_SPACES[id];
-	const wheelId = config.wheelFallback ?? id;
-	return WHEEL_RENDERERS[wheelId]!;
+	return WHEEL_RENDERERS[getWheelSpaceId(id)]!;
 }

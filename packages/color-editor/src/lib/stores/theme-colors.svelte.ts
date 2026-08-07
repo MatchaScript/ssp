@@ -1,7 +1,7 @@
 import * as Leo from '@adobe/leonardo-contrast-colors';
 import type { CssColor, ContrastFormula } from '@adobe/leonardo-contrast-colors';
+import { colorKeysFor } from '@matchalatte/ssp-theme/generate';
 import { configState } from './config.svelte';
-import { buildColorKeys } from '$lib/utils/color-keys';
 
 export interface ThemeColorOutput {
 	background: string;
@@ -19,11 +19,21 @@ export interface ThemeColorOutput {
  */
 class ThemeColorsState {
 	backgroundColorName = $state<string>('gray');
-	lightness = $state<number>(100);
 	contrast = $state<number>(1);
 	saturation = $state<number>(100);
 	contrastFormula = $state<ContrastFormula>('wcag2');
 	previewTheme = $state<'light' | 'dark'>('light');
+
+	/** Slider override; null means "whatever the config says for this theme". */
+	private lightnessOverride = $state<number | null>(null);
+
+	get lightness(): number {
+		return this.lightnessOverride ?? configState.raw.themes[this.previewTheme]?.lightness ?? 100;
+	}
+
+	set lightness(value: number) {
+		this.lightnessOverride = value;
+	}
 
 	private theme = $derived.by<Leo.Theme>(() => {
 		const { gray, colorContrastTargets } = configState.raw;
@@ -33,7 +43,7 @@ class ThemeColorsState {
 			name: 'gray',
 			colorKeys: [gray.baseHex] as CssColor[],
 			ratios: gray.contrastTargets[this.previewTheme].ratios,
-			colorSpace: 'CAM02p',
+			colorSpace: 'OKLCH',
 			output: 'HEX'
 		});
 
@@ -42,9 +52,9 @@ class ThemeColorsState {
 			(color) =>
 				new Leo.Color({
 					name: color.name,
-					colorKeys: buildColorKeys(color),
+					colorKeys: colorKeysFor(color),
 					ratios: colorContrastTargets,
-					colorSpace: 'CAM02p',
+					colorSpace: 'CAM02',
 					output: 'HEX'
 				})
 		);
@@ -59,9 +69,9 @@ class ThemeColorsState {
 						if (!entry) return grayBgColor;
 						return new Leo.BackgroundColor({
 							name: entry.name,
-							colorKeys: buildColorKeys(entry),
+							colorKeys: colorKeysFor(entry),
 							ratios: colorContrastTargets,
-							colorSpace: 'CAM02p',
+							colorSpace: 'CAM02',
 							output: 'HEX'
 						});
 					})();
@@ -83,8 +93,6 @@ class ThemeColorsState {
 		});
 	});
 
-	contrastColors = $derived.by(() => this.theme.contrastColors);
-
 	output = $derived.by<ThemeColorOutput>(() => {
 		const [backgroundEntry, ...colorEntries] = this.theme.contrastColors;
 
@@ -103,7 +111,7 @@ class ThemeColorsState {
 
 	setPreviewTheme(theme: 'light' | 'dark') {
 		this.previewTheme = theme;
-		this.lightness = configState.raw.themes[theme].lightness;
+		this.lightnessOverride = null;
 	}
 }
 
