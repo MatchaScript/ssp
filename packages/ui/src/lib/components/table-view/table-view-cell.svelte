@@ -74,7 +74,12 @@
 		});
 	}
 
-	const isCellFocused = $derived(tableState.isCellFocused(row.rowKey, columnId));
+	// Read off the row's own focus value, so a move between two other rows does
+	// not invalidate this cell. Cells of a disabled row omit the attribute
+	// entirely — see the note in `<TableView.Row>`.
+	const isCellFocused = $derived(row.focus?.type === 'cell' && row.focus.columnId === columnId);
+	const isRowDisabled = $derived(tableState.isRowDisabled(row.rowKey));
+	const cellTabIndex = $derived(isRowDisabled ? undefined : isCellFocused ? 0 : -1);
 	// Leading-cell marker: when there's no checkbox column, the very first cell
 	// of each row is the row's leading edge — render the row focus indicator
 	// inside it. With a checkbox column the indicator lives inside that td
@@ -115,7 +120,8 @@
 		data-overflow={tableState.overflowMode}
 		data-focused={isCellFocused || undefined}
 		aria-colindex={ariaColIndex}
-		tabindex={isCellFocused ? 0 : -1}
+		tabindex={cellTabIndex}
+		onfocus={() => tableState.setCellFocus(row.rowKey, columnId)}
 		onkeydown={handleKeydown}
 	>
 		{#if isLeadingCell}
@@ -155,7 +161,8 @@
 		data-overflow={tableState.overflowMode}
 		data-focused={isCellFocused || undefined}
 		aria-colindex={ariaColIndex}
-		tabindex={isCellFocused ? 0 : -1}
+		tabindex={cellTabIndex}
+		onfocus={() => tableState.setCellFocus(row.rowKey, columnId)}
 		onkeydown={handleKeydown}
 	>
 		{#if isLeadingCell}

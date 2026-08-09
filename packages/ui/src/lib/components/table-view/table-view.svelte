@@ -1,4 +1,5 @@
 <script lang="ts">
+	import { untrack } from 'svelte';
 	import type { ColumnFilter, SortDescriptor, TableViewRootProps } from './types.js';
 	import { TableState } from './state/table-state.svelte.js';
 	import { setTableContext } from './state/context.js';
@@ -223,23 +224,37 @@
 	// ── Focus integration ────────────────────────────────────────
 	// Keyboard handling lives on each `<tr>` (alongside its onclick / onfocus)
 	// so descendant keystrokes don't bubble into row navigation by accident.
-	// The table only owns the Tab-entry behavior: when focus first enters it,
-	// roll roving focus onto the first enabled row.
+	// The table only owns the Tab-entry behavior: when focus first lands on the
+	// `<table>` itself, place the identity on the first (or last) enabled row.
 	function handleFocusIn(e: FocusEvent) {
-		if (isDisabled || selectionMode === 'none') return;
-		// Only auto-focus when the focus came from outside the table — focus
-		// transitions between rows are handled by the row's own onfocus
-		// (`syncHighlight`).
+		// Only the table itself. Rows and cells report their own focus, and the
+		// `focus` event does not bubble, so nothing else arrives here anyway
+		// except the `focusin` of a descendant — which must not re-enter.
 		if (e.target !== e.currentTarget) return;
-		if (tableState.focusedKey === null) {
-			tableState.focusFirst({ focusVisible: true });
-			const k = tableState.focusedKey;
-			if (k) tableState.announceRowFocus(k);
-		}
+		tableState.enterFromTab(e.relatedTarget as Node | null);
 	}
 
-	const isInteractive = $derived(!isDisabled && selectionMode !== 'none');
-	const tableTabIndex = $derived(isInteractive && tableState.focusedKey === null ? 0 : -1);
+	// The whole table is one tab stop: the `<table>` owns it while nothing
+	// inside is aimed at, and hands it over as soon as something is. No
+	// `selectionMode` condition — WCAG 2.1.1 applies to a read-only grid too,
+	// and upstream does not gate keyboard entry on selection either.
+	const tableTabIndex = $derived(tableState.keyboardTarget === null ? 0 : -1);
+
+	// The wrapper is measured for the PageUp / PageDown distance and read for the
+	// writing direction; the `<table>` is the reference point for deciding which
+	// way Tab arrived.
+	let wrapperEl: HTMLElement | null = $state(null);
+	let tableEl: HTMLElement | null = $state(null);
+	$effect(() => {
+		const el = wrapperEl;
+		if (!el) return;
+		return untrack(() => tableState.registerWrapper(el));
+	});
+	$effect(() => {
+		const el = tableEl;
+		if (!el) return;
+		return untrack(() => tableState.registerTable(el));
+	});
 
 	setTableContext(tableState);
 
@@ -268,13 +283,16 @@
 </script>
 
 <div
+	bind:this={wrapperEl}
 	bind:clientWidth={tableWidth}
 	data-spectrum-table-view-wrapper
 	data-density={density}
 	data-quiet={isQuiet || undefined}
 	onscroll={handleScroll}
+	onfocusin={() => tableState.noteDomFocus()}
 >
 	<table
+		bind:this={tableEl}
 		role="grid"
 		data-spectrum-table-view
 		data-density={density}

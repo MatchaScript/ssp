@@ -49,7 +49,10 @@
 	);
 
 	const isHidden = $derived(tableState.isColumnHidden(id));
-	const isHeaderFocused = $derived(tableState.isColumnHeaderFocused(id));
+	const keyboardTarget = $derived(tableState.keyboardTarget);
+	const isHeaderFocused = $derived(
+		keyboardTarget?.type === 'columnheader' && keyboardTarget.columnId === id
+	);
 	const ariaColIndex = $derived(tableState.navColumns.indexOf(id) + 1);
 	const allowsFiltering = $derived(column.filterType !== undefined);
 	const isFiltered = $derived(tableState.hasFilter(id));
@@ -101,6 +104,7 @@
 		aria-colindex={ariaColIndex}
 		{...allowsSorting ? { 'aria-description': 'sortable column' } : {}}
 		tabindex={isHeaderFocused ? 0 : -1}
+		onfocus={() => tableState.setColumnHeaderFocus(id)}
 		onclick={allowsSorting && isHeaderVisible ? handleClick : undefined}
 		onkeydown={handleKeydown}
 		style="anchor-name: {filterAnchor};"

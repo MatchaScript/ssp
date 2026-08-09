@@ -7,12 +7,17 @@
 		rows,
 		selectionMode = 'multiple' as 'none' | 'single' | 'multiple',
 		disabledKeys,
-		withColumnFeatures = false
+		hiddenColumns,
+		withColumnFeatures = false,
+		skipColumnB = false
 	}: {
 		rows: Row[];
 		selectionMode?: 'none' | 'single' | 'multiple';
 		disabledKeys?: string[];
+		hiddenColumns?: string[];
 		withColumnFeatures?: boolean;
+		/** Declare column "b" but render no cell for it — a supported shape. */
+		skipColumnB?: boolean;
 	} = $props();
 
 	// Plain columns: no menu trigger, no resizer — the only focusable things are
@@ -34,13 +39,20 @@
 	const columns = $derived(withColumnFeatures ? FEATURED : PLAIN);
 </script>
 
-<TableView.Root aria-label="roving" {selectionMode} {disabledKeys}>
+<TableView.Root
+	aria-label="roving"
+	{selectionMode}
+	{disabledKeys}
+	hiddenColumns={hiddenColumns ? new Set(hiddenColumns) : undefined}
+>
 	<TableView.Header {columns} />
 	<TableView.Body items={rows} getKey={(r) => r.id}>
 		{#snippet row(item)}
 			<TableView.Row>
 				<TableView.Cell column="a">{item.a}</TableView.Cell>
-				<TableView.Cell column="b">{item.b}</TableView.Cell>
+				{#if !skipColumnB}
+					<TableView.Cell column="b">{item.b}</TableView.Cell>
+				{/if}
 				<TableView.Cell column="c">{item.c}</TableView.Cell>
 			</TableView.Row>
 		{/snippet}

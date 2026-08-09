@@ -122,14 +122,19 @@
 
 <!-- The handle sits inside the <th>'s click target. Without `stopPropagation`
      on click + pointerdown, a tap on the resizer bubbles up and the column
-     header's onclick toggles sort. -->
-<!-- svelte-ignore a11y_no_noninteractive_tabindex -->
+     header's onclick toggles sort.
+
+     Neither the handle nor its input is a tab stop: the table as a whole is one
+     tab stop, and both are still programmatically focusable at -1. The keyboard
+     reaches them through the column menu's "Resize column" entry, which the
+     header opens with Alt+ArrowDown. Without the -1 the visually hidden range
+     input would stay tabbable on native focusability alone. -->
 <div
 	bind:this={handleEl}
 	role="presentation"
 	data-spectrum-table-view-resizer
 	data-resizing={isResizing ? '' : undefined}
-	tabindex={0}
+	tabindex="-1"
 	onkeydown={handleDivKeydown}
 	onblur={handleDivBlur}
 	onpointerdown={(e) => e.stopPropagation()}
@@ -141,6 +146,7 @@
 		min={minPx}
 		max={maxPx}
 		value={width}
+		tabindex={-1}
 		aria-label="Column resizer"
 		aria-valuetext={ariaValueText}
 		data-spectrum-table-view-resizer-input

@@ -5,6 +5,7 @@
  * Plain Map/Set are used for registries read only from event handlers;
  * reactive consumers go through SvelteMap.
  */
+import { tick, untrack } from 'svelte';
 import {
 	SelectableCollection,
 	isPrintable,
@@ -19,13 +20,17 @@ import type {
 	TableViewOverflowMode,
 	TableViewSelectionMode
 } from '../types.js';
-import { order, type ColumnDescriptor, type Ordered, type RowMeta } from './collection.js';
 import {
-	TableKeyboardDelegate,
-	type FocusTarget
-} from '../internal/keyboard/table-keyboard-delegate.js';
+	order,
+	type ColumnDescriptor,
+	type FocusTarget,
+	type Ordered,
+	type RowMeta
+} from './collection.js';
+import { TableKeyboardDelegate } from '../internal/keyboard/table-keyboard-delegate.js';
 import { Typeahead } from '$lib/utils/selectable-collection/typeahead.js';
 import { getAnnouncer } from '$lib/utils/announcer/index.js';
+import { getElementDirection } from '$lib/utils/direction.js';
 import { TableColumnLayoutState } from './column-layout-state.svelte.js';
 
 // Hint Safari (and modern Chromium / Firefox) to keep `:focus-visible`
@@ -52,6 +57,13 @@ export const SELECTION_COLUMN_ID = '__ssp_table_selection__';
  * exactly this width in the layout.
  */
 const SELECTION_COLUMN_WIDTH = 40;
+
+/**
+ * PageUp / PageDown distance used until the wrapper and one row have been
+ * measured — server rendering and the first paint. Afterwards the real
+ * viewport decides (`TableState.#pageSize`).
+ */
+const DEFAULT_PAGE_SIZE = 10;
 
 const SELECTION_COLUMN_DESCRIPTOR: ColumnDescriptor = {
 	id: SELECTION_COLUMN_ID,
@@ -135,11 +147,28 @@ export class TableState {
 	#cellElements = new Map<string, HTMLElement>();
 	#columnHeaderElements = new Map<string, HTMLElement>();
 
-	// Cell-mode focus state. When set, the cell is the keyboard target
-	// (tabindex=0) instead of the row. Row highlight (SelectableCollection)
-	// stays in sync so selection / aria still reference the right row.
-	#focusedCell: { rowKey: string; columnId: string } | null = $state(null);
-	#focusedColumnHeader: string | null = $state(null);
+	// The wrapper (scroll box) and the `<table>`. Registered by Root; the wrapper
+	// is measured for `#pageSize` and read for the writing direction, and the
+	// `<table>` is the reference point for the Tab-direction test in
+	// `enterFromTab`.
+	#wrapperEl: HTMLElement | null = null;
+	#tableEl: HTMLElement | null = null;
+
+	// Where the keyboard is pointed — one identity, all three modes. Its
+	// resolution against the current rows and columns is `#keyboardTarget`; every
+	// tabindex in the table reads that and nothing else.
+	#focus: FocusTarget | null = $state.raw(null);
+
+	// Focus relocation state. Three plain integers, not a snapshot of the
+	// collection: the last resolved position, and the row count it was resolved
+	// against (needed to know how many rows a change removed).
+	#lastRowIndex = -1;
+	#lastColumnIndex = -1;
+	#lastRowCount = 0;
+	// Set once anything inside the table has taken DOM focus. Combined with
+	// where focus is *now* to decide whether relocation owes the user a
+	// `.focus()` call — see `#shouldRestoreDomFocus`.
+	#hasBeenFocused = false;
 
 	#delegate: TableKeyboardDelegate;
 	#cellTypeahead: Typeahead;
@@ -170,12 +199,34 @@ export class TableState {
 
 	constructor(opts: TableStateOptions) {
 		this.#opts = opts;
+		// Captures `this` for the literal-object getters below — Svelte 5 needs a
+		// lexical alias so each getter re-reads the live value on access.
+		// eslint-disable-next-line @typescript-eslint/no-this-alias
+		const self = this;
 		this.#collection = new SelectableCollection({
 			get selectionMode() {
 				return opts.selectionMode;
 			},
 			get selectedKeys() {
 				return opts.selectedKeys as Set<string>;
+			},
+			// Row order comes from `items`, not from the DOM. The shared
+			// primitive's `compareDocumentPosition` sort is for collections whose
+			// items self-register and have no other way to know their order.
+			orderedValues: () => this.#rowKeys,
+			// The highlight is TableState's `#focus`, resolved. Row-mode moves
+			// (arrows, Home/End, Page*, typeahead) are applied inside the
+			// collection and reported back through `onHighlightChange`, so the
+			// identity stays a single value with a single owner.
+			highlightedValue: () => {
+				const f = this.#keyboardTarget;
+				return f === null || f.type === 'columnheader' ? null : f.rowKey;
+			},
+			onHighlightChange: (value) => {
+				this.#setFocus(value === null ? null : { type: 'row', rowKey: value });
+			},
+			get pageSize() {
+				return self.#pageSize();
 			},
 			// S2 hardcodes `selectionBehavior: 'toggle'` for TableView — checkbox
 			// column is shown whenever selection is on, and clicks always toggle.
@@ -192,7 +243,11 @@ export class TableState {
 			onSelectionChange: (keys) => opts.setSelectedKeys(keys)
 		});
 		this.#delegate = new TableKeyboardDelegate({
-			rows: () => this.#rowKeys.map((key) => ({ key, disabled: this.isRowDisabled(key) })),
+			// Nothing here builds an array per call: the delegate asks the row list
+			// for indices and disabled-ness one key at a time.
+			rowKeys: () => this.#rowKeys,
+			rowIndexOf: (key) => this.#rows.indexOf(key),
+			isRowDisabled: (key) => this.isRowDisabled(key),
 			// Selection column is treated as the first column for nav purposes
 			// whenever selection is enabled (RAC parity — see
 			// `SELECTION_COLUMN_ID` doc). `#navColumns` already prepends the
@@ -200,7 +255,9 @@ export class TableState {
 			// under `SELECTION_COLUMN_ID` so the delegate's index lookups land on
 			// the right elements. Hidden columns drop out of the nav order so
 			// arrow keys skip them — they're not focusable in the DOM either.
-			columns: () => this.#navColumns.items
+			columns: () => this.#navColumns,
+			direction: () => getElementDirection(this.#wrapperEl),
+			pageSize: () => this.#pageSize()
 		});
 		this.#cellTypeahead = new Typeahead(
 			() =>
@@ -220,15 +277,11 @@ export class TableState {
 				}),
 			(domId) => {
 				const rowKey = this.#collection.getValue(domId);
-				const focusedCell = this.#focusedCell;
-				if (!rowKey || !focusedCell) return;
-				this.#focusTarget({ type: 'cell', rowKey, columnId: focusedCell.columnId });
+				const f = this.#focus;
+				if (!rowKey || f === null || f.type !== 'cell') return;
+				this.#focusTarget({ type: 'cell', rowKey, columnId: f.columnId });
 			}
 		);
-		// Captures `this` for the literal-object getters below — Svelte 5 needs a
-		// lexical alias so each getter re-reads the live value on access.
-		// eslint-disable-next-line @typescript-eslint/no-this-alias
-		const self = this;
 		this.#layout = new TableColumnLayoutState({
 			get tableWidth() {
 				return self.#opts.tableWidth;
@@ -236,6 +289,21 @@ export class TableState {
 			get columns() {
 				return self.#navColumns.items;
 			}
+		});
+
+		// The single place that decides where focus goes when the collection
+		// changes underneath it. Two triggers, both leading to the same question:
+		// the identity stopped resolving (its row or column left), or the row it
+		// names turned disabled. Upstream answers them in two separate effects
+		// (`useGridState` and `useSelectableItem`); one entry point is enough.
+		$effect(() => {
+			const rows = this.#rows;
+			const nav = this.#navColumns;
+			void this.#opts.isDisabled;
+			void this.#opts.disabledKeys;
+			// `#focus` is both read and written below. Untracked, or the effect
+			// re-enters itself on every relocation.
+			untrack(() => this.#reconcileFocus(rows, nav));
 		});
 	}
 
@@ -467,23 +535,46 @@ export class TableState {
 		};
 	}
 
-	// ── focus-target queries (driven by 2D nav state) ──────────
-	isCellFocused(rowKey: string, columnId: string): boolean {
-		const f = this.#focusedCell;
-		return f !== null && f.rowKey === rowKey && f.columnId === columnId;
+	// ── the keyboard target ────────────────────────────────────
+	// `#focus` is what the user aimed at; `#keyboardTarget` is that identity
+	// resolved against the rows and columns that exist right now. A target whose
+	// row or column has left resolves to null, and null is what hands the tab
+	// stop back to the `<table>` — so "focus was on a column I just hid" cannot
+	// leave the table with no tab stop at all.
+	#keyboardTarget = $derived.by<FocusTarget | null>(() =>
+		this.#resolve(this.#focus, this.#rows, this.#navColumns)
+	);
+
+	#resolve(
+		f: FocusTarget | null,
+		rows: Ordered<string>,
+		nav: Ordered<ColumnDescriptor>
+	): FocusTarget | null {
+		if (f === null) return null;
+		switch (f.type) {
+			case 'row':
+				return rows.indexOf(f.rowKey) === -1 ? null : f;
+			case 'cell':
+				return rows.indexOf(f.rowKey) === -1 || nav.indexOf(f.columnId) === -1 ? null : f;
+			case 'columnheader':
+				return nav.indexOf(f.columnId) === -1 ? null : f;
+		}
 	}
-	isColumnHeaderFocused(columnId: string): boolean {
-		return this.#focusedColumnHeader === columnId;
+
+	/** The resolved keyboard target. Every `tabindex` in the table reads this. */
+	get keyboardTarget(): FocusTarget | null {
+		return this.#keyboardTarget;
 	}
-	get focusedCell(): { rowKey: string; columnId: string } | null {
-		return this.#focusedCell;
-	}
-	get focusedColumnHeader(): string | null {
-		return this.#focusedColumnHeader;
-	}
-	/** True when a cell or a column header currently owns the keyboard. */
-	get isCellModeActive(): boolean {
-		return this.#focusedCell !== null || this.#focusedColumnHeader !== null;
+
+	/**
+	 * The keyboard target when it points at this row, else null. Read once per
+	 * row (by `<TableViewRowScope>`) so a row's cells subscribe to their own
+	 * row's focus rather than to the table-wide target.
+	 */
+	rowFocus(rowKey: string): FocusTarget | null {
+		const f = this.#keyboardTarget;
+		if (f === null || f.type === 'columnheader' || f.rowKey !== rowKey) return null;
+		return f;
 	}
 
 	// ── helpers ─────────────────────────────────────────────────
@@ -493,29 +584,286 @@ export class TableState {
 	isRowDisabled(key: string): boolean {
 		return this.#opts.isDisabled || this.#opts.disabledKeys.has(key);
 	}
-	isFocused(domId: string): boolean {
-		return this.#collection.highlightedId === domId;
-	}
-	get focusedKey(): string | null {
-		const id = this.#collection.highlightedId;
-		return id === null ? null : (this.#collection.getValue(id) ?? null);
+
+	// ── focus control ──────────────────────────────────────────
+	#setFocus(next: FocusTarget | null): void {
+		this.#focus = next;
+		// Remember where we were, for `#relocate`. Doing it here (and again in
+		// `#reconcileFocus` when the collection shifts under a still-resolvable
+		// identity) covers both ways the position can change.
+		if (next === null) return;
+		if (next.type !== 'columnheader') this.#lastRowIndex = this.#rows.indexOf(next.rowKey);
+		if (next.type !== 'row') this.#lastColumnIndex = this.#navColumns.indexOf(next.columnId);
 	}
 
-	// ── focus control (used by <TableView.Root> on focusin) ────
-	focusFirst(opts?: { focusVisible?: boolean }): void {
-		this.#focusedCell = null;
-		this.#focusedColumnHeader = null;
-		this.#collection.focusFirst(opts);
+	#rowElement(rowKey: string | undefined): HTMLElement | undefined {
+		if (rowKey === undefined) return undefined;
+		const domId = this.#collection.getDomId(rowKey);
+		return domId === undefined ? undefined : this.#collection.getElement(domId);
 	}
+
+	#elementFor(target: FocusTarget): HTMLElement | undefined {
+		switch (target.type) {
+			case 'row':
+				return this.#rowElement(target.rowKey);
+			case 'cell':
+				return this.#cellElements.get(this.#cellKey(target.rowKey, target.columnId));
+			case 'columnheader':
+				return this.#columnHeaderElements.get(target.columnId);
+		}
+	}
+
+	#applyDomFocus(target: FocusTarget): void {
+		this.#elementFor(target)?.focus(FOCUS_OPTS);
+	}
+
 	/**
-	 * Called from `<tr onfocus>`. Clears cell-mode state so an explicit
-	 * row focus (Tab-in, row click) collapses any prior cell selection
-	 * back to row mode.
+	 * Down-grade a target the DOM cannot satisfy. A row may legitimately skip a
+	 * cell — `<TableView.Cell>` binds by column id, not by markup position — and
+	 * the delegate steps over the column list without knowing which cells were
+	 * rendered. Row mode is always satisfiable: a rendered row always registers
+	 * its `<tr>`. Keeping this in one place is what stops the identity from ever
+	 * naming something with no element, which would leave the table with no
+	 * `tabindex=0` anywhere and no way back in.
 	 */
-	syncHighlight(domId: string | null): void {
-		this.#focusedCell = null;
-		this.#focusedColumnHeader = null;
-		this.#collection.syncHighlight(domId);
+	#reachable(target: FocusTarget): FocusTarget | null {
+		if (this.#elementFor(target) !== undefined) return target;
+		if (target.type !== 'cell') return null;
+		const row: FocusTarget = { type: 'row', rowKey: target.rowKey };
+		return this.#elementFor(row) === undefined ? null : row;
+	}
+
+	/** Move the identity and the DOM focus together. */
+	#focusTarget(target: FocusTarget): void {
+		const reachable = this.#reachable(target);
+		if (reachable === null) return;
+		this.#setFocus(reachable);
+		this.#applyDomFocus(reachable);
+	}
+
+	#firstEnabledRow(): string | null {
+		return this.#rowKeys.find((key) => !this.isRowDisabled(key)) ?? null;
+	}
+	#lastEnabledRow(): string | null {
+		const keys = this.#rowKeys;
+		for (let i = keys.length - 1; i >= 0; i--) {
+			if (!this.isRowDisabled(keys[i])) return keys[i];
+		}
+		return null;
+	}
+
+	/**
+	 * The `<table>` itself took focus and nothing inside is aimed at yet: place
+	 * the identity on the first enabled row, or the last when Tab arrived from
+	 * after the table. The direction test is upstream's
+	 * (`useSelectableCollection`'s focusin handler), plus a containment check —
+	 * a `tabindex=-1` cell is still mouse-focusable, and Shift+Tab off one lands
+	 * here with a relatedTarget the table *contains*. `compareDocumentPosition`
+	 * reports a descendant as CONTAINED_BY|FOLLOWING, so without the check that
+	 * reads as "arrived from after the table" and walks focus forward instead of
+	 * letting it leave.
+	 *
+	 * With no enabled row — an empty table, every row disabled, or `isDisabled` —
+	 * the column headers are the only thing left to operate, and they are how a
+	 * filter that emptied the table gets cleared again. So the identity goes
+	 * there instead of nowhere. Upstream reaches the same place by a different
+	 * route: it forces every column header untabbable when the collection is
+	 * empty (`useTableColumnHeader.ts:123-124`) and hands the grid the tab stop
+	 * only if no tabbable child exists (`useGrid.ts:216-229`) — its column-menu
+	 * buttons *are* tabbable children, so Tab still reaches them. Ours are not
+	 * (the table is one tab stop), so the entry has to be deliberate.
+	 */
+	enterFromTab(relatedTarget: Node | null): void {
+		if (this.#focus !== null) return;
+		const table = this.#tableEl;
+		const backward =
+			relatedTarget !== null &&
+			table !== null &&
+			!table.contains(relatedTarget) &&
+			(table.compareDocumentPosition(relatedTarget) & Node.DOCUMENT_POSITION_FOLLOWING) !== 0;
+
+		const rowKey = backward ? this.#lastEnabledRow() : this.#firstEnabledRow();
+		if (rowKey !== null) {
+			this.#focusTarget({ type: 'row', rowKey });
+			this.announceRowFocus(rowKey);
+			return;
+		}
+
+		// Declared columns only. The synthetic selection column is a nav stop but
+		// not a place to start: with no enabled row there is nothing to select,
+		// and the affordances a user comes here for hang off the real headers.
+		const columns = this.#visibleColumns.items;
+		const column = backward ? columns[columns.length - 1] : columns[0];
+		if (column) this.#focusTarget({ type: 'columnheader', columnId: column.id });
+	}
+
+	/** Something inside the table took DOM focus. Fed by the wrapper's focusin. */
+	noteDomFocus(): void {
+		this.#hasBeenFocused = true;
+	}
+
+	/**
+	 * Does relocation owe the user a `.focus()` call?
+	 *
+	 * Answered on read rather than sampled beforehand, because the two events
+	 * that would carry the answer do not. `focusout` fires for a removed element
+	 * exactly as it does for a deliberate exit — null `relatedTarget`, target
+	 * still reporting `isConnected` — and `$effect.pre` only runs during a
+	 * traversal, so a change that dirties the row list from inside another
+	 * effect's flush skips it entirely.
+	 *
+	 * So: focus still inside means relocation just moves it along; focus fallen
+	 * to `<body>` means whatever held it stopped being focusable — removed, or
+	 * turned disabled and dropped its tabindex — and nothing else claimed it.
+	 *
+	 * ponytail: also treats "user parked focus on bare page background, then the
+	 * row they had been on changed" as ours, and pulls focus back into the
+	 * table. Separating that needs to distinguish "the element stopped being
+	 * focusable" from "the user left", which the DOM does not report.
+	 */
+	#shouldRestoreDomFocus(): boolean {
+		if (!this.#hasBeenFocused) return false;
+		if (this.#wrapperEl?.contains(document.activeElement)) return true;
+		return document.activeElement === document.body;
+	}
+
+	/**
+	 * The `<tr>` received focus on its own (click, AT, a programmatic move).
+	 * `focus` does not bubble, so a cell taking focus never reaches here — which
+	 * is exactly what keeps cell mode from collapsing back to row mode.
+	 */
+	setRowFocus(rowKey: string): void {
+		this.#adoptDomFocus({ type: 'row', rowKey });
+	}
+
+	/**
+	 * A cell or a column header received focus on its own. Cells and headers are
+	 * `tabindex=-1`, which still makes them mouse-focusable, so a click has to
+	 * move the identity as well — otherwise it stays wherever the keyboard last
+	 * left it, and the next arrow key jumps somewhere unrelated.
+	 */
+	setCellFocus(rowKey: string, columnId: string): void {
+		this.#adoptDomFocus({ type: 'cell', rowKey, columnId });
+	}
+	setColumnHeaderFocus(columnId: string): void {
+		this.#adoptDomFocus({ type: 'columnheader', columnId });
+	}
+
+	// Also reached by our own `.focus()` calls, which have already set the
+	// identity — hence the equality check rather than an unconditional write.
+	#adoptDomFocus(target: FocusTarget): void {
+		if (sameTarget(this.#focus, target)) return;
+		this.#setFocus(target);
+	}
+
+	// ── focus relocation ───────────────────────────────────────
+	#isDisabledTarget(f: FocusTarget): boolean {
+		return f.type !== 'columnheader' && this.isRowDisabled(f.rowKey);
+	}
+
+	#reconcileFocus(rows: Ordered<string>, nav: Ordered<ColumnDescriptor>): void {
+		const f = this.#focus;
+		if (f === null) {
+			this.#lastRowCount = rows.items.length;
+			return;
+		}
+		if (this.#resolve(f, rows, nav) !== null && !this.#isDisabledTarget(f)) {
+			// Still valid — just refresh where it sits, in case rows moved.
+			if (f.type !== 'columnheader') this.#lastRowIndex = rows.indexOf(f.rowKey);
+			if (f.type !== 'row') this.#lastColumnIndex = nav.indexOf(f.columnId);
+			this.#lastRowCount = rows.items.length;
+			return;
+		}
+		const next = this.#relocate(f, rows, nav);
+		this.#lastRowCount = rows.items.length;
+		this.#setFocus(next);
+		// Writing `#focus` inside an effect means the tabindex reaches the DOM on
+		// the next flush, so the element cannot be focused until after it.
+		if (next !== null && this.#shouldRestoreDomFocus()) {
+			void tick().then(() => this.#applyDomFocus(next));
+		}
+	}
+
+	#relocate(
+		f: FocusTarget,
+		rows: Ordered<string>,
+		nav: Ordered<ColumnDescriptor>
+	): FocusTarget | null {
+		// A column that no longer exists at the remembered index drops back to row
+		// mode rather than sliding onto the last column — upstream does the same
+		// when the old cell index overruns the new row (`useGridState`'s
+		// `keyToFocus`).
+		const columnId =
+			this.#lastColumnIndex >= 0 && this.#lastColumnIndex < nav.items.length
+				? nav.items[this.#lastColumnIndex].id
+				: null;
+		const rowKey = this.#relocateRow(rows);
+
+		if (f.type === 'columnheader') {
+			if (columnId !== null) return { type: 'columnheader', columnId };
+			return rowKey === null ? null : { type: 'row', rowKey };
+		}
+		if (rowKey === null) return null;
+		if (f.type === 'row' || columnId === null) return { type: 'row', rowKey };
+		return { type: 'cell', rowKey, columnId };
+	}
+
+	/**
+	 * Upstream's landing formula (`useGridState`): when more than one row went
+	 * away, back up by the number removed so focus lands *ahead* of the deleted
+	 * block. A plain clamp lands on whatever now occupies the old index — delete
+	 * B, C, D out of A–E with focus on C and clamping puts you on E, while this
+	 * puts you on A.
+	 */
+	#relocateRow(rows: Ordered<string>): string | null {
+		const len = rows.items.length;
+		if (len === 0) return null;
+		const diff = this.#lastRowCount - len;
+		const index = Math.min(
+			diff > 1 ? Math.max(this.#lastRowIndex - diff + 1, 0) : this.#lastRowIndex,
+			len - 1
+		);
+		for (let i = Math.max(index, 0); i < len; i++) {
+			if (!this.isRowDisabled(rows.items[i])) return rows.items[i];
+		}
+		for (let i = index - 1; i >= 0; i--) {
+			if (!this.isRowDisabled(rows.items[i])) return rows.items[i];
+		}
+		return null;
+	}
+
+	// ── element registration from Root ─────────────────────────
+	// Passed as methods rather than `TableStateOptions` fields so tables built
+	// directly in tests keep working without a DOM.
+	registerWrapper(el: HTMLElement): () => void {
+		this.#wrapperEl = el;
+		return () => {
+			if (this.#wrapperEl === el) this.#wrapperEl = null;
+		};
+	}
+	registerTable(el: HTMLElement): () => void {
+		this.#tableEl = el;
+		return () => {
+			if (this.#tableEl === el) this.#tableEl = null;
+		};
+	}
+
+	/**
+	 * PageUp / PageDown distance, in rows. The one supplier — both the keyboard
+	 * delegate (cell mode) and the shared collection (row mode) read this, so a
+	 * page is the same distance in either mode.
+	 *
+	 * It is an approximation. Upstream has no scalar page size: it fixes the
+	 * page boundary in pixels and walks the row rects one at a time until it
+	 * crosses (`GridKeyboardDelegate.getKeyPageAbove` / `Below`). A row count
+	 * only matches that while every row is the same height, which
+	 * `overflowMode: 'wrap'` breaks.
+	 */
+	#pageSize(): number {
+		const wrapper = this.#wrapperEl;
+		const rowHeight = this.#rowElement(this.#rowKeys[0])?.offsetHeight ?? 0;
+		if (!wrapper || rowHeight <= 0) return DEFAULT_PAGE_SIZE;
+		return Math.max(1, Math.floor(wrapper.clientHeight / rowHeight));
 	}
 
 	// ── selection input dispatch (used by <TableView.Row> click) ──
@@ -524,41 +872,6 @@ export class TableState {
 	}
 
 	// ── keyboard ────────────────────────────────────────────────
-	/**
-	 * Move keyboard focus to a `(row | cell | columnheader)` target. Updates
-	 * the corresponding `#focused*` slots and calls `.focus()` on the
-	 * registered element exactly once. Row highlight stays in sync when
-	 * entering cell mode so selection / aria still reference the right row.
-	 */
-	#focusTarget(target: FocusTarget): void {
-		switch (target.type) {
-			case 'row': {
-				this.#focusedCell = null;
-				this.#focusedColumnHeader = null;
-				const domId = this.#collection.getDomId(target.rowKey);
-				if (!domId) return;
-				this.#collection.highlight(domId, { focusVisible: true });
-				return;
-			}
-			case 'cell': {
-				this.#focusedColumnHeader = null;
-				this.#focusedCell = { rowKey: target.rowKey, columnId: target.columnId };
-				const rowDomId = this.#collection.getDomId(target.rowKey);
-				if (rowDomId) this.#collection.syncHighlight(rowDomId);
-				const el = this.#cellElements.get(this.#cellKey(target.rowKey, target.columnId));
-				el?.focus(FOCUS_OPTS);
-				return;
-			}
-			case 'columnheader': {
-				this.#focusedCell = null;
-				this.#focusedColumnHeader = target.columnId;
-				const el = this.#columnHeaderElements.get(target.columnId);
-				el?.focus(FOCUS_OPTS);
-				return;
-			}
-		}
-	}
-
 	/**
 	 * Row-level keydown. Handles cell-mode transitions (ArrowRight enters
 	 * cell mode; ArrowUp on the first enabled row escapes to the column
@@ -586,9 +899,15 @@ export class TableState {
 			this.toggleSelectAll();
 			return;
 		}
-		// ArrowRight on a row → enter cell mode at the first cell.
-		if (event.key === 'ArrowRight') {
-			const target = this.#delegate.getKeyRight({ type: 'row', rowKey });
+		// Enter cell mode at the leading cell. Which physical arrow does that is
+		// a function of the writing direction, so both go through the delegate
+		// rather than ArrowRight being hardcoded as "forward".
+		if (event.key === 'ArrowRight' || event.key === 'ArrowLeft') {
+			const current: FocusTarget = { type: 'row', rowKey };
+			const target =
+				event.key === 'ArrowRight'
+					? this.#delegate.getKeyRight(current)
+					: this.#delegate.getKeyLeft(current);
 			if (target) {
 				event.preventDefault();
 				this.#focusTarget(target);
@@ -739,6 +1058,17 @@ export class TableState {
 
 		switch (event.key) {
 			case 'ArrowDown':
+				// Alt+ArrowDown opens the column menu — the APG menu-button
+				// gesture. The trigger is not a tab stop of its own (the table is
+				// a single tab stop), so this is the keyboard's way in, and from
+				// the menu's "Resize column" entry, into the resizer as well.
+				// Upstream leaves the same hole open: `useGridCell` swallows
+				// ArrowUp / ArrowDown for grid nav only `if (!e.altKey)`.
+				if (event.altKey) {
+					event.preventDefault();
+					this.#openColumnMenu(columnId);
+					return;
+				}
 				target = this.#delegate.getKeyBelow(current);
 				break;
 			case 'ArrowRight':
@@ -779,6 +1109,18 @@ export class TableState {
 			event.preventDefault();
 			this.#focusTarget(target);
 		}
+	}
+
+	/**
+	 * Click the column's menu trigger, if it renders one. Scoped to the
+	 * registered `<th>`, so no second registry is needed for an element the
+	 * header already owns.
+	 */
+	#openColumnMenu(columnId: string): void {
+		this.#columnHeaderElements
+			.get(columnId)
+			?.querySelector<HTMLElement>('[data-spectrum-table-view-column-menu-trigger]')
+			?.click();
 	}
 
 	/** Resolve the href for a row, if any (consumed by Row click handlers). */
@@ -1056,6 +1398,18 @@ export class TableState {
 	#getAnnouncer() {
 		if (typeof document === 'undefined') return null;
 		return getAnnouncer(document);
+	}
+}
+
+function sameTarget(a: FocusTarget | null, b: FocusTarget): boolean {
+	if (a === null || a.type !== b.type) return false;
+	switch (b.type) {
+		case 'row':
+			return a.type === 'row' && a.rowKey === b.rowKey;
+		case 'cell':
+			return a.type === 'cell' && a.rowKey === b.rowKey && a.columnId === b.columnId;
+		case 'columnheader':
+			return a.type === 'columnheader' && a.columnId === b.columnId;
 	}
 }
 

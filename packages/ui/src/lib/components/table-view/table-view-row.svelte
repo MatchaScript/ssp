@@ -24,11 +24,19 @@
 	// All getters: identity comes from the row scope, and the link / a11y props
 	// must stay live for descendant <TableView.Cell> — a value copy would leave
 	// the stretched <a> overlay (and aria-label) stale when `href` changes.
+	// The keyboard target while it points at this row. One read of the
+	// table-wide state per row, from the row scope; the `<tr>`, its cells and
+	// its checkbox all answer "am I the target?" from this one value.
+	const rowFocus = $derived(scope.focus);
+
 	setRowContext({
 		get rowKey() {
 			return key;
 		},
 		rowDomId: domId,
+		get focus() {
+			return rowFocus;
+		},
 		get href() {
 			return href;
 		},
@@ -48,12 +56,16 @@
 
 	const isSelected = $derived(tableState.isSelected(key));
 	const isDisabled = $derived(tableState.isRowDisabled(key));
-	const isFocused = $derived(tableState.isFocused(domId));
-	// Roving tabindex hands off to the cell / column-header when 2D nav is
-	// active. The row stays the *highlight* target (selection anchor, aria),
-	// but it surrenders the keyboard focus slot so Tab into the table lands
-	// on whatever the user last navigated to.
-	const isRowKeyboardTarget = $derived(isFocused && !tableState.isCellModeActive);
+	// The row is "focused" whenever the target names it, in either mode — that
+	// is what paints the row-level accent while a cell inside it owns the
+	// keyboard. It only owns the tab stop in row mode.
+	const isFocused = $derived(rowFocus !== null);
+	const isRowKeyboardTarget = $derived(rowFocus?.type === 'row');
+	// A disabled row (and its cells) gets no `tabindex` attribute at all rather
+	// than -1: -1 is still programmatically focusable, which would let
+	// `.focus()` land on a row the keyboard deliberately skips. Same rule the
+	// shared primitive's `itemTabIndex` applies, and upstream's
+	// `useSelectableItem`.
 	const showCheckbox = $derived(tableState.selectionMode !== 'none');
 	const resolvedTextValue = $derived(textValue ?? '');
 	const isLink = $derived(href !== undefined);
@@ -158,7 +170,7 @@
 
 	function handleFocus() {
 		if (isDisabled) return;
-		tableState.syncHighlight(domId);
+		tableState.setRowFocus(key);
 	}
 
 	// Keyboard nav lives at the row level so descendant keystrokes (Button /
@@ -196,7 +208,9 @@
 		return untrack(() => tableState.registerCell(key, SELECTION_COLUMN_ID, el));
 	});
 
-	const isCheckboxCellFocused = $derived(tableState.isCellFocused(key, SELECTION_COLUMN_ID));
+	const isCheckboxCellFocused = $derived(
+		rowFocus?.type === 'cell' && rowFocus.columnId === SELECTION_COLUMN_ID
+	);
 	// Same expression every other column index uses — the selection column is
 	// simply the one that sits at index 0 of the nav order.
 	const checkboxColIndex = $derived(tableState.navColumns.indexOf(SELECTION_COLUMN_ID) + 1);
@@ -224,7 +238,7 @@
 	aria-disabled={isDisabled || undefined}
 	aria-labelledby={ariaLabelledBy}
 	aria-rowindex={ariaRowIndex}
-	tabindex={isRowKeyboardTarget ? 0 : -1}
+	tabindex={isDisabled ? undefined : isRowKeyboardTarget ? 0 : -1}
 	onclick={handleClick}
 	ondblclick={handleDoubleClick}
 	onfocus={handleFocus}
@@ -237,7 +251,8 @@
 			data-spectrum-table-view-checkbox-cell
 			data-focused={isCheckboxCellFocused || undefined}
 			aria-colindex={checkboxColIndex}
-			tabindex={isCheckboxCellFocused ? 0 : -1}
+			tabindex={isDisabled ? undefined : isCheckboxCellFocused ? 0 : -1}
+			onfocus={() => tableState.setCellFocus(key, SELECTION_COLUMN_ID)}
 			onclick={handleCheckboxClick}
 			onkeydown={handleCheckboxKeydown}
 		>

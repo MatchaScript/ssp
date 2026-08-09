@@ -31,6 +31,17 @@ export function order<T>(items: readonly T[], keyOf: (item: T) => string): Order
 export const EMPTY_ORDERED: Ordered<never> = order([], () => '');
 
 /**
+ * Where the keyboard is pointed. Row, cell and column-header are three shapes of
+ * one value rather than three independent flags, so there is never a pair of
+ * "is a cell focused" / "is a header focused" answers to reconcile after the
+ * fact — and an identity that stops resolving takes the whole target with it.
+ */
+export type FocusTarget =
+	| { type: 'row'; rowKey: string }
+	| { type: 'cell'; rowKey: string; columnId: string }
+	| { type: 'columnheader'; columnId: string };
+
+/**
  * Non-reactive per-row metadata used only inside event handlers. Kept out of
  * the reactive `RowDescriptor` because `onAction` is typically an inline
  * closure that gets a fresh identity on every parent render — storing it in

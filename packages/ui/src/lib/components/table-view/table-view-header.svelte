@@ -38,7 +38,10 @@
 		return untrack(() => tableState.registerColumnHeader(SELECTION_COLUMN_ID, el));
 	});
 
-	const isCheckboxHeaderFocused = $derived(tableState.isColumnHeaderFocused(SELECTION_COLUMN_ID));
+	const keyboardTarget = $derived(tableState.keyboardTarget);
+	const isCheckboxHeaderFocused = $derived(
+		keyboardTarget?.type === 'columnheader' && keyboardTarget.columnId === SELECTION_COLUMN_ID
+	);
 
 	function handleCheckboxClick() {
 		if (tableState.selectionMode === 'multiple') tableState.toggleSelectAll();
@@ -69,6 +72,7 @@
 				aria-colindex={tableState.navColumns.indexOf(SELECTION_COLUMN_ID) + 1}
 				aria-label={tableState.selectionMode === 'multiple' ? 'Select all' : undefined}
 				tabindex={isCheckboxHeaderFocused ? 0 : -1}
+				onfocus={() => tableState.setColumnHeaderFocus(SELECTION_COLUMN_ID)}
 				onclick={tableState.selectionMode === 'multiple' ? handleCheckboxClick : undefined}
 				onkeydown={handleCheckboxKeydown}
 			>

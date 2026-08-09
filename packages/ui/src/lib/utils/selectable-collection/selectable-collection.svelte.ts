@@ -60,6 +60,26 @@ export interface SelectableCollectionProps {
 	 */
 	readonly allowsSelectAll?: boolean;
 	/**
+	 * Item order, as semantic values. For consumers that already own the order
+	 * (TableView's `items` array). Omitted, the collection sorts its registered
+	 * elements by DOM position, which is all a self-registering collection has.
+	 */
+	readonly orderedValues?: () => readonly string[];
+	/**
+	 * Highlight identity, as a semantic value. While this is supplied the
+	 * collection stops owning the highlight: `highlightedId` becomes this value
+	 * resolved to a domId, and every internal move is reported through
+	 * `onHighlightChange` instead of being written locally.
+	 */
+	readonly highlightedValue?: () => string | null;
+	/**
+	 * Called whenever the collection moves the highlight itself. Arrow / Home /
+	 * End / Page navigation and typeahead all apply the move internally and
+	 * return nothing, so without this a controlled consumer would see the DOM
+	 * focus travel while its own identity stood still.
+	 */
+	readonly onHighlightChange?: (value: string | null) => void;
+	/**
 	 * Item count jumped by PageUp / PageDown. Default 10. The collection lacks
 	 * viewport awareness so it cannot derive a "page" geometrically; consumers
 	 * with virtualization should supply a value tuned to their visible row count.
@@ -155,10 +175,13 @@ export class SelectableCollection {
 	#items = new Map<string, ItemRegistration>();
 	#valueToId = new Map<string, string>();
 	#orderedCache: ItemRegistration[] | null = null;
+	/** Which `orderedValues()` array `#orderedCache` was built from. */
+	#orderedSource: readonly string[] | null = null;
+	#getOrderedItems: () => ItemRegistration[];
 	#typeahead: Typeahead;
 
-	/** The domId of the currently highlighted (focused) item. */
-	highlightedId: string | null = $state(null);
+	/** Uncontrolled highlight. Stays untouched while `highlightedValue` is supplied. */
+	#highlightedId: string | null = $state(null);
 
 	/**
 	 * The value of the most recently set selection anchor.
@@ -174,6 +197,12 @@ export class SelectableCollection {
 
 	constructor(props: SelectableCollectionProps) {
 		this.#props = props;
+		// Resolved once, here: `handleKeyDown` calls this on every keystroke, so
+		// the branch has no business living inside it.
+		const orderedValues = props.orderedValues;
+		this.#getOrderedItems = orderedValues
+			? () => this.#orderedFromValues(orderedValues())
+			: () => this.#orderedFromDOM();
 		this.#typeahead = new Typeahead(
 			() => this.#getOrderedItems(),
 			(domId) => {
@@ -212,8 +241,12 @@ export class SelectableCollection {
 			this.#items.delete(reg.domId);
 			this.#valueToId.delete(reg.value);
 			this.#orderedCache = null;
-			if (this.highlightedId === reg.domId) {
-				this.highlightedId = null;
+			// Uncontrolled only. Nobody else would clear it, and a highlight left
+			// pointing at an unmounted item parks `containerTabIndex` at -1
+			// forever, taking the widget's tab stop with it. A controlled consumer
+			// owns the identity and decides where it goes instead.
+			if (!this.#props.highlightedValue && this.#highlightedId === reg.domId) {
+				this.#highlightedId = null;
 			}
 		};
 	}
@@ -225,13 +258,47 @@ export class SelectableCollection {
 		if (updates.textValue !== undefined) item.textValue = updates.textValue;
 	}
 
-	#getOrderedItems(): ItemRegistration[] {
+	#orderedFromDOM(): ItemRegistration[] {
 		if (this.#orderedCache) return this.#orderedCache;
 		this.#orderedCache = sortByDOMOrder([...this.#items.values()]);
 		return this.#orderedCache;
 	}
 
+	// Memoized on the supplied array's identity, because `handleKeyDown` asks for
+	// this on every keystroke. Registration changes clear `#orderedCache`, so a
+	// stable array whose items mount later still rebuilds. Values with no
+	// registration drop out, which keeps the list matching the DOM.
+	#orderedFromValues(values: readonly string[]): ItemRegistration[] {
+		if (this.#orderedCache && this.#orderedSource === values) return this.#orderedCache;
+		const items: ItemRegistration[] = [];
+		for (const value of values) {
+			const domId = this.#valueToId.get(value);
+			const item = domId === undefined ? undefined : this.#items.get(domId);
+			if (item) items.push(item);
+		}
+		this.#orderedSource = values;
+		this.#orderedCache = items;
+		return items;
+	}
+
 	// ── Highlight (roving focus) ──
+
+	/** The domId of the currently highlighted (focused) item. */
+	get highlightedId(): string | null {
+		const controlled = this.#props.highlightedValue;
+		if (!controlled) return this.#highlightedId;
+		const value = controlled();
+		return value === null ? null : (this.#valueToId.get(value) ?? null);
+	}
+
+	/**
+	 * The one place the collection writes the highlight. Controlled consumers own
+	 * the identity, so they are told and nothing local is written.
+	 */
+	#setHighlight(domId: string | null): void {
+		this.#props.onHighlightChange?.(domId === null ? null : (this.getValue(domId) ?? null));
+		if (!this.#props.highlightedValue) this.#highlightedId = domId;
+	}
 
 	/**
 	 * Move roving focus to an item.
@@ -241,7 +308,7 @@ export class SelectableCollection {
 	 * so the hint is required there; Chrome/Firefox use it as-is too.
 	 */
 	highlight(domId: string | null, opts?: { focusVisible?: boolean }) {
-		this.highlightedId = domId;
+		this.#setHighlight(domId);
 		if (domId) {
 			this.#items.get(domId)?.el.focus(opts);
 		}
@@ -272,7 +339,7 @@ export class SelectableCollection {
 	 * handler when the element already received focus externally (Tab, click, AT).
 	 */
 	syncHighlight(domId: string | null) {
-		this.highlightedId = domId;
+		this.#setHighlight(domId);
 	}
 
 	focusFirst(opts?: { focusVisible?: boolean }) {
@@ -377,9 +444,8 @@ export class SelectableCollection {
 		// range this gesture previously covered is taken back, so shrinking the
 		// range deselects what it passes over.
 		const next = new Set(this.selectedKeys);
-		const prevIdx = this.#extendedToKey === null
-			? -1
-			: ordered.findIndex((i) => i.value === this.#extendedToKey);
+		const prevIdx =
+			this.#extendedToKey === null ? -1 : ordered.findIndex((i) => i.value === this.#extendedToKey);
 		if (prevIdx !== -1) {
 			const [prevStart, prevEnd] = fromIdx <= prevIdx ? [fromIdx, prevIdx] : [prevIdx, fromIdx];
 			for (let i = prevStart; i <= prevEnd; i++) next.delete(ordered[i].value);
