@@ -7,7 +7,7 @@ catalog:
   '@sveltejs/kit': ^2.70.2
   '@sveltejs/package': ^2.5.8
   '@sveltejs/vite-plugin-svelte': ^7.2.0
-  '@types/node': ^26.1.1
+  '@types/node': ^26.1.2
   '@vitest/browser-playwright': ^4.1.10
   '@vitest/coverage-v8': ^4.1.10
   playwright: ^1.62.1
