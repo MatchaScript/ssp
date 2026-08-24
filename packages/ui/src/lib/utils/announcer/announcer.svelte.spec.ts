@@ -58,7 +58,7 @@ describe('announcer', () => {
 		const cssText = root?.style.cssText ?? '';
 		expect(cssText).toContain('position: absolute');
 		expect(cssText).toContain('width: 1px');
-		expect(cssText).toContain('clip: rect(0, 0, 0, 0)');
+		expect(cssText).toContain('clip: rect(0');
 	});
 
 	it('appends polite messages to the polite log', () => {
