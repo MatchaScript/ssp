@@ -9,6 +9,12 @@
 	const tableState = getTableContext();
 	let handleEl: HTMLDivElement | null = $state(null);
 	let inputEl: HTMLInputElement | null = $state(null);
+	// "Column resizer" on its own reads identically on every resizable column,
+	// so the name is composed: the input's own `aria-label` (reached by naming
+	// itself first, since `aria-labelledby` is not followed recursively) plus
+	// the header of the column it resizes.
+	const inputDomId = $props.id();
+	const ariaLabelledBy = $derived(`${inputDomId} ${tableState.columnHeaderId(columnId)}`);
 	// True while a pointer drag is in flight — gates the full-viewport cursor overlay.
 	let showOverlay = $state(false);
 
@@ -142,12 +148,14 @@
 >
 	<input
 		bind:this={inputEl}
+		id={inputDomId}
 		type="range"
 		min={minPx}
 		max={maxPx}
 		value={width}
 		tabindex={-1}
 		aria-label="Column resizer"
+		aria-labelledby={ariaLabelledBy}
 		aria-valuetext={ariaValueText}
 		data-spectrum-table-view-resizer-input
 		onkeydown={handleInputKeydown}

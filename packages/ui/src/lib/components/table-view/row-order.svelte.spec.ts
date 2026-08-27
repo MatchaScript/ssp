@@ -133,6 +133,53 @@ describe('TableView.announceRowFocus uses `items` order', () => {
 	});
 });
 
+describe('ARIA index attributes belong to a virtualized collection only', () => {
+	let host: HTMLDivElement;
+	let component: ReturnType<typeof mount>;
+
+	beforeEach(() => {
+		host = document.createElement('div');
+		host.style.width = '900px';
+		document.body.appendChild(host);
+		component = mount(Harness, {
+			target: host,
+			props: {
+				rows: [
+					{ id: 'r0', a: 'a0', b: 'b0', c: 'c0' },
+					{ id: 'r1', a: 'a1', b: 'b1', c: 'c1' }
+				],
+				selectionMode: 'multiple'
+			}
+		});
+		flushSync();
+	});
+	afterEach(() => {
+		unmount(component);
+		host.remove();
+	});
+
+	it('a fully rendered table emits none of them, and its column headers all keep aria-colindex', () => {
+		// They describe a collection larger than the DOM. A table that renders
+		// every row it has is not one, and the counts go wrong the moment they
+		// disagree with what is rendered.
+		const table = host.querySelector('table[role="grid"]')!;
+		expect(table.hasAttribute('aria-rowcount')).toBe(false);
+		expect(table.hasAttribute('aria-colcount')).toBe(false);
+		expect(host.querySelectorAll('tr[aria-rowindex]')).toHaveLength(0);
+
+		// The column headers are the exception — upstream emits theirs
+		// unconditionally too, and the selection column is one of them.
+		const withColIndex = Array.from(host.querySelectorAll('[aria-colindex]'));
+		const headers = Array.from(
+			host.querySelectorAll(
+				'[data-spectrum-table-view-column], [data-spectrum-table-view-checkbox-header]'
+			)
+		);
+		expect(headers).toHaveLength(4);
+		expect(withColIndex).toEqual(headers);
+	});
+});
+
 describe('TableView hidden columns keep cells and <col> aligned', () => {
 	let host: HTMLDivElement;
 	let component: ReturnType<typeof mount>;
@@ -153,6 +200,13 @@ describe('TableView hidden columns keep cells and <col> aligned', () => {
 		return Array.from(rowEls(host)[0].querySelectorAll('[data-spectrum-table-view-cell]'));
 	}
 
+	// Every cell carries `${rowDomId}-cell-${columnId}`, so the tail of its id is
+	// the column it claims to belong to. That is the binding the row's
+	// `aria-labelledby` and the keyboard delegate both rely on.
+	function cellColumnIds(): string[] {
+		return firstRowCells().map((cell) => cell.id.slice(cell.id.lastIndexOf('-cell-') + 6));
+	}
+
 	beforeEach(() => {
 		host = document.createElement('div');
 		host.style.width = '900px';
@@ -169,11 +223,7 @@ describe('TableView hidden columns keep cells and <col> aligned', () => {
 
 	it('drops a hidden middle column from the cells and the colgroup together', () => {
 		expect(colIds()).toEqual(['a', 'b', 'c']);
-		expect(firstRowCells().map((cell) => cell.getAttribute('aria-colindex'))).toEqual([
-			'1',
-			'2',
-			'3'
-		]);
+		expect(cellColumnIds()).toEqual(['a', 'b', 'c']);
 
 		// Hiding the middle column removes both its `<col>` and its cells. The
 		// trailing column must slide into the vacated slot on both sides at
@@ -183,8 +233,11 @@ describe('TableView hidden columns keep cells and <col> aligned', () => {
 		flushSync();
 
 		expect(colIds()).toEqual(['a', 'c']);
-		const cells = firstRowCells();
-		expect(cells.map((cell) => cell.textContent?.trim())).toEqual(['a0', 'c0']);
-		expect(cells.map((cell) => cell.getAttribute('aria-colindex'))).toEqual(['1', '2']);
+		expect(firstRowCells().map((cell) => cell.textContent?.trim())).toEqual(['a0', 'c0']);
+		// The surviving cells still name 'a' and 'c'. Position moved; binding did
+		// not — which is the property the removed `aria-colindex` used to stand in
+		// for, and the one the row's `aria-labelledby` actually needs.
+		expect(cellColumnIds()).toEqual(['a', 'c']);
+		expect(rowEls(host)[0].getAttribute('aria-labelledby')).toBe(firstRowCells()[0].id);
 	});
 });

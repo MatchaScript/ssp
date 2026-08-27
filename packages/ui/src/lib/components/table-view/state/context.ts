@@ -28,8 +28,8 @@ export type RowContext = {
 	rowKey: string;
 	// Stable DOM id for the row (`<tr>`). Used to derive deterministic per-cell
 	// element ids without back-coordination from the cell to the row — the
-	// rowheader cell becomes `${rowDomId}-cell-${columnId}` and the row's
-	// `aria-labelledby` points at it.
+	// rowheader cell's id comes out of `TableState.cellId(rowDomId, columnId)`
+	// and the row's `aria-labelledby` points at it.
 	rowDomId: string;
 
 	// Passed straight down from the row scope so a Cell can answer "am I the

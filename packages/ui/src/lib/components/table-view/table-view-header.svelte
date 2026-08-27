@@ -12,8 +12,8 @@
 
 	// Registered here, in the component body rather than an `$effect`, so the
 	// columns are available as soon as Header renders. This array is also the
-	// column order: header cells, `<col>` elements and `aria-colindex` all read
-	// it, so they cannot disagree.
+	// column order: header cells, `<col>` elements and the headers'
+	// `aria-colindex` all read it, so they cannot disagree.
 	//
 	// `<colgroup>` is still empty on the server: HTML requires it to precede
 	// `<thead>`, so Root emits it before this component has run. Column-dependent
@@ -43,8 +43,37 @@
 		keyboardTarget?.type === 'columnheader' && keyboardTarget.columnId === SELECTION_COLUMN_ID
 	);
 
+	const isSelectAll = $derived(tableState.selectionMode === 'multiple');
+	// Nothing to select — an empty table, every row disabled, or the whole table
+	// disabled. Left enabled, the control would answer "press me" and then do
+	// nothing at all, with no announcement to say so. Upstream disables it on the
+	// same condition (`useTableSelectAllCheckbox`).
+	const isSelectAllDisabled = $derived(tableState.selectableKeys.length === 0);
+	// Three states in one attribute, so the answer to "what does pressing this
+	// do?" is available before pressing it. Without it the tri-state lives only
+	// in the drawn box and a screen-reader user learns the outcome afterwards,
+	// from the live region.
+	const selectAllChecked = $derived(
+		tableState.isAllSelected ? 'true' : tableState.isSomeSelected ? 'mixed' : 'false'
+	);
+
 	function handleCheckboxClick() {
 		if (tableState.selectionMode === 'multiple') tableState.toggleSelectAll();
+	}
+
+	// The input's own activation is NOT cancelled — see the same handler in
+	// `<TableView.Row>` for why a cancelled checkbox click ends up reading the
+	// opposite of the selection. `stopPropagation` keeps the `<th>` out of this
+	// activation so select-all is applied once, and the two writes afterwards
+	// re-derive the control from the selection: the browser has already flipped
+	// `checked` and cleared `indeterminate`, and when the toggle is refused the
+	// projection does not change, so Svelte's memoized writes leave that flip
+	// standing.
+	function handleCheckboxInputClick(e: MouseEvent & { currentTarget: HTMLInputElement }) {
+		e.stopPropagation();
+		handleCheckboxClick();
+		e.currentTarget.checked = tableState.isAllSelected;
+		e.currentTarget.indeterminate = tableState.isSomeSelected;
 	}
 
 	function handleCheckboxKeydown(e: KeyboardEvent) {
@@ -57,7 +86,7 @@
 <!-- svelte-ignore a11y_no_redundant_roles -->
 <thead role="rowgroup">
 	<!-- svelte-ignore a11y_no_redundant_roles -->
-	<tr role="row" data-spectrum-table-view-header-row aria-rowindex={1}>
+	<tr role="row" data-spectrum-table-view-header-row>
 		{#if showCheckboxColumn}
 			<!-- Selection column header. Always focusable in cell-mode (RAC parity:
 			     it's a real columnheader for nav purposes even in single-select
@@ -68,21 +97,38 @@
 				bind:this={checkboxRef}
 				data-spectrum-table-view-checkbox-header
 				data-focused={isCheckboxHeaderFocused || undefined}
-				role={tableState.selectionMode === 'multiple' ? 'columnheader' : 'presentation'}
+				role={isSelectAll ? 'columnheader' : 'presentation'}
 				aria-colindex={tableState.navColumns.indexOf(SELECTION_COLUMN_ID) + 1}
-				aria-label={tableState.selectionMode === 'multiple' ? 'Select all' : undefined}
 				tabindex={isCheckboxHeaderFocused ? 0 : -1}
 				onfocus={() => tableState.setColumnHeaderFocus(SELECTION_COLUMN_ID)}
-				onclick={tableState.selectionMode === 'multiple' ? handleCheckboxClick : undefined}
+				onclick={isSelectAll ? handleCheckboxClick : undefined}
 				onkeydown={handleCheckboxKeydown}
 			>
-				{#if tableState.selectionMode === 'multiple' && !tableState.hideHeader}
-					<CheckboxBox
+				{#if isSelectAll}
+					<!-- The name lives on the control, not on the `<th>`: a column
+					     header that repeats it makes AT read "Select all" twice
+					     before saying what state it is in. Rendered even when the
+					     header row is visually hidden — `hideHeader` hides the
+					     drawn box, not the semantics. -->
+					<input
+						type="checkbox"
+						data-spectrum-table-view-selection-checkbox
 						checked={tableState.isAllSelected}
 						indeterminate={tableState.isSomeSelected}
-						isDisabled={tableState.isDisabled}
-						size="s"
+						disabled={isSelectAllDisabled}
+						tabindex={-1}
+						aria-label="Select all"
+						aria-checked={selectAllChecked}
+						onclick={handleCheckboxInputClick}
 					/>
+					{#if !tableState.hideHeader}
+						<CheckboxBox
+							checked={tableState.isAllSelected}
+							indeterminate={tableState.isSomeSelected}
+							isDisabled={isSelectAllDisabled}
+							size="s"
+						/>
+					{/if}
 				{/if}
 			</th>
 		{/if}

@@ -25,17 +25,21 @@ describe('data sources are released when Body / Header unmount', () => {
 		return state;
 	}
 
-	const table = () => host.querySelector('table[role="grid"]') as HTMLElement;
-
 	it('drops the rows when the body goes away', () => {
 		const props = render();
-		expect(table().getAttribute('aria-rowcount')).toBe('4');
+		expect(host.querySelectorAll('tr[data-spectrum-table-view-row]')).toHaveLength(3);
+		expect(host.querySelector('[data-spectrum-table-view-empty-state]')).toBeNull();
 
 		props.showBody = false;
 		flushSync();
 
-		expect(host.querySelector('tbody')).toBeNull();
-		expect(table().getAttribute('aria-rowcount')).toBe('1');
+		// Root renders the empty state off its own reading of the row source, so
+		// the message appearing is what says the source was released — an
+		// unmounted `<tbody>` on its own would only say the markup is gone.
+		expect(host.querySelector('[data-spectrum-table-view-body]')).toBeNull();
+		expect(host.querySelector('[data-spectrum-table-view-empty-state]')?.textContent?.trim()).toBe(
+			'Nothing here'
+		);
 	});
 
 	it('does not select rows that are no longer rendered', () => {
@@ -61,8 +65,11 @@ describe('data sources are released when Body / Header unmount', () => {
 
 		expect(host.querySelector('thead')).toBeNull();
 		expect(host.querySelectorAll('col[data-column-id]')).toHaveLength(0);
-		// The synthetic selection column survives — it comes from `selectionMode`,
-		// not from the header — so one column of content is still rendered.
-		expect(table().getAttribute('aria-colcount')).toBe('1');
+		// The colgroup is rendered from the same column list the rest of the table
+		// navigates, so what is left in it is what the table still believes it
+		// has: the synthetic selection column, which comes from `selectionMode`
+		// rather than from the header.
+		expect(host.querySelectorAll('col')).toHaveLength(1);
+		expect(host.querySelector('col[data-spectrum-table-view-checkbox-col]')).not.toBeNull();
 	});
 });

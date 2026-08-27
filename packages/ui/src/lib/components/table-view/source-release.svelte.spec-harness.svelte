@@ -16,7 +16,13 @@
 	];
 </script>
 
-<TableView.Root aria-label="release" selectionMode="multiple">
+<!-- Root renders this only while it reports no rows, so its arrival is an
+     observation of the row source rather than of the markup. -->
+{#snippet renderEmptyState()}
+	Nothing here
+{/snippet}
+
+<TableView.Root aria-label="release" selectionMode="multiple" {renderEmptyState}>
 	{#if showHeader}
 		<TableView.Header columns={COLUMNS} />
 	{/if}

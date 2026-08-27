@@ -70,23 +70,19 @@
 	const resolvedTextValue = $derived(textValue ?? '');
 	const isLink = $derived(href !== undefined);
 
-	// `aria-labelledby` points at the rowheader cell. Cell ids follow the
-	// deterministic pattern `${rowDomId}-cell-${columnId}` (cells generate
-	// their own id from the row context using the same template), so the row
-	// can predict the id without the cell having to push it back. If no
-	// rowheader column is registered (e.g. transient state during column
-	// registration) `aria-labelledby` is omitted and SR falls back to the
-	// row's textual content.
+	// `aria-labelledby` points at the rowheader cell. Cell ids come from one
+	// convention in TableState (`cellId`), which the cells themselves also use to
+	// write their own id, so the row can predict the id without the cell having
+	// to push it back. If no rowheader column is registered (e.g. transient state
+	// during column registration) `aria-labelledby` is omitted and SR falls back
+	// to the row's textual content.
 	// All rowheader cells, space-joined — a table may declare more than one, and
 	// naming the row from only the first splits its accessible name.
 	const ariaLabelledBy = $derived(
 		tableState.rowHeaderColumnIds.length > 0
-			? tableState.rowHeaderColumnIds.map((id) => `${domId}-cell-${id}`).join(' ')
+			? tableState.rowHeaderColumnIds.map((id) => tableState.cellId(domId, id)).join(' ')
 			: undefined
 	);
-	// 1-based; the header row is always row 1, so body rows start at 2. The
-	// position comes from the row scope, i.e. the consumer's array index.
-	const ariaRowIndex = $derived(scope.index + 2);
 
 	$effect(() => {
 		const el = ref;
@@ -183,11 +179,10 @@
 		tableState.handleRowKeyDown(e, key);
 	}
 
-	function handleCheckboxClick(e: MouseEvent) {
-		// The row's onclick handler also fires; for non-linked rows we'd toggle
-		// twice. Stop propagation so the cell click is the single source of
-		// truth for the checkbox column.
-		e.stopPropagation();
+	// One toggle for the whole selection cell. The `<td>` owns the click for the
+	// full 40px column, the `<input>` inside it is 14px of that, and both route
+	// here — so whichever of them is activated, the row is toggled exactly once.
+	function toggleSelection(e: MouseEvent) {
 		if (isDisabled) return;
 		tableState.selectFromInput(key, {
 			shiftKey: e.shiftKey,
@@ -195,6 +190,14 @@
 			metaKey: e.metaKey,
 			pointerType: 'mouse'
 		});
+	}
+
+	function handleCheckboxCellClick(e: MouseEvent) {
+		// The row's onclick handler also fires; for non-linked rows we'd toggle
+		// twice. Stop propagation so the cell click is the single source of
+		// truth for the checkbox column.
+		e.stopPropagation();
+		toggleSelection(e);
 	}
 
 	// Per-row checkbox cell — registered as a cell under SELECTION_COLUMN_ID so
@@ -211,9 +214,36 @@
 	const isCheckboxCellFocused = $derived(
 		rowFocus?.type === 'cell' && rowFocus.columnId === SELECTION_COLUMN_ID
 	);
-	// Same expression every other column index uses — the selection column is
-	// simply the one that sits at index 0 of the nav order.
-	const checkboxColIndex = $derived(tableState.navColumns.indexOf(SELECTION_COLUMN_ID) + 1);
+
+	// The checkbox names itself and then the row: "Select" from its own
+	// `aria-label` (reached because `aria-labelledby` is not followed
+	// recursively), then the rowheader cells that name the row. Naming it from
+	// the resolved row label instead would read a value sampled once, since the
+	// label registries are deliberately non-reactive.
+	const checkboxDomId = $derived(`${domId}-select`);
+	const checkboxLabelledBy = $derived(
+		ariaLabelledBy === undefined ? undefined : `${checkboxDomId} ${ariaLabelledBy}`
+	);
+
+	// The input's own activation is NOT cancelled. Cancelling a checkbox click
+	// makes the browser restore `checked` to its pre-click value after the
+	// handlers have run, and under a trusted activation — a real click, a screen
+	// reader's press — Svelte's template flush lands in between: it writes the
+	// new selection onto the control and the restore then overwrites it, leaving
+	// the checkbox reading the opposite of what is selected.
+	//
+	// So the click runs its course, and the two things the cancellation was
+	// protecting are kept directly: `stopPropagation` leaves the `<td>` out of
+	// this activation, so there is still one toggle per click; and the write
+	// below re-derives the checkedness from the selection, which is what a
+	// REFUSED toggle needs — the browser has already flipped the control, the
+	// projection did not change, and Svelte's `checked` write is memoized
+	// against that projection, so nothing else would put it back.
+	function handleCheckboxInputClick(e: MouseEvent & { currentTarget: HTMLInputElement }) {
+		e.stopPropagation();
+		toggleSelection(e);
+		e.currentTarget.checked = tableState.isSelected(key);
+	}
 
 	function handleCheckboxKeydown(e: KeyboardEvent) {
 		if (isDisabled) return;
@@ -237,7 +267,6 @@
 	aria-selected={tableState.selectionMode !== 'none' ? isSelected : undefined}
 	aria-disabled={isDisabled || undefined}
 	aria-labelledby={ariaLabelledBy}
-	aria-rowindex={ariaRowIndex}
 	tabindex={isDisabled ? undefined : isRowKeyboardTarget ? 0 : -1}
 	onclick={handleClick}
 	ondblclick={handleDoubleClick}
@@ -250,10 +279,9 @@
 			role="gridcell"
 			data-spectrum-table-view-checkbox-cell
 			data-focused={isCheckboxCellFocused || undefined}
-			aria-colindex={checkboxColIndex}
 			tabindex={isDisabled ? undefined : isCheckboxCellFocused ? 0 : -1}
 			onfocus={() => tableState.setCellFocus(key, SELECTION_COLUMN_ID)}
-			onclick={handleCheckboxClick}
+			onclick={handleCheckboxCellClick}
 			onkeydown={handleCheckboxKeydown}
 		>
 			<!-- Row focus indicator. Rendered inside the leading cell rather
@@ -262,6 +290,17 @@
 			     case. Styles are `:global` because the matching element lives in
 			     two different components. -->
 			<span data-spectrum-table-view-row-focus-indicator aria-hidden="true"></span>
+			<input
+				id={checkboxDomId}
+				type="checkbox"
+				data-spectrum-table-view-selection-checkbox
+				checked={isSelected}
+				disabled={isDisabled}
+				tabindex={-1}
+				aria-label="Select"
+				aria-labelledby={checkboxLabelledBy}
+				onclick={handleCheckboxInputClick}
+			/>
 			<CheckboxBox checked={isSelected} {isDisabled} size="s" />
 		</td>
 	{/if}

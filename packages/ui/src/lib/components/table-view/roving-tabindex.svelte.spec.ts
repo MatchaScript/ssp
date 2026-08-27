@@ -511,6 +511,22 @@ describe('how many tab stops the widget actually exposes', () => {
 		expect(tabStops()[0]).toBe(table());
 	});
 
+	it('the selection column real checkboxes are not tab stops of their own', () => {
+		render();
+
+		// `<input type="checkbox">` is tabbable on native focusability alone, so
+		// counting `tabindex="0"` attributes would report one stop where Tab finds
+		// five. Every one of them has to carry an explicit -1.
+		const checkboxes = Array.from(
+			host.querySelectorAll<HTMLInputElement>('input[data-spectrum-table-view-selection-checkbox]')
+		);
+		expect(checkboxes).toHaveLength(4); // select-all + one per row
+		expect(checkboxes.filter((el) => el.getAttribute('tabindex') !== '-1')).toEqual([]);
+
+		expect(tabStops()).toHaveLength(1);
+		expect(tabStops()[0]).toBe(table());
+	});
+
 	it('Alt+ArrowDown on a column header opens its menu — the keyboard way in', () => {
 		render({ withColumnFeatures: true });
 		enterTable();

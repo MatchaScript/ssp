@@ -92,6 +92,7 @@
 {#if !isHidden}
 	<th
 		bind:this={ref}
+		id={tableState.columnHeaderId(id)}
 		role="columnheader"
 		data-spectrum-table-view-column
 		data-align={align ?? undefined}

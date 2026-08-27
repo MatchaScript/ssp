@@ -17,11 +17,9 @@
 	// (markup-order) `tableState.columns`, so subsequent visible cells keep
 	// pointing at the right column even when one in the middle is hidden.
 	const isHidden = $derived(tableState.isColumnHidden(columnId));
-	// Deterministic cell id, kept in sync with the pattern Row uses to
-	// compute its `aria-labelledby`. Falling back to the markup-order index
-	// when the column hasn't registered yet keeps the id non-empty during
-	// the brief mount window.
-	const cellDomId = $derived(`${row.rowDomId}-cell-${columnId}`);
+	// Deterministic cell id, from the same convention Row uses to compute its
+	// `aria-labelledby` — the row predicts this id rather than being told it.
+	const cellDomId = $derived(tableState.cellId(row.rowDomId, columnId));
 	// Stretched-link is hosted in the rowheader cell only, even if the row
 	// has multiple isRowHeader columns we use the first one we encounter.
 	const isLink = $derived(isRowHeader && row.href !== undefined);
@@ -88,12 +86,6 @@
 	// whichever cell sits at the leading edge — the selection column takes that
 	// job whenever selection is on.
 	const isLeadingCell = $derived(tableState.navColumns.indexOf(columnId) === 0);
-	// `aria-colindex` is computed against the *visible* column set,
-	// matching W3C ARIA APG semantics. Hidden columns drop out — both because
-	// they're not in the DOM and so AT correctly reports "column N of M".
-	// Selection-mode tables prepend a checkbox column (col 1), so cells start
-	// at col 2 in that case.
-	const ariaColIndex = $derived(tableState.navColumns.indexOf(columnId) + 1);
 
 	function handleKeydown(e: KeyboardEvent) {
 		// Bubbles from cell descendants (Button / TextField inside a cell) must
@@ -119,7 +111,6 @@
 		data-show-divider={column?.showDivider || undefined}
 		data-overflow={tableState.overflowMode}
 		data-focused={isCellFocused || undefined}
-		aria-colindex={ariaColIndex}
 		tabindex={cellTabIndex}
 		onfocus={() => tableState.setCellFocus(row.rowKey, columnId)}
 		onkeydown={handleKeydown}
@@ -160,7 +151,6 @@
 		data-show-divider={column?.showDivider || undefined}
 		data-overflow={tableState.overflowMode}
 		data-focused={isCellFocused || undefined}
-		aria-colindex={ariaColIndex}
 		tabindex={cellTabIndex}
 		onfocus={() => tableState.setCellFocus(row.rowKey, columnId)}
 		onkeydown={handleKeydown}

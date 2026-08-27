@@ -105,8 +105,21 @@ export interface TableStateOptions {
 	// layout
 	readonly tableWidth: number;
 
+	// identity — the prefix behind `columnHeaderId`. Supplied by Root from
+	// `$props.id()` so the ids it derives survive hydration.
+	readonly tableId: string;
+
 	// actions
 	readonly onAction?: (key: string) => void;
+}
+
+/**
+ * An id part has to survive being written into an `id` attribute, which cannot
+ * contain ASCII whitespace. Upstream normalizes the same way
+ * (`react-aria/src/table/utils.ts`).
+ */
+function normalizeIdPart(value: string): string {
+	return value.replace(/\s+/g, '');
 }
 
 /**
@@ -169,6 +182,9 @@ export class TableState {
 	// where focus is *now* to decide whether relocation owes the user a
 	// `.focus()` call — see `#shouldRestoreDomFocus`.
 	#hasBeenFocused = false;
+	// Whether DOM focus was inside the table, sampled ahead of the DOM change
+	// rather than read live — see `hadDomFocus`.
+	#hadDomFocus = false;
 
 	#delegate: TableKeyboardDelegate;
 	#cellTypeahead: Typeahead;
@@ -179,8 +195,8 @@ export class TableState {
 	// widths sum to exactly `tableWidth`. `ColumnDescriptor` is a structural
 	// superset of `LayoutColumn`, so descriptors feed the layout directly.
 	//
-	// Nav order: the same list 2D navigation, the colgroup and `aria-colindex`
-	// all read. Index 0 is the leading edge, so `aria-colindex` is uniformly
+	// Nav order: the same list 2D navigation and the colgroup read. Index 0 is
+	// the leading edge, so the column headers' `aria-colindex` is uniformly
 	// `navColumns.indexOf(id) + 1` with no selection-mode arithmetic at the
 	// call sites.
 	#navColumns = $derived.by<Ordered<ColumnDescriptor>>(() =>
@@ -305,6 +321,18 @@ export class TableState {
 			// re-enters itself on every relocation.
 			untrack(() => this.#reconcileFocus(rows, nav));
 		});
+
+		// Samples `hadDomFocus` for the selection the announcement is about to
+		// report. `$effect.pre` is what puts the read in the right place: it runs
+		// during the traversal, and this one is created in Root's `<script>` — so
+		// ahead of `<TableView.Body>`'s `{#each}` — which means the rows the change
+		// removes are still in the DOM and still hold focus when it runs. Reading
+		// `document.activeElement` from the announcement effect instead would ask
+		// after the removal, when focus has already fallen to `<body>`.
+		$effect.pre(() => {
+			void this.#opts.selectedKeys;
+			this.#hadDomFocus = this.#wrapperEl?.contains(document.activeElement) ?? false;
+		});
 	}
 
 	// ── option pass-through ─────────────────────────────────────
@@ -377,10 +405,33 @@ export class TableState {
 	}
 	/**
 	 * Visible columns plus the synthetic selection column when selection is on.
-	 * The single list behind 2D nav, the colgroup and `aria-colindex`.
+	 * The single list behind 2D nav, the colgroup and the column headers'
+	 * `aria-colindex`.
 	 */
 	get navColumns(): Ordered<ColumnDescriptor> {
 		return this.#navColumns;
+	}
+	/**
+	 * The `<th>` id for a column header. One convention in one place, because the
+	 * column resizer composes its accessible name out of it — its own label plus
+	 * the header it belongs to — and would otherwise read the same for every
+	 * resizable column.
+	 */
+	columnHeaderId(columnId: string): string {
+		return `${this.#opts.tableId}-col-${normalizeIdPart(columnId)}`;
+	}
+	/**
+	 * The `<td>` / `<th>` id for one cell. The row predicts its rowheader cells'
+	 * ids from here to build its `aria-labelledby` (and the row checkbox's), and
+	 * the cell writes the same id onto its element, so the two cannot disagree.
+	 * The column id is normalized for the same reason `columnHeaderId` normalizes
+	 * it: `aria-labelledby` tokenizes on whitespace, so a consumer's column id
+	 * carrying any would turn one reference into several that resolve to nothing
+	 * — and the row and its checkbox would go unnamed. Upstream normalizes its
+	 * cell id the same way (`react-aria/src/table/utils.ts` `getCellId`).
+	 */
+	cellId(rowDomId: string, columnId: string): string {
+		return `${rowDomId}-cell-${normalizeIdPart(columnId)}`;
 	}
 	getColumn(id: string): ColumnDescriptor | undefined {
 		return this.#columns.get(id);
@@ -700,6 +751,24 @@ export class TableState {
 	/** Something inside the table took DOM focus. Fed by the wrapper's focusin. */
 	noteDomFocus(): void {
 		this.#hasBeenFocused = true;
+	}
+
+	/**
+	 * Was DOM focus inside the table when the selection change happened?
+	 *
+	 * The live region only speaks for changes the user drove from here. A
+	 * consumer that rewrites `selectedKeys` from a toolbar elsewhere on the page
+	 * would otherwise make the table narrate someone else's UI. Upstream gates
+	 * its selection announcement on the same question (`useGridSelectionAnnouncement`).
+	 *
+	 * The value is sampled before the change reaches the DOM, not read live at
+	 * the point of asking, because the reader is a `$effect` and user effects run
+	 * after reconciliation. A change that removes the focused row along with it
+	 * leaves `document.activeElement` on `<body>` by then, so a live read would
+	 * call the user's own deletion someone else's change and stay silent.
+	 */
+	get hadDomFocus(): boolean {
+		return this.#hadDomFocus;
 	}
 
 	/**

@@ -39,6 +39,32 @@ describe('<ColumnResizer>', () => {
 		expect(parseInt(input!.value, 10)).toBeGreaterThan(0);
 	});
 
+	it('names each resizer after the column it resizes', () => {
+		const headers = Array.from(
+			host.querySelectorAll<HTMLElement>('[data-spectrum-table-view-column]')
+		);
+		expect(headers.map((th) => th.textContent?.trim())).toEqual(['A', 'B', 'C']);
+		// Every column header carries an id, which is the only thing that lets a
+		// resizer say which column it belongs to.
+		expect(headers.every((th) => th.id.length > 0)).toBe(true);
+		expect(new Set(headers.map((th) => th.id)).size).toBe(3);
+
+		const inputs = Array.from(
+			host.querySelectorAll<HTMLInputElement>('[data-spectrum-table-view-resizer-input]')
+		);
+		expect(inputs).toHaveLength(2);
+		// "Column resizer" alone reads identically on both. The name is composed:
+		// the input names itself first (picking up its own `aria-label`, since
+		// `aria-labelledby` is not followed recursively) and then its header.
+		expect(inputs.map((input) => input.getAttribute('aria-labelledby'))).toEqual([
+			`${inputs[0].id} ${headers[0].id}`,
+			`${inputs[1].id} ${headers[1].id}`
+		]);
+		expect(inputs.every((input) => input.getAttribute('aria-label') === 'Column resizer')).toBe(
+			true
+		);
+	});
+
 	it('Enter on the outer div starts resize and focuses the input', () => {
 		const resizer = host.querySelector('[data-spectrum-table-view-resizer]') as HTMLElement;
 		resizer.focus();

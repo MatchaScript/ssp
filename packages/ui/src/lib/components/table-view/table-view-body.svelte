@@ -15,8 +15,8 @@
 	// work either of them out.
 	//
 	// It does not make row-dependent output correct on the server. `<TableView.Root>`
-	// emits `aria-rowcount` and decides the empty state before it renders
-	// children, so on the server it still sees zero rows.
+	// decides the empty state before it renders children, so on the server it
+	// still sees zero rows.
 	const release = tableState.setRowSource({
 		get keys() {
 			return keys;

@@ -40,6 +40,7 @@ function createState(overrides: Partial<TableStateOptions> = {}): TableState {
 		columnFilters: [],
 		setColumnFilters: () => {},
 		tableWidth: 900,
+		tableId: 'tv',
 		...overrides
 	});
 }

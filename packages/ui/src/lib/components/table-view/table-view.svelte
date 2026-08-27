@@ -135,6 +135,10 @@
 	// ── Table width (drives column layout) ───────────────────────
 	let tableWidth = $state(0);
 
+	// Prefix for the ids TableState derives (column headers). From `$props.id()`
+	// so server and client agree on them.
+	const tableId = $props.id();
+
 	// ── TableState ───────────────────────────────────────────────
 	const tableState = new TableState({
 		get density() {
@@ -182,7 +186,8 @@
 		},
 		get tableWidth() {
 			return tableWidth;
-		}
+		},
+		tableId
 	});
 
 	// ── Live region announcements ────────────────────────────────
@@ -198,6 +203,10 @@
 		const prev = lastSelectedKeys;
 		lastSelectedKeys = next;
 		if (prev === next) return;
+		// Only for changes the user drove from inside the table. A consumer that
+		// rewrites `selectedKeys` from its own UI elsewhere on the page is not
+		// something this table's live region should narrate.
+		if (!tableState.hadDomFocus) return;
 		tableState.announceSelectionChange(prev, next);
 	});
 
@@ -265,12 +274,6 @@
 	const totalColumns = $derived(tableState.navColumns.items.length);
 	const isEmpty = $derived(tableState.rows.items.length === 0);
 
-	// ARIA row / col counts. `aria-rowcount` includes the header row; AT
-	// implementations rely on the count for percentage announcements
-	// ("row 5 of 200"). Row virtualization is out of scope.
-	const ariaRowCount = $derived(1 + tableState.rows.items.length);
-	const ariaColCount = $derived(totalColumns);
-
 	// ── Scroll → onLoadMore ──────────────────────────────────────
 	function handleScroll(e: Event) {
 		if (loadingState !== 'idle' || !onLoadMore) return;
@@ -304,17 +307,23 @@
 		class={className}
 		aria-multiselectable={selectionMode === 'multiple' || undefined}
 		aria-disabled={isDisabled || undefined}
-		aria-rowcount={ariaRowCount}
-		aria-colcount={ariaColCount}
 		tabindex={tableTabIndex}
 		onfocusin={handleFocusIn}
 		{...restProps}
 	>
 		<TableViewColgroup />
 		{@render children()}
+		<!-- Loader and empty-state rows are chrome, not data. `<tr>` maps to
+		     role=row natively, so an empty table would otherwise report one row
+		     and a loading table one row too many. `role="presentation"` on the
+		     row takes its `<td>` with it: a cell is a required owned element of a
+		     row, so it turns presentational too. The compiler's
+		     `a11y_no_interactive_element_to_noninteractive_role` reads `<tr>` as
+		     interactive, which it is not — a row is a structural container. -->
 		{#if loadingState === 'loading'}
 			<tbody>
-				<tr>
+				<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+				<tr role="presentation">
 					<td data-spectrum-table-view-loader colspan={totalColumns || 1}>
 						<ProgressCircle isIndeterminate={true} size="m" />
 					</td>
@@ -322,7 +331,8 @@
 			</tbody>
 		{:else if isEmpty && renderEmptyState}
 			<tbody>
-				<tr>
+				<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+				<tr role="presentation">
 					<td data-spectrum-table-view-empty-state colspan={totalColumns || 1}>
 						{@render renderEmptyState()}
 					</td>
@@ -331,7 +341,8 @@
 		{/if}
 		{#if loadingState === 'loadingMore'}
 			<tbody>
-				<tr>
+				<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+				<tr role="presentation">
 					<td data-spectrum-table-view-loader data-loading-more colspan={totalColumns || 1}>
 						<ProgressCircle isIndeterminate={true} size="s" />
 					</td>
@@ -447,6 +458,24 @@
 		outline-offset: -2px;
 		border-radius: var(--corner-radius-300);
 		z-index: 2;
+	}
+
+	/* The selection column's real `<input type="checkbox">`. It carries the a11y
+	   semantics (role, accessible name, checked / mixed state) while the
+	   `<CheckboxBox>` beside it draws the control, the same split the resizer's
+	   range input uses. Visually hidden rather than removed so the state is
+	   there to be read. `:global` because the inputs are rendered by
+	   `<TableView.Row>` and `<TableView.Header>`, each under its own scope. */
+	[data-spectrum-table-view] :global([data-spectrum-table-view-selection-checkbox]) {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border-width: 0;
 	}
 
 	/* `hideHeader` keeps the header row in the DOM — the column names are the
