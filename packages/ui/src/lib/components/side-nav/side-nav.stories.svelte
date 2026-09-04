@@ -306,17 +306,17 @@
 				<SideNav.Item href="/inbox">
 					<Icon icon={Home} />
 					<Text>All</Text>
-					<Badge size="S" variant="neutral">128</Badge>
+					<Badge size="s" variant="neutral">128</Badge>
 				</SideNav.Item>
 				<SideNav.Item href="/unread">
 					<Icon icon={Bookmark} />
 					<Text>Unread</Text>
-					<Badge size="S" variant="accent">12</Badge>
+					<Badge size="s" variant="accent">12</Badge>
 				</SideNav.Item>
 				<SideNav.Item href="/flagged">
 					<Icon icon={Pin} />
 					<Text>Flagged</Text>
-					<Badge size="S" variant="notice">3</Badge>
+					<Badge size="s" variant="notice">3</Badge>
 				</SideNav.Item>
 				<SideNav.Item href="/archive">
 					<Icon icon={FolderOpen} />

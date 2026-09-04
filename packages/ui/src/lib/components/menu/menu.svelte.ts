@@ -2,13 +2,12 @@ import { createContext, getContext, setContext, hasContext } from 'svelte';
 import {
 	SelectableCollection,
 	type ItemRegistration,
-	type SelectionMode,
 	type FocusStrategy
 } from '$lib/utils/selectable-collection/index.js';
+import type { MenuSize, SelectionMode } from './types.js';
 
 // ─── Types ───────────────────────────────────────────────────────────
 
-export type MenuSize = 's' | 'm' | 'l' | 'xl';
 export type { SelectionMode, FocusStrategy };
 
 // ─── MenuState ───────────────────────────────────────────────────────

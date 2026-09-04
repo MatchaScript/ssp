@@ -1,6 +1,9 @@
 import type { HTMLAttributes } from 'svelte/elements';
 
-export interface DividerRootProps extends HTMLAttributes<HTMLDivElement> {
+export interface DividerRootProps extends Omit<
+	HTMLAttributes<HTMLDivElement>,
+	'children' | 'role' | 'aria-orientation'
+> {
 	/**
 	 * How thick the Divider should be.
 	 * @default 'm'

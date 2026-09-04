@@ -12,6 +12,7 @@
 </script>
 
 <div
+	{...restProps}
 	bind:this={ref}
 	role="separator"
 	aria-orientation={orientation}
@@ -19,7 +20,6 @@
 	data-orientation={orientation}
 	data-static-color={staticColor}
 	class="spectrum-Divider {className}"
-	{...restProps}
 ></div>
 
 <style>

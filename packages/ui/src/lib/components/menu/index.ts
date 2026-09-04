@@ -22,4 +22,4 @@ export {
 	MenuSectionHeading as SectionHeading
 };
 
-export type { MenuSize, SelectionMode } from './menu.svelte.js';
+export type * from './types.js';

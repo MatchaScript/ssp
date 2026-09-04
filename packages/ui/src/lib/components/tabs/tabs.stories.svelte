@@ -77,16 +77,16 @@
 		<Tabs.List aria-label="Mailboxes">
 			<Tabs.Trigger value="inbox">
 				Inbox
-				<Badge variant="accent" size="S">12</Badge>
+				<Badge variant="accent" size="s">12</Badge>
 			</Tabs.Trigger>
 			<Tabs.Trigger value="drafts">
 				Drafts
-				<Badge variant="neutral" size="S">3</Badge>
+				<Badge variant="neutral" size="s">3</Badge>
 			</Tabs.Trigger>
 			<Tabs.Trigger value="archive">Archive</Tabs.Trigger>
 			<Tabs.Trigger value="spam">
 				Spam
-				<Badge variant="negative" size="S">8</Badge>
+				<Badge variant="negative" size="s">8</Badge>
 			</Tabs.Trigger>
 		</Tabs.List>
 		<Tabs.Content value="inbox">12 unread messages.</Tabs.Content>

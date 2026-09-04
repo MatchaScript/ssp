@@ -1,11 +1,8 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
 	import { tick } from 'svelte';
+	import type { MenuProps } from './types.js';
 	import {
 		MenuState,
-		type MenuSize,
-		type SelectionMode,
 		setMenuContext,
 		getMenuTriggerContext,
 		getSubmenuTriggerContext,
@@ -20,21 +17,22 @@
 		onAction,
 		onSelectionChange,
 		onClose,
+		style: styleProp = '',
+		onkeydown,
+		ontoggle,
+		onpointerenter,
+		onpointerleave,
 		ref = $bindable(null),
 		...restProps
-	}: Omit<HTMLAttributes<HTMLDivElement>, 'onkeydown' | 'role'> & {
-		children: Snippet;
-		size?: MenuSize;
-		selectionMode?: SelectionMode;
-		selectedKeys?: Set<string>;
-		onAction?: (id: string) => void;
-		onSelectionChange?: (keys: Set<string>) => void;
-		onClose?: () => void;
-		ref?: HTMLDivElement | null;
-	} = $props();
+	}: MenuProps = $props();
 
 	const triggerCtx = getMenuTriggerContext();
 	const isTriggered = !!triggerCtx;
+	const menuStyle = $derived(
+		[isTriggered ? `position-anchor: ${triggerCtx.anchorId}` : '', styleProp]
+			.filter(Boolean)
+			.join('; ')
+	);
 
 	// Capture the SubmenuTriggerContext BEFORE shadowing it for children.
 	// Menu itself needs it (for ArrowLeft close), but its MenuItem descendants
@@ -87,7 +85,9 @@
 		};
 	});
 
-	function handleKeyDown(event: KeyboardEvent) {
+	function handleKeyDown(event: KeyboardEvent & { currentTarget: EventTarget & HTMLDivElement }) {
+		onkeydown?.(event);
+		if (event.defaultPrevented) return;
 		// ArrowLeft in a submenu closes it and returns focus to the trigger.
 		// handleSubmenuKeydown is a no-op for other keys, so always call first.
 		submenuCtx?.handleSubmenuKeydown(event);
@@ -97,8 +97,23 @@
 
 	// popover="auto" handles light-dismiss (outside click, Escape) natively.
 	// Sync our `open` state when the browser closes the popover for any reason.
-	function handleToggle(event: ToggleEvent) {
+	function handleToggle(event: ToggleEvent & { currentTarget: EventTarget & HTMLDivElement }) {
+		ontoggle?.(event);
 		if (event.newState === 'closed') triggerCtx?.closeMenu();
+	}
+
+	function handlePointerEnter(
+		event: PointerEvent & { currentTarget: EventTarget & HTMLDivElement }
+	) {
+		onpointerenter?.(event);
+		submenuCtx?.handleContentPointerEnter();
+	}
+
+	function handlePointerLeave(
+		event: PointerEvent & { currentTarget: EventTarget & HTMLDivElement }
+	) {
+		onpointerleave?.(event);
+		submenuCtx?.handleContentPointerLeave();
 	}
 </script>
 
@@ -110,6 +125,7 @@
 	<!-- Menu is closed — don't render -->
 {:else}
 	<div
+		{...restProps}
 		bind:this={ref}
 		role="menu"
 		tabindex={menuState.containerTabIndex}
@@ -118,12 +134,11 @@
 		data-variant={triggerCtx?.variant ?? undefined}
 		data-size={size}
 		popover={isTriggered ? 'auto' : undefined}
-		style={isTriggered ? `position-anchor: ${triggerCtx.anchorId};` : undefined}
-		{...restProps}
+		style={menuStyle || undefined}
 		onkeydown={handleKeyDown}
-		ontoggle={isTriggered ? handleToggle : undefined}
-		onpointerenter={() => submenuCtx?.handleContentPointerEnter()}
-		onpointerleave={() => submenuCtx?.handleContentPointerLeave()}
+		ontoggle={handleToggle}
+		onpointerenter={handlePointerEnter}
+		onpointerleave={handlePointerLeave}
 		{@attach (node) => {
 			if (isTriggered) (node as HTMLElement).showPopover();
 		}}

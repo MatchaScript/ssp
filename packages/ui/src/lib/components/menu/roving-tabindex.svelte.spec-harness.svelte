@@ -1,6 +1,6 @@
 <script lang="ts">
 	import * as Menu from './index.js';
-	import type { SelectionMode } from './menu.svelte.js';
+	import type { SelectionMode } from './types.js';
 
 	let {
 		showThird = true,

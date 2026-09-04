@@ -29,7 +29,7 @@
 		<span class="color-name">
 			{color.name}
 			{#if isAccent}
-				<Badge variant="informative" size="S">{m.create_accent()}</Badge>
+				<Badge variant="informative" size="s">{m.create_accent()}</Badge>
 			{/if}
 		</span>
 		<span class="color-meta">

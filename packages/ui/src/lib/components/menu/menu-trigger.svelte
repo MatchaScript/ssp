@@ -1,19 +1,9 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import type { MenuTriggerProps } from './types.js';
 	import { MenuTriggerState } from './menu-trigger.svelte.js';
 	import { setMenuTriggerContext } from './menu.svelte.js';
 
-	let {
-		trigger,
-		children,
-		open = $bindable(false)
-	}: {
-		/** Named snippet for the trigger element. Receives `triggerProps` to spread. */
-		trigger: Snippet<[{ triggerProps: Record<string, unknown> }]>;
-		/** Should contain a `<Menu>` component. */
-		children: Snippet;
-		open?: boolean;
-	} = $props();
+	let { trigger, children, open = $bindable(false) }: MenuTriggerProps = $props();
 
 	const id = $props.id();
 	const anchorId = `--spectrum-menu-trigger-${id}`;

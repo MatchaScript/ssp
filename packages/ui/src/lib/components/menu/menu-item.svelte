@@ -1,10 +1,10 @@
 <script lang="ts">
-	import { untrack, type Snippet } from 'svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
+	import { untrack } from 'svelte';
 	import Icon from '$lib/components/icon/icon.svelte';
 	import { ChevronRight, ExternalLink } from '$lib/components/icon';
 	import { CheckboxBox } from '../checkbox/index.js';
 	import { getMenuContext, getSubmenuTriggerContext } from './menu.svelte.js';
+	import type { MenuItemProps } from './types.js';
 
 	let {
 		id,
@@ -20,33 +20,14 @@
 		rel,
 		download,
 		hideLinkOutIcon = false,
+		style: styleProp = '',
+		onclick,
+		onkeydown,
+		onpointerenter,
+		onpointerleave,
 		ref = $bindable(null),
 		...restProps
-	}: Omit<HTMLAttributes<HTMLElement>, 'id' | 'role'> & {
-		/** Semantic key for this item — used for selection and onAction callbacks. */
-		id: string;
-		/** Primary label content. */
-		children?: Snippet;
-		/** Icon displayed before the label. */
-		icon?: Snippet;
-		/** Secondary line below the label. */
-		description?: Snippet | string;
-		/** Small text between label and keyboard shortcut (e.g. selected submenu value). */
-		value?: Snippet | string;
-		/** Keyboard shortcut. */
-		shortcut?: Snippet | string;
-		isDisabled?: boolean;
-		/** Text for typeahead matching. Defaults to element textContent. */
-		textValue?: string;
-		/** When set, the item renders as `<a>` and navigates on activation. */
-		href?: string;
-		target?: '_blank' | '_self' | '_parent' | '_top' | (string & {});
-		rel?: string;
-		download?: string | boolean;
-		/** Suppress the auto LinkOut icon on target="_blank" links. */
-		hideLinkOutIcon?: boolean;
-		ref?: HTMLElement | null;
-	} = $props();
+	}: MenuItemProps = $props();
 
 	const domId = $props.id();
 	const menuState = getMenuContext();
@@ -58,6 +39,11 @@
 	const isLink = $derived(href != null);
 	const isLinkOut = $derived(isLink && target === '_blank');
 	const tag = $derived(isLink ? 'a' : 'div');
+	const itemStyle = $derived(
+		[isSubmenuTrigger ? `anchor-name: ${submenuCtx?.anchorId}` : '', styleProp]
+			.filter(Boolean)
+			.join('; ')
+	);
 	// External links without an explicit rel get the safe defaults.
 	const resolvedRel = $derived(isLinkOut ? (rel ?? 'noopener noreferrer') : rel);
 
@@ -96,22 +82,26 @@
 		});
 	});
 
-	function handlePointerEnter() {
+	function handlePointerEnter(event: PointerEvent & { currentTarget: EventTarget & HTMLElement }) {
 		if (isDisabled) return;
+		onpointerenter?.(event);
 		menuState.highlight(domId, { focusVisible: false });
 		submenuCtx?.handleTriggerPointerEnter();
 	}
 
-	function handlePointerLeave() {
+	function handlePointerLeave(event: PointerEvent & { currentTarget: EventTarget & HTMLElement }) {
+		onpointerleave?.(event);
 		submenuCtx?.handleTriggerPointerLeave();
 	}
 
-	function handleClick(event: MouseEvent) {
+	function handleClick(event: MouseEvent & { currentTarget: EventTarget & HTMLElement }) {
 		if (isDisabled) {
 			// Prevent navigation on disabled links.
 			if (isLink) event.preventDefault();
 			return;
 		}
+		onclick?.(event);
+		if (event.defaultPrevented) return;
 		if (isSubmenuTrigger) {
 			submenuCtx?.openSubmenu();
 			return;
@@ -121,7 +111,9 @@
 		menuState.selectItem(domId);
 	}
 
-	function handleKeyDown(event: KeyboardEvent) {
+	function handleKeyDown(event: KeyboardEvent & { currentTarget: EventTarget & HTMLElement }) {
+		onkeydown?.(event);
+		if (event.defaultPrevented) return;
 		// Let submenu trigger handle ArrowRight
 		if (submenuCtx) {
 			submenuCtx.handleSubTriggerKeydown(event);
@@ -131,6 +123,7 @@
 
 <svelte:element
 	this={tag}
+	{...restProps}
 	bind:this={ref}
 	{role}
 	tabindex={menuState.itemTabIndex(domId)}
@@ -147,8 +140,7 @@
 	aria-disabled={isDisabled || undefined}
 	aria-haspopup={isSubmenuTrigger ? 'menu' : undefined}
 	aria-expanded={isSubmenuTrigger ? submenuCtx?.open : undefined}
-	style={isSubmenuTrigger ? `anchor-name: ${submenuCtx?.anchorId}` : undefined}
-	{...restProps}
+	style={itemStyle || undefined}
 	onpointerenter={handlePointerEnter}
 	onpointerleave={handlePointerLeave}
 	onclick={handleClick}

@@ -74,4 +74,33 @@ describe('<MenuTrigger> focus restore on close', () => {
 		expect(document.activeElement).toBe(host.querySelector('[data-outside]'));
 		expect(document.activeElement).not.toBe(trigger);
 	});
+
+	it('preserves consumer styles alongside its positioning anchor', () => {
+		const { menu } = openMenu(host);
+		const style = menu.getAttribute('style') ?? '';
+		expect(style).toContain('position-anchor: --spectrum-menu-trigger-');
+		expect(style).toContain('min-width: 10rem');
+	});
+
+	it('renders one separator element for an explicit divider', () => {
+		const { menu } = openMenu(host);
+		const divider = menu.querySelector('[data-test-divider]') as HTMLElement;
+		expect(divider.getAttribute('role')).toBe('separator');
+		expect(divider.querySelector('[role="separator"]')).toBeNull();
+	});
+
+	it('preserves consumer event handlers on menu items', () => {
+		const { menu } = openMenu(host);
+		(menu.querySelector('[data-spectrum-menu-item]') as HTMLElement).click();
+		flushSync();
+		expect(host.querySelector('[data-consumer-clicks]')?.textContent).toBe('1');
+	});
+
+	it('keeps a section heading linked to its group', () => {
+		const { menu } = openMenu(host);
+		const section = menu.querySelector('[data-test-section]') as HTMLElement;
+		const heading = section.querySelector('[data-spectrum-menu-section-heading]') as HTMLElement;
+		expect(section.getAttribute('role')).toBe('group');
+		expect(section.getAttribute('aria-labelledby')).toBe(heading.id);
+	});
 });
