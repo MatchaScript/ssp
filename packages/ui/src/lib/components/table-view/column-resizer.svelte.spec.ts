@@ -114,7 +114,11 @@ describe('<ColumnResizer>', () => {
 		expect(resizer.getAttribute('data-resizing')).toBe('');
 	});
 
-	it('pointer drag updates aria-valuetext', () => {
+	it.each([
+		['ltr', '280 pixels'],
+		['rtl', '120 pixels']
+	])('pointer drag from clientX 200 to 280 in %s updates aria-valuetext', (dir, expected) => {
+		host.dir = dir;
 		const resizer = host.querySelector('[data-spectrum-table-view-resizer]') as HTMLElement;
 		const input = resizer.querySelector(
 			'[data-spectrum-table-view-resizer-input]'
@@ -128,27 +132,7 @@ describe('<ColumnResizer>', () => {
 		window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 280 }));
 		flushSync();
 
-		const after = input.getAttribute('aria-valuetext');
-		expect(after).toBe('280 pixels');
-	});
-
-	it('pointer drag in RTL inverts deltaX when updating aria-valuetext', () => {
-		host.dir = 'rtl';
-		const resizer = host.querySelector('[data-spectrum-table-view-resizer]') as HTMLElement;
-		const input = resizer.querySelector(
-			'[data-spectrum-table-view-resizer-input]'
-		) as HTMLInputElement;
-
-		resizer.dispatchEvent(
-			new PointerEvent('pointerdown', { pointerId: 1, clientX: 200, button: 0, bubbles: true })
-		);
-		window.dispatchEvent(new PointerEvent('pointermove', { pointerId: 1, clientX: 280 }));
-		flushSync();
-		window.dispatchEvent(new PointerEvent('pointerup', { pointerId: 1, clientX: 280 }));
-		flushSync();
-
-		const after = input.getAttribute('aria-valuetext');
-		expect(after).toBe('120 pixels');
+		expect(input.getAttribute('aria-valuetext')).toBe(expected);
 	});
 
 	it('pointer drag shows the cursor overlay mid-drag and ends resize on pointerup', () => {
