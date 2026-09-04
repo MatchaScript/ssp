@@ -112,7 +112,7 @@
 	<div
 		bind:this={ref}
 		role="menu"
-		tabindex="-1"
+		tabindex={menuState.containerTabIndex}
 		data-spectrum-menu
 		data-popover={isTriggered || undefined}
 		data-variant={triggerCtx?.variant ?? undefined}

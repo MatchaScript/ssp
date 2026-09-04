@@ -182,6 +182,107 @@
 		{ label: 'Away', value: 'Away' },
 		{ label: 'Offline', value: 'Offline' }
 	];
+	const USER_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true },
+		{ id: 'email', label: 'Email' },
+		{ id: 'role', label: 'Role' },
+		{ id: 'status', label: 'Status' },
+		{ id: 'joined', label: 'Joined', align: 'end' }
+	];
+
+	const SORTABLE_USER_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true, allowsSorting: true },
+		{ id: 'email', label: 'Email', allowsSorting: true },
+		{ id: 'role', label: 'Role', allowsSorting: true },
+		{ id: 'status', label: 'Status' },
+		{ id: 'joined', label: 'Joined', align: 'end', allowsSorting: true }
+	];
+
+	const SORTABLE_SERVER_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'host', label: 'Host', isRowHeader: true, allowsSorting: true },
+		{ id: 'region', label: 'Region', allowsSorting: true },
+		{ id: 'cpu', label: 'CPU %', align: 'end', allowsSorting: true },
+		{ id: 'memory', label: 'Memory %', align: 'end', allowsSorting: true },
+		{ id: 'status', label: 'Status', allowsSorting: true }
+	];
+
+	// Five user columns with no sort / hide affordances.
+	const PLAIN_USER_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true },
+		{ id: 'email', label: 'Email' },
+		{ id: 'role', label: 'Role' },
+		{ id: 'status', label: 'Status' },
+		{ id: 'joined', label: 'Joined', align: 'end' }
+	];
+
+	const CELL_NAV_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true, allowsSorting: true },
+		{ id: 'email', label: 'Email' },
+		{ id: 'role', label: 'Role', allowsSorting: true },
+		{ id: 'status', label: 'Status' },
+		{ id: 'joined', label: 'Joined', align: 'end', allowsSorting: true }
+	];
+
+	// Stories that show the table with no rows (empty state, loading).
+	const NO_DATA_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true },
+		{ id: 'email', label: 'Email' },
+		{ id: 'role', label: 'Role' }
+	];
+
+	const NO_USERS: User[] = [];
+
+	const LINKED_ACTION_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true },
+		{ id: 'email', label: 'Email' },
+		{ id: 'role', label: 'Role' },
+		{ id: 'status', label: 'Status' },
+		{ id: 'actions', label: 'Actions', align: 'end' }
+	];
+
+	const MIXED_ROW_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true },
+		{ id: 'email', label: 'Email' },
+		{ id: 'role', label: 'Role' }
+	];
+
+	const COLUMN_MENU_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true, allowsSorting: true },
+		{ id: 'email', label: 'Email', allowsSorting: true, allowsHiding: true },
+		{ id: 'role', label: 'Role', allowsHiding: true },
+		{ id: 'status', label: 'Status', allowsHiding: true },
+		{ id: 'joined', label: 'Joined', align: 'end', allowsSorting: true, allowsHiding: true }
+	];
+
+	const USER_FILTER_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true, allowsSorting: true, filterType: 'text' },
+		{ id: 'email', label: 'Email', filterType: 'text' },
+		{ id: 'role', label: 'Role', filterType: 'enum', enumOptions: roleOptions },
+		{ id: 'status', label: 'Status', filterType: 'enum', enumOptions: statusOptions },
+		{ id: 'joined', label: 'Joined', align: 'end', allowsSorting: true }
+	];
+
+	const SERVER_FILTER_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'host', label: 'Host', isRowHeader: true, filterType: 'text' },
+		{ id: 'region', label: 'Region', filterType: 'text' },
+		{ id: 'cpu', label: 'CPU %', align: 'end', filterType: 'number' },
+		{ id: 'memory', label: 'Memory %', align: 'end', filterType: 'number' },
+		{ id: 'status', label: 'Status' }
+	];
+
+	const HIDDEN_HEADER_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'name', label: 'Name', isRowHeader: true },
+		{ id: 'email', label: 'Email' },
+		{ id: 'role', label: 'Role' },
+		{ id: 'status', label: 'Status' },
+		{ id: 'joined', label: 'Joined' }
+	];
+
+	const WIDTH_COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'a', label: 'Two hundred', defaultWidth: 200 },
+		{ id: 'b', label: 'Two fr', defaultWidth: '2fr' },
+		{ id: 'c', label: 'One fr' }
+	];
 </script>
 
 <Story name="Example">
@@ -194,23 +295,17 @@
 				isQuiet={args.isQuiet}
 				isDisabled={args.isDisabled}
 			>
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role">Role</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-					<TableView.Column id="joined" align="end">Joined</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each users as user (user.id)}
-						<TableView.Row key={user.id}>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+				<TableView.Header columns={USER_COLUMNS} />
+				<TableView.Body items={users} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -220,23 +315,17 @@
 <Story name="Basic" asChild>
 	<div style="width: 640px;">
 		<TableView.Root aria-label="Basic table">
-			<TableView.Header>
-				<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-				<TableView.Column id="email">Email</TableView.Column>
-				<TableView.Column id="role">Role</TableView.Column>
-				<TableView.Column id="status">Status</TableView.Column>
-				<TableView.Column id="joined" align="end">Joined</TableView.Column>
-			</TableView.Header>
-			<TableView.Body>
-				{#each users as user (user.id)}
-					<TableView.Row key={user.id}>
-						<TableView.Cell>{user.name}</TableView.Cell>
-						<TableView.Cell>{user.email}</TableView.Cell>
-						<TableView.Cell>{user.role}</TableView.Cell>
-						<TableView.Cell>{user.status}</TableView.Cell>
-						<TableView.Cell>{user.joined}</TableView.Cell>
+			<TableView.Header columns={USER_COLUMNS} />
+			<TableView.Body items={users} getKey={(user) => user.id}>
+				{#snippet row(user)}
+					<TableView.Row>
+						<TableView.Cell column="name">{user.name}</TableView.Cell>
+						<TableView.Cell column="email">{user.email}</TableView.Cell>
+						<TableView.Cell column="role">{user.role}</TableView.Cell>
+						<TableView.Cell column="status">{user.status}</TableView.Cell>
+						<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 					</TableView.Row>
-				{/each}
+				{/snippet}
 			</TableView.Body>
 		</TableView.Root>
 	</div>
@@ -255,23 +344,17 @@
 				sortDescriptor={sortableSort}
 				onSortChange={(d) => (sortableSort = d)}
 			>
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader allowsSorting>Name</TableView.Column>
-					<TableView.Column id="email" allowsSorting>Email</TableView.Column>
-					<TableView.Column id="role" allowsSorting>Role</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-					<TableView.Column id="joined" align="end" allowsSorting>Joined</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each sortableUsers as user (user.id)}
-						<TableView.Row key={user.id}>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+				<TableView.Header columns={SORTABLE_USER_COLUMNS} />
+				<TableView.Body items={sortableUsers} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -290,23 +373,17 @@
 				selectedKeys={selectedUsers}
 				onSelectionChange={(keys) => (selectedUsers = keys)}
 			>
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role">Role</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-					<TableView.Column id="joined" align="end">Joined</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each users as user (user.id)}
-						<TableView.Row key={user.id}>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+				<TableView.Header columns={USER_COLUMNS} />
+				<TableView.Body items={users} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -321,23 +398,17 @@
 			defaultSelectedKeys={new SvelteSet(['3'])}
 			onAction={(k) => console.log('Action:', k)}
 		>
-			<TableView.Header>
-				<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-				<TableView.Column id="email">Email</TableView.Column>
-				<TableView.Column id="role">Role</TableView.Column>
-				<TableView.Column id="status">Status</TableView.Column>
-				<TableView.Column id="joined" align="end">Joined</TableView.Column>
-			</TableView.Header>
-			<TableView.Body>
-				{#each users as user (user.id)}
-					<TableView.Row key={user.id}>
-						<TableView.Cell>{user.name}</TableView.Cell>
-						<TableView.Cell>{user.email}</TableView.Cell>
-						<TableView.Cell>{user.role}</TableView.Cell>
-						<TableView.Cell>{user.status}</TableView.Cell>
-						<TableView.Cell>{user.joined}</TableView.Cell>
+			<TableView.Header columns={USER_COLUMNS} />
+			<TableView.Body items={users} getKey={(user) => user.id}>
+				{#snippet row(user)}
+					<TableView.Row>
+						<TableView.Cell column="name">{user.name}</TableView.Cell>
+						<TableView.Cell column="email">{user.email}</TableView.Cell>
+						<TableView.Cell column="role">{user.role}</TableView.Cell>
+						<TableView.Cell column="status">{user.status}</TableView.Cell>
+						<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 					</TableView.Row>
-				{/each}
+				{/snippet}
 			</TableView.Body>
 		</TableView.Root>
 	</div>
@@ -353,23 +424,17 @@
 					{density}
 				</p>
 				<TableView.Root aria-label="{density} density" {density}>
-					<TableView.Header>
-						<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-						<TableView.Column id="email">Email</TableView.Column>
-						<TableView.Column id="role">Role</TableView.Column>
-						<TableView.Column id="status">Status</TableView.Column>
-						<TableView.Column id="joined" align="end">Joined</TableView.Column>
-					</TableView.Header>
-					<TableView.Body>
-						{#each users.slice(0, 3) as user (user.id)}
-							<TableView.Row key={user.id}>
-								<TableView.Cell>{user.name}</TableView.Cell>
-								<TableView.Cell>{user.email}</TableView.Cell>
-								<TableView.Cell>{user.role}</TableView.Cell>
-								<TableView.Cell>{user.status}</TableView.Cell>
-								<TableView.Cell>{user.joined}</TableView.Cell>
+					<TableView.Header columns={USER_COLUMNS} />
+					<TableView.Body items={users.slice(0, 3)} getKey={(user) => user.id}>
+						{#snippet row(user)}
+							<TableView.Row>
+								<TableView.Cell column="name">{user.name}</TableView.Cell>
+								<TableView.Cell column="email">{user.email}</TableView.Cell>
+								<TableView.Cell column="role">{user.role}</TableView.Cell>
+								<TableView.Cell column="status">{user.status}</TableView.Cell>
+								<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 							</TableView.Row>
-						{/each}
+						{/snippet}
 					</TableView.Body>
 				</TableView.Root>
 			</div>
@@ -385,23 +450,17 @@
 				sortDescriptor={serverSort}
 				onSortChange={(d) => (serverSort = d)}
 			>
-				<TableView.Header>
-					<TableView.Column id="host" isRowHeader allowsSorting>Host</TableView.Column>
-					<TableView.Column id="region" allowsSorting>Region</TableView.Column>
-					<TableView.Column id="cpu" align="end" allowsSorting>CPU %</TableView.Column>
-					<TableView.Column id="memory" align="end" allowsSorting>Memory %</TableView.Column>
-					<TableView.Column id="status" allowsSorting>Status</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each sortedServers as server (server.id)}
-						<TableView.Row key={server.id}>
-							<TableView.Cell>{server.host}</TableView.Cell>
-							<TableView.Cell>{server.region}</TableView.Cell>
-							<TableView.Cell>{server.cpu}</TableView.Cell>
-							<TableView.Cell>{server.memory}</TableView.Cell>
-							<TableView.Cell>{server.status}</TableView.Cell>
+				<TableView.Header columns={SORTABLE_SERVER_COLUMNS} />
+				<TableView.Body items={sortedServers} getKey={(server) => server.id}>
+					{#snippet row(server)}
+						<TableView.Row>
+							<TableView.Cell column="host">{server.host}</TableView.Cell>
+							<TableView.Cell column="region">{server.region}</TableView.Cell>
+							<TableView.Cell column="cpu">{server.cpu}</TableView.Cell>
+							<TableView.Cell column="memory">{server.memory}</TableView.Cell>
+							<TableView.Cell column="status">{server.status}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -412,12 +471,16 @@
 	{#snippet template()}
 		<div style="width: 640px;">
 			<TableView.Root aria-label="No results">
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role">Role</TableView.Column>
-				</TableView.Header>
-				<TableView.Body />
+				<TableView.Header columns={NO_DATA_COLUMNS} />
+				<TableView.Body items={NO_USERS} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+						</TableView.Row>
+					{/snippet}
+				</TableView.Body>
 				{#snippet renderEmptyState()}
 					<p style="margin: 0;">No users match the current filters.</p>
 				{/snippet}
@@ -429,11 +492,7 @@
 <Story name="Loading" asChild>
 	<div style="width: 640px;">
 		<TableView.Root aria-label="Loading" loadingState="loading">
-			<TableView.Header>
-				<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-				<TableView.Column id="email">Email</TableView.Column>
-				<TableView.Column id="role">Role</TableView.Column>
-			</TableView.Header>
+			<TableView.Header columns={NO_DATA_COLUMNS} />
 		</TableView.Root>
 	</div>
 </Story>
@@ -441,23 +500,17 @@
 <Story name="Quiet" asChild>
 	<div style="width: 640px;">
 		<TableView.Root aria-label="Quiet" isQuiet>
-			<TableView.Header>
-				<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-				<TableView.Column id="email">Email</TableView.Column>
-				<TableView.Column id="role">Role</TableView.Column>
-				<TableView.Column id="status">Status</TableView.Column>
-				<TableView.Column id="joined" align="end">Joined</TableView.Column>
-			</TableView.Header>
-			<TableView.Body>
-				{#each users.slice(0, 3) as user (user.id)}
-					<TableView.Row key={user.id}>
-						<TableView.Cell>{user.name}</TableView.Cell>
-						<TableView.Cell>{user.email}</TableView.Cell>
-						<TableView.Cell>{user.role}</TableView.Cell>
-						<TableView.Cell>{user.status}</TableView.Cell>
-						<TableView.Cell>{user.joined}</TableView.Cell>
+			<TableView.Header columns={PLAIN_USER_COLUMNS} />
+			<TableView.Body items={users.slice(0, 3)} getKey={(user) => user.id}>
+				{#snippet row(user)}
+					<TableView.Row>
+						<TableView.Cell column="name">{user.name}</TableView.Cell>
+						<TableView.Cell column="email">{user.email}</TableView.Cell>
+						<TableView.Cell column="role">{user.role}</TableView.Cell>
+						<TableView.Cell column="status">{user.status}</TableView.Cell>
+						<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 					</TableView.Row>
-				{/each}
+				{/snippet}
 			</TableView.Body>
 		</TableView.Root>
 	</div>
@@ -477,23 +530,17 @@
 				selectionMode="multiple"
 				onAction={(k) => console.log('Action on row', k)}
 			>
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role">Role</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-					<TableView.Column id="joined" align="end">Joined</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each users as user (user.id)}
-						<TableView.Row key={user.id} textValue={user.name}>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+				<TableView.Header columns={PLAIN_USER_COLUMNS} />
+				<TableView.Body items={users} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row textValue={user.name}>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -512,23 +559,17 @@
 				Escape collapses cell mode anywhere. Enter on a sortable header toggles sort.
 			</p>
 			<TableView.Root aria-label="Cell navigation demo" selectionMode="multiple">
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader allowsSorting>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role" allowsSorting>Role</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-					<TableView.Column id="joined" align="end" allowsSorting>Joined</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each users as user (user.id)}
-						<TableView.Row key={user.id} textValue={user.name}>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+				<TableView.Header columns={CELL_NAV_COLUMNS} />
+				<TableView.Body items={users} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row textValue={user.name}>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -542,23 +583,17 @@
 			selectionMode="multiple"
 			disabledKeys={new Set(['3', '4'])}
 		>
-			<TableView.Header>
-				<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-				<TableView.Column id="email">Email</TableView.Column>
-				<TableView.Column id="role">Role</TableView.Column>
-				<TableView.Column id="status">Status</TableView.Column>
-				<TableView.Column id="joined" align="end">Joined</TableView.Column>
-			</TableView.Header>
-			<TableView.Body>
-				{#each users as user (user.id)}
-					<TableView.Row key={user.id}>
-						<TableView.Cell>{user.name}</TableView.Cell>
-						<TableView.Cell>{user.email}</TableView.Cell>
-						<TableView.Cell>{user.role}</TableView.Cell>
-						<TableView.Cell>{user.status}</TableView.Cell>
-						<TableView.Cell>{user.joined}</TableView.Cell>
+			<TableView.Header columns={USER_COLUMNS} />
+			<TableView.Body items={users} getKey={(u) => u.id}>
+				{#snippet row(user)}
+					<TableView.Row>
+						<TableView.Cell column="name">{user.name}</TableView.Cell>
+						<TableView.Cell column="email">{user.email}</TableView.Cell>
+						<TableView.Cell column="role">{user.role}</TableView.Cell>
+						<TableView.Cell column="status">{user.status}</TableView.Cell>
+						<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 					</TableView.Row>
-				{/each}
+				{/snippet}
 			</TableView.Body>
 		</TableView.Root>
 	</div>
@@ -572,23 +607,17 @@
 			defaultSelectedKeys={new SvelteSet(['1'])}
 			disallowEmptySelection
 		>
-			<TableView.Header>
-				<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-				<TableView.Column id="email">Email</TableView.Column>
-				<TableView.Column id="role">Role</TableView.Column>
-				<TableView.Column id="status">Status</TableView.Column>
-				<TableView.Column id="joined" align="end">Joined</TableView.Column>
-			</TableView.Header>
-			<TableView.Body>
-				{#each users as user (user.id)}
-					<TableView.Row key={user.id}>
-						<TableView.Cell>{user.name}</TableView.Cell>
-						<TableView.Cell>{user.email}</TableView.Cell>
-						<TableView.Cell>{user.role}</TableView.Cell>
-						<TableView.Cell>{user.status}</TableView.Cell>
-						<TableView.Cell>{user.joined}</TableView.Cell>
+			<TableView.Header columns={USER_COLUMNS} />
+			<TableView.Body items={users} getKey={(u) => u.id}>
+				{#snippet row(user)}
+					<TableView.Row>
+						<TableView.Cell column="name">{user.name}</TableView.Cell>
+						<TableView.Cell column="email">{user.email}</TableView.Cell>
+						<TableView.Cell column="role">{user.role}</TableView.Cell>
+						<TableView.Cell column="status">{user.status}</TableView.Cell>
+						<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 					</TableView.Row>
-				{/each}
+				{/snippet}
 			</TableView.Body>
 		</TableView.Root>
 	</div>
@@ -605,29 +634,22 @@
 				to follow.
 			</p>
 			<TableView.Root aria-label="Linked rows">
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role">Role</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-					<TableView.Column id="joined" align="end">Joined</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each users as user (user.id)}
+				<TableView.Header columns={USER_COLUMNS} />
+				<TableView.Body items={users} getKey={(u) => u.id}>
+					{#snippet row(user)}
 						<TableView.Row
-							key={user.id}
 							href="https://example.com/users/{user.id}"
 							target="_blank"
 							rel="noopener"
 							textValue={user.name}
 						>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -644,25 +666,15 @@
 				cell fires its own onclick (and stays clickable above the row-link overlay).
 			</p>
 			<TableView.Root aria-label="Linked + selectable" selectionMode="multiple">
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role">Role</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-					<TableView.Column id="actions" align="end">Actions</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each users as user (user.id)}
-						<TableView.Row
-							key={user.id}
-							href="https://example.com/users/{user.id}"
-							textValue={user.name}
-						>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>
+				<TableView.Header columns={LINKED_ACTION_COLUMNS} />
+				<TableView.Body items={users} getKey={(u) => u.id}>
+					{#snippet row(user)}
+						<TableView.Row href="https://example.com/users/{user.id}" textValue={user.name}>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="actions">
 								<Button
 									variant="secondary"
 									treatment="outline"
@@ -672,7 +684,7 @@
 								</Button>
 							</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -690,35 +702,26 @@
 				or Enter.
 			</p>
 			<TableView.Root aria-label="Mixed">
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader>Name</TableView.Column>
-					<TableView.Column id="email">Email</TableView.Column>
-					<TableView.Column id="role">Role</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each users as user, i (user.id)}
+				<TableView.Header columns={MIXED_ROW_COLUMNS} />
+				<TableView.Body items={users} getKey={(u) => u.id}>
+					{#snippet row(user, i)}
 						{#if i < 3}
-							<TableView.Row
-								key={user.id}
-								href="https://example.com/users/{user.id}"
-								textValue={user.name}
-							>
-								<TableView.Cell>{user.name}</TableView.Cell>
-								<TableView.Cell>{user.email}</TableView.Cell>
-								<TableView.Cell>{user.role}</TableView.Cell>
+							<TableView.Row href="https://example.com/users/{user.id}" textValue={user.name}>
+								<TableView.Cell column="name">{user.name}</TableView.Cell>
+								<TableView.Cell column="email">{user.email}</TableView.Cell>
+								<TableView.Cell column="role">{user.role}</TableView.Cell>
 							</TableView.Row>
 						{:else}
 							<TableView.Row
-								key={user.id}
 								textValue={user.name}
 								onAction={() => console.log('Custom action for', user.id)}
 							>
-								<TableView.Cell>{user.name}</TableView.Cell>
-								<TableView.Cell>{user.email}</TableView.Cell>
-								<TableView.Cell>{user.role}</TableView.Cell>
+								<TableView.Cell column="name">{user.name}</TableView.Cell>
+								<TableView.Cell column="email">{user.email}</TableView.Cell>
+								<TableView.Cell column="role">{user.role}</TableView.Cell>
 							</TableView.Row>
 						{/if}
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>
@@ -741,25 +744,17 @@
 				hiddenColumns={menuHidden}
 				onHiddenColumnsChange={(next) => (menuHidden = next)}
 			>
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader allowsSorting>Name</TableView.Column>
-					<TableView.Column id="email" allowsSorting allowsHiding>Email</TableView.Column>
-					<TableView.Column id="role" allowsHiding>Role</TableView.Column>
-					<TableView.Column id="status" allowsHiding>Status</TableView.Column>
-					<TableView.Column id="joined" align="end" allowsSorting allowsHiding
-						>Joined</TableView.Column
-					>
-				</TableView.Header>
-				<TableView.Body>
-					{#each menuSortedUsers as user (user.id)}
-						<TableView.Row key={user.id}>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+				<TableView.Header columns={COLUMN_MENU_COLUMNS} />
+				<TableView.Body items={menuSortedUsers} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 			{#if menuHidden.size > 0}
@@ -803,29 +798,17 @@
 				columnFilters={filters}
 				onColumnFiltersChange={(next) => (filters = next)}
 			>
-				<TableView.Header>
-					<TableView.Column id="name" isRowHeader allowsSorting filterType="text">
-						Name
-					</TableView.Column>
-					<TableView.Column id="email" filterType="text">Email</TableView.Column>
-					<TableView.Column id="role" filterType="enum" enumOptions={roleOptions}>
-						Role
-					</TableView.Column>
-					<TableView.Column id="status" filterType="enum" enumOptions={statusOptions}>
-						Status
-					</TableView.Column>
-					<TableView.Column id="joined" align="end" allowsSorting>Joined</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each filteredUsers as user (user.id)}
-						<TableView.Row key={user.id}>
-							<TableView.Cell>{user.name}</TableView.Cell>
-							<TableView.Cell>{user.email}</TableView.Cell>
-							<TableView.Cell>{user.role}</TableView.Cell>
-							<TableView.Cell>{user.status}</TableView.Cell>
-							<TableView.Cell>{user.joined}</TableView.Cell>
+				<TableView.Header columns={USER_FILTER_COLUMNS} />
+				<TableView.Body items={filteredUsers} getKey={(user) => user.id}>
+					{#snippet row(user)}
+						<TableView.Row>
+							<TableView.Cell column="name">{user.name}</TableView.Cell>
+							<TableView.Cell column="email">{user.email}</TableView.Cell>
+							<TableView.Cell column="role">{user.role}</TableView.Cell>
+							<TableView.Cell column="status">{user.status}</TableView.Cell>
+							<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 				{#snippet renderEmptyState()}
 					<p style="margin: 0;">No users match the current filters.</p>
@@ -851,23 +834,17 @@
 				columnFilters={filters}
 				onColumnFiltersChange={(next) => (filters = next)}
 			>
-				<TableView.Header>
-					<TableView.Column id="host" isRowHeader filterType="text">Host</TableView.Column>
-					<TableView.Column id="region" filterType="text">Region</TableView.Column>
-					<TableView.Column id="cpu" align="end" filterType="number">CPU %</TableView.Column>
-					<TableView.Column id="memory" align="end" filterType="number">Memory %</TableView.Column>
-					<TableView.Column id="status">Status</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each filteredServers as server (server.id)}
-						<TableView.Row key={server.id}>
-							<TableView.Cell>{server.host}</TableView.Cell>
-							<TableView.Cell>{server.region}</TableView.Cell>
-							<TableView.Cell>{server.cpu}</TableView.Cell>
-							<TableView.Cell>{server.memory}</TableView.Cell>
-							<TableView.Cell>{server.status}</TableView.Cell>
+				<TableView.Header columns={SERVER_FILTER_COLUMNS} />
+				<TableView.Body items={filteredServers} getKey={(server) => server.id}>
+					{#snippet row(server)}
+						<TableView.Row>
+							<TableView.Cell column="host">{server.host}</TableView.Cell>
+							<TableView.Cell column="region">{server.region}</TableView.Cell>
+							<TableView.Cell column="cpu">{server.cpu}</TableView.Cell>
+							<TableView.Cell column="memory">{server.memory}</TableView.Cell>
+							<TableView.Cell column="status">{server.status}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 				{#snippet renderEmptyState()}
 					<p style="margin: 0;">No servers match the current filters.</p>
@@ -879,17 +856,18 @@
 
 <Story name="Hidden header" asChild>
 	<div style="width: 640px;">
-		<TableView.Root aria-label="Hidden header">
-			<TableView.Body>
-				{#each users.slice(0, 3) as user (user.id)}
-					<TableView.Row key={user.id}>
-						<TableView.Cell>{user.name}</TableView.Cell>
-						<TableView.Cell>{user.email}</TableView.Cell>
-						<TableView.Cell>{user.role}</TableView.Cell>
-						<TableView.Cell>{user.status}</TableView.Cell>
-						<TableView.Cell>{user.joined}</TableView.Cell>
+		<TableView.Root aria-label="Hidden header" hideHeader>
+			<TableView.Header columns={HIDDEN_HEADER_COLUMNS} />
+			<TableView.Body items={users.slice(0, 3)} getKey={(user) => user.id}>
+				{#snippet row(user)}
+					<TableView.Row>
+						<TableView.Cell column="name">{user.name}</TableView.Cell>
+						<TableView.Cell column="email">{user.email}</TableView.Cell>
+						<TableView.Cell column="role">{user.role}</TableView.Cell>
+						<TableView.Cell column="status">{user.status}</TableView.Cell>
+						<TableView.Cell column="joined">{user.joined}</TableView.Cell>
 					</TableView.Row>
-				{/each}
+				{/snippet}
 			</TableView.Body>
 		</TableView.Root>
 	</div>
@@ -903,19 +881,15 @@
 		{@const { children: _children, ...rest } = args}
 		<div style="width: 720px;">
 			<TableView.Root aria-label="Column widths" selectionMode="none" {...rest}>
-				<TableView.Header>
-					<TableView.Column id="a" defaultWidth={200}>Two hundred</TableView.Column>
-					<TableView.Column id="b" defaultWidth="2fr">Two fr</TableView.Column>
-					<TableView.Column id="c">One fr</TableView.Column>
-				</TableView.Header>
-				<TableView.Body>
-					{#each rows as row (row.id)}
-						<TableView.Row key={row.id}>
-							<TableView.Cell>{row.a}</TableView.Cell>
-							<TableView.Cell>{row.b}</TableView.Cell>
-							<TableView.Cell>{row.c}</TableView.Cell>
+				<TableView.Header columns={WIDTH_COLUMNS} />
+				<TableView.Body items={rows} getKey={(item) => item.id}>
+					{#snippet row(item)}
+						<TableView.Row>
+							<TableView.Cell column="a">{item.a}</TableView.Cell>
+							<TableView.Cell column="b">{item.b}</TableView.Cell>
+							<TableView.Cell column="c">{item.c}</TableView.Cell>
 						</TableView.Row>
-					{/each}
+					{/snippet}
 				</TableView.Body>
 			</TableView.Root>
 		</div>

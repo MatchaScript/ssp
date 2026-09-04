@@ -13,18 +13,26 @@
  * Disabled rows are skipped in both row and cell modes. Cells inherit their
  * row's disabled state — there is no per-cell disabling in the API.
  */
-export type FocusTarget =
-	| { type: 'row'; rowKey: string }
-	| { type: 'cell'; rowKey: string; columnId: string }
-	| { type: 'columnheader'; columnId: string };
+import type { FocusTarget, Ordered } from '../../state/collection.js';
+
+export type { FocusTarget };
 
 export interface TableKeyboardDelegateOptions {
-	/** Rows in markup order. Disabled rows stay in the list (so indices match) but are skipped when navigating. */
-	readonly rows: () => readonly { key: string; disabled: boolean }[];
-	/** Columns in markup order. The synthetic selection column is prepended whenever `selectionMode !== 'none'`. */
-	readonly columns: () => readonly { id: string }[];
-	/** Default 10. Used for PageUp / PageDown. */
-	readonly pageSize?: () => number;
+	/** Row keys in consumer order. Disabled rows stay in the list (so indices match) but are skipped when navigating. */
+	readonly rowKeys: () => readonly string[];
+	/** Position of a row key, or -1. Backed by the row list's key index, so no caller scans. */
+	readonly rowIndexOf: (key: string) => number;
+	readonly isRowDisabled: (key: string) => boolean;
+	/** Columns in nav order. The synthetic selection column is prepended whenever `selectionMode !== 'none'`. */
+	readonly columns: () => Ordered<{ id: string }>;
+	/**
+	 * Logical order → visual order. The column list runs leading-edge first, so
+	 * ArrowRight steps forward through it under `ltr` and backward under `rtl`.
+	 * Required: a default here is a silent wrong answer in RTL.
+	 */
+	readonly direction: () => 'ltr' | 'rtl';
+	/** PageUp / PageDown distance, in rows. Supplied by TableState alone. */
+	readonly pageSize: () => number;
 }
 
 export class TableKeyboardDelegate {
@@ -34,59 +42,48 @@ export class TableKeyboardDelegate {
 		this.#opts = opts;
 	}
 
-	#rows() {
-		return this.#opts.rows();
+	#rowKeys() {
+		return this.#opts.rowKeys();
 	}
 	#columns() {
 		return this.#opts.columns();
 	}
-	#pageSize() {
-		return this.#opts.pageSize?.() ?? 10;
-	}
-
-	#rowIndex(key: string): number {
-		return this.#rows().findIndex((r) => r.key === key);
-	}
-	#colIndex(id: string): number {
-		return this.#columns().findIndex((c) => c.id === id);
+	#isDisabled(key: string) {
+		return this.#opts.isRowDisabled(key);
 	}
 
 	/** Step from `fromIdx` by `direction` (1 down, -1 up), skipping disabled rows. */
-	#stepRow(fromIdx: number, direction: 1 | -1): { key: string; index: number } | null {
-		const rows = this.#rows();
-		for (let i = fromIdx + direction; i >= 0 && i < rows.length; i += direction) {
-			if (!rows[i].disabled) return { key: rows[i].key, index: i };
+	#stepRow(fromIdx: number, direction: 1 | -1): string | null {
+		const keys = this.#rowKeys();
+		for (let i = fromIdx + direction; i >= 0 && i < keys.length; i += direction) {
+			if (!this.#isDisabled(keys[i])) return keys[i];
 		}
 		return null;
 	}
 
 	/** Find the closest enabled row at or beyond `targetIdx` in `direction`. */
-	#nearestEnabled(targetIdx: number, direction: 1 | -1): { key: string; index: number } | null {
-		const rows = this.#rows();
-		const start = Math.max(0, Math.min(targetIdx, rows.length - 1));
-		for (let i = start; direction === 1 ? i < rows.length : i >= 0; i += direction) {
-			if (!rows[i].disabled) return { key: rows[i].key, index: i };
+	#nearestEnabled(targetIdx: number, direction: 1 | -1): string | null {
+		const keys = this.#rowKeys();
+		const start = Math.max(0, Math.min(targetIdx, keys.length - 1));
+		for (let i = start; direction === 1 ? i < keys.length : i >= 0; i += direction) {
+			if (!this.#isDisabled(keys[i])) return keys[i];
 		}
 		// Fallback: try the other direction so callers always land somewhere
 		// enabled if any enabled row exists.
-		for (let i = start; direction === 1 ? i >= 0 : i < rows.length; i -= direction) {
-			if (!rows[i].disabled) return { key: rows[i].key, index: i };
+		for (let i = start; direction === 1 ? i >= 0 : i < keys.length; i -= direction) {
+			if (!this.#isDisabled(keys[i])) return keys[i];
 		}
 		return null;
 	}
 
-	#firstEnabledRow(): { key: string; index: number } | null {
-		const rows = this.#rows();
-		for (let i = 0; i < rows.length; i++) {
-			if (!rows[i].disabled) return { key: rows[i].key, index: i };
-		}
-		return null;
+	#firstEnabledRow(): string | null {
+		return this.#rowKeys().find((key) => !this.#isDisabled(key)) ?? null;
 	}
 
-	#lastEnabledRow(): { key: string; index: number } | null {
-		const rows = this.#rows();
-		for (let i = rows.length - 1; i >= 0; i--) {
-			if (!rows[i].disabled) return { key: rows[i].key, index: i };
+	#lastEnabledRow(): string | null {
+		const keys = this.#rowKeys();
+		for (let i = keys.length - 1; i >= 0; i--) {
+			if (!this.#isDisabled(keys[i])) return keys[i];
 		}
 		return null;
 	}
@@ -95,18 +92,18 @@ export class TableKeyboardDelegate {
 		switch (current.type) {
 			case 'columnheader': {
 				const first = this.#firstEnabledRow();
-				if (!first) return null;
+				if (first === null) return null;
 				// From column header, ArrowDown drops into the first cell of the
 				// first enabled row (cell mode). RAC behavior.
-				return { type: 'cell', rowKey: first.key, columnId: current.columnId };
+				return { type: 'cell', rowKey: first, columnId: current.columnId };
 			}
 			case 'row': {
-				const next = this.#stepRow(this.#rowIndex(current.rowKey), 1);
-				return next ? { type: 'row', rowKey: next.key } : null;
+				const next = this.#stepRow(this.#opts.rowIndexOf(current.rowKey), 1);
+				return next === null ? null : { type: 'row', rowKey: next };
 			}
 			case 'cell': {
-				const next = this.#stepRow(this.#rowIndex(current.rowKey), 1);
-				return next ? { type: 'cell', rowKey: next.key, columnId: current.columnId } : null;
+				const next = this.#stepRow(this.#opts.rowIndexOf(current.rowKey), 1);
+				return next === null ? null : { type: 'cell', rowKey: next, columnId: current.columnId };
 			}
 		}
 	}
@@ -116,72 +113,72 @@ export class TableKeyboardDelegate {
 			case 'columnheader':
 				return null;
 			case 'row': {
-				const prev = this.#stepRow(this.#rowIndex(current.rowKey), -1);
-				if (prev) return { type: 'row', rowKey: prev.key };
+				const prev = this.#stepRow(this.#opts.rowIndexOf(current.rowKey), -1);
+				if (prev !== null) return { type: 'row', rowKey: prev };
 				// At the first row, ArrowUp escapes to the column header. We
 				// jump to the first column since a row-level focus has no
 				// associated column index.
-				const cols = this.#columns();
+				const cols = this.#columns().items;
 				return cols.length > 0 ? { type: 'columnheader', columnId: cols[0].id } : null;
 			}
 			case 'cell': {
-				const prev = this.#stepRow(this.#rowIndex(current.rowKey), -1);
-				if (prev) return { type: 'cell', rowKey: prev.key, columnId: current.columnId };
+				const prev = this.#stepRow(this.#opts.rowIndexOf(current.rowKey), -1);
+				if (prev !== null) return { type: 'cell', rowKey: prev, columnId: current.columnId };
 				return { type: 'columnheader', columnId: current.columnId };
 			}
 		}
 	}
 
-	getKeyRight(current: FocusTarget, direction: 'ltr' | 'rtl' = 'ltr'): FocusTarget | null {
-		return direction === 'rtl' ? this.#stepCol(current, -1) : this.#stepCol(current, 1);
+	getKeyRight(current: FocusTarget): FocusTarget | null {
+		return this.#stepCol(current, this.#opts.direction() === 'rtl' ? -1 : 1);
 	}
 
-	getKeyLeft(current: FocusTarget, direction: 'ltr' | 'rtl' = 'ltr'): FocusTarget | null {
-		return direction === 'rtl' ? this.#stepCol(current, 1) : this.#stepCol(current, -1);
+	getKeyLeft(current: FocusTarget): FocusTarget | null {
+		return this.#stepCol(current, this.#opts.direction() === 'rtl' ? 1 : -1);
 	}
 
 	#stepCol(current: FocusTarget, direction: 1 | -1): FocusTarget | null {
 		const cols = this.#columns();
-		if (cols.length === 0) return null;
+		if (cols.items.length === 0) return null;
 
 		switch (current.type) {
 			case 'row': {
 				// ArrowRight on a row enters cell mode at the first cell;
 				// ArrowLeft on a row stays put (RAC: no left-of-row).
 				if (direction === 1) {
-					return { type: 'cell', rowKey: current.rowKey, columnId: cols[0].id };
+					return { type: 'cell', rowKey: current.rowKey, columnId: cols.items[0].id };
 				}
 				return null;
 			}
 			case 'cell': {
-				const idx = this.#colIndex(current.columnId);
+				const idx = cols.indexOf(current.columnId);
 				if (idx < 0) return null;
 				const next = idx + direction;
 				if (next < 0) {
 					// Past the leading edge → drop back to row mode.
 					return { type: 'row', rowKey: current.rowKey };
 				}
-				if (next >= cols.length) return null;
-				return { type: 'cell', rowKey: current.rowKey, columnId: cols[next].id };
+				if (next >= cols.items.length) return null;
+				return { type: 'cell', rowKey: current.rowKey, columnId: cols.items[next].id };
 			}
 			case 'columnheader': {
-				const idx = this.#colIndex(current.columnId);
+				const idx = cols.indexOf(current.columnId);
 				if (idx < 0) return null;
 				const next = idx + direction;
-				if (next < 0 || next >= cols.length) return null;
-				return { type: 'columnheader', columnId: cols[next].id };
+				if (next < 0 || next >= cols.items.length) return null;
+				return { type: 'columnheader', columnId: cols.items[next].id };
 			}
 		}
 	}
 
 	getFirstKey(current: FocusTarget): FocusTarget | null {
-		const cols = this.#columns();
+		const cols = this.#columns().items;
 		switch (current.type) {
 			case 'columnheader':
 				return cols.length > 0 ? { type: 'columnheader', columnId: cols[0].id } : null;
 			case 'row': {
 				const first = this.#firstEnabledRow();
-				return first ? { type: 'row', rowKey: first.key } : null;
+				return first === null ? null : { type: 'row', rowKey: first };
 			}
 			case 'cell':
 				// Home in cell mode: first cell of the current row (RAC).
@@ -192,7 +189,7 @@ export class TableKeyboardDelegate {
 	}
 
 	getLastKey(current: FocusTarget): FocusTarget | null {
-		const cols = this.#columns();
+		const cols = this.#columns().items;
 		switch (current.type) {
 			case 'columnheader':
 				return cols.length > 0
@@ -200,7 +197,7 @@ export class TableKeyboardDelegate {
 					: null;
 			case 'row': {
 				const last = this.#lastEnabledRow();
-				return last ? { type: 'row', rowKey: last.key } : null;
+				return last === null ? null : { type: 'row', rowKey: last };
 			}
 			case 'cell':
 				return cols.length > 0
@@ -210,41 +207,45 @@ export class TableKeyboardDelegate {
 	}
 
 	getKeyPageBelow(current: FocusTarget): FocusTarget | null {
-		const page = this.#pageSize();
+		const page = this.#opts.pageSize();
 		switch (current.type) {
 			case 'columnheader':
 				return null;
 			case 'row': {
-				const idx = this.#rowIndex(current.rowKey);
+				const idx = this.#opts.rowIndexOf(current.rowKey);
 				if (idx < 0) return null;
 				const target = this.#nearestEnabled(idx + page, -1);
-				return target ? { type: 'row', rowKey: target.key } : null;
+				return target === null ? null : { type: 'row', rowKey: target };
 			}
 			case 'cell': {
-				const idx = this.#rowIndex(current.rowKey);
+				const idx = this.#opts.rowIndexOf(current.rowKey);
 				if (idx < 0) return null;
 				const target = this.#nearestEnabled(idx + page, -1);
-				return target ? { type: 'cell', rowKey: target.key, columnId: current.columnId } : null;
+				return target === null
+					? null
+					: { type: 'cell', rowKey: target, columnId: current.columnId };
 			}
 		}
 	}
 
 	getKeyPageAbove(current: FocusTarget): FocusTarget | null {
-		const page = this.#pageSize();
+		const page = this.#opts.pageSize();
 		switch (current.type) {
 			case 'columnheader':
 				return null;
 			case 'row': {
-				const idx = this.#rowIndex(current.rowKey);
+				const idx = this.#opts.rowIndexOf(current.rowKey);
 				if (idx < 0) return null;
 				const target = this.#nearestEnabled(idx - page, 1);
-				return target ? { type: 'row', rowKey: target.key } : null;
+				return target === null ? null : { type: 'row', rowKey: target };
 			}
 			case 'cell': {
-				const idx = this.#rowIndex(current.rowKey);
+				const idx = this.#opts.rowIndexOf(current.rowKey);
 				if (idx < 0) return null;
 				const target = this.#nearestEnabled(idx - page, 1);
-				return target ? { type: 'cell', rowKey: target.key, columnId: current.columnId } : null;
+				return target === null
+					? null
+					: { type: 'cell', rowKey: target, columnId: current.columnId };
 			}
 		}
 	}

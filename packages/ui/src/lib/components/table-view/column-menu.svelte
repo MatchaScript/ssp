@@ -91,6 +91,9 @@
 	}
 </script>
 
+<!-- The trigger is not a tab stop of its own — the table as a whole is one tab
+     stop. Alt+ArrowDown on the focused column header opens this menu, and the
+     menu's "Resize column" entry is how the keyboard reaches the resizer. -->
 <Menu.MenuTrigger>
 	{#snippet trigger({ triggerProps })}
 		<ActionButton
@@ -99,6 +102,7 @@
 			size="s"
 			data-spectrum-table-view-column-menu-trigger
 			aria-label="Column menu"
+			tabindex={-1}
 			onclick={(e: MouseEvent) => {
 				// Header click toggles sort; the menu trigger lives inside the
 				// header so its click would bubble up and re-toggle. Stop early

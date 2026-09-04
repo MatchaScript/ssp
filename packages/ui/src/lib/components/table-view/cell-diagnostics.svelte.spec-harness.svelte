@@ -1,32 +1,27 @@
 <script lang="ts">
 	import * as TableView from './index.js';
 
+	let { duplicate = false }: { duplicate?: boolean } = $props();
+
 	const COLUMNS: TableView.TableViewColumn[] = [
-		{
-			id: 'a',
-			label: 'A',
-			isRowHeader: true,
-			allowsSorting: true,
-			allowsResizing: true,
-			defaultWidth: 200
-		},
+		{ id: 'a', label: 'A', isRowHeader: true },
 		{ id: 'b', label: 'B' }
 	];
 
-	const rows = Array.from({ length: 3 }, (_, i) => ({
-		id: `r${i}`,
-		a: `a${i}`,
-		b: `b${i}`
-	}));
+	const rows = [{ id: 'r0', a: 'a0', b: 'b0' }];
 </script>
 
-<TableView.Root>
+<TableView.Root aria-label="diagnostics">
 	<TableView.Header columns={COLUMNS} />
 	<TableView.Body items={rows} getKey={(r) => r.id}>
 		{#snippet row(item)}
 			<TableView.Row>
 				<TableView.Cell column="a">{item.a}</TableView.Cell>
-				<TableView.Cell column="b">{item.b}</TableView.Cell>
+				{#if duplicate}
+					<TableView.Cell column="a">{item.a}</TableView.Cell>
+				{:else}
+					<TableView.Cell column="typo">{item.b}</TableView.Cell>
+				{/if}
 			</TableView.Row>
 		{/snippet}
 	</TableView.Body>

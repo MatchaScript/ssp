@@ -49,6 +49,12 @@ export class MenuState {
 	get selectedKeys() {
 		return this.#props.selectedKeys;
 	}
+	get containerTabIndex() {
+		return this.#collection.containerTabIndex;
+	}
+	itemTabIndex(domId: string) {
+		return this.#collection.itemTabIndex(domId);
+	}
 	get highlightedId() {
 		return this.#collection.highlightedId;
 	}

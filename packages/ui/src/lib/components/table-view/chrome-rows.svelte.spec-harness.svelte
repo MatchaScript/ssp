@@ -1,26 +1,25 @@
 <script lang="ts">
 	import * as TableView from './index.js';
 
+	let {
+		rows,
+		loadingState = 'idle' as TableView.TableViewLoadingState
+	}: {
+		rows: { id: string; a: string; b: string }[];
+		loadingState?: TableView.TableViewLoadingState;
+	} = $props();
+
 	const COLUMNS: TableView.TableViewColumn[] = [
-		{
-			id: 'a',
-			label: 'A',
-			isRowHeader: true,
-			allowsSorting: true,
-			allowsResizing: true,
-			defaultWidth: 200
-		},
+		{ id: 'a', label: 'A', isRowHeader: true },
 		{ id: 'b', label: 'B' }
 	];
-
-	const rows = Array.from({ length: 3 }, (_, i) => ({
-		id: `r${i}`,
-		a: `a${i}`,
-		b: `b${i}`
-	}));
 </script>
 
-<TableView.Root>
+{#snippet renderEmptyState()}
+	Nothing here
+{/snippet}
+
+<TableView.Root aria-label="chrome" selectionMode="multiple" {loadingState} {renderEmptyState}>
 	<TableView.Header columns={COLUMNS} />
 	<TableView.Body items={rows} getKey={(r) => r.id}>
 		{#snippet row(item)}

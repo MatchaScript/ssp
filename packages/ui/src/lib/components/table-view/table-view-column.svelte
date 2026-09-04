@@ -1,59 +1,25 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
-	import type { TableViewColumnProps } from './types.js';
+	import type { Snippet } from 'svelte';
+	import type { ColumnDescriptor } from './state/collection.js';
 	import { getTableContext } from './state/context.js';
 	import { Icon, ArrowUpWideNarrow, ArrowDownNarrowWide } from '../icon/index.js';
 	import ColumnMenu from './column-menu.svelte';
 	import ColumnResizer from './column-resizer.svelte';
 
-	let {
-		id,
-		isRowHeader = false,
-		allowsSorting = false,
-		allowsHiding = false,
-		allowsResizing = false,
-		filterType,
-		enumOptions,
-		align,
-		showDivider = false,
-		width,
-		defaultWidth,
-		minWidth,
-		maxWidth,
-		children
-	}: TableViewColumnProps = $props();
+	// Internal render unit for one entry of `<TableView.Header columns>`. It
+	// owns no order and registers no descriptor — Header supplies both — so the
+	// `<th>` sequence and the column list cannot drift apart.
+	let { column, content }: { column: ColumnDescriptor; content?: Snippet<[ColumnDescriptor]> } =
+		$props();
 
 	const tableState = getTableContext();
 	let ref: HTMLTableCellElement | null = $state(null);
 
-	// Upsert the descriptor on every prop change. `registerColumn` is a plain
-	// `Map.set`, so re-running on prop churn is cheap and skips the
-	// register→unregister→register dance that briefly leaves the column
-	// missing from `tableState.columns`.
-	$effect(() => {
-		tableState.registerColumn({
-			id,
-			isRowHeader,
-			allowsSorting,
-			allowsHiding,
-			allowsResizing,
-			align,
-			showDivider,
-			width,
-			defaultWidth,
-			minWidth,
-			maxWidth,
-			filterType,
-			enumOptions
-		});
-	});
-
-	// Unregister on unmount, or when `id` changes (the previous id no longer
-	// has a Column owning it).
-	$effect(() => {
-		const owned = id;
-		return () => tableState.unregisterColumn(owned);
-	});
+	const id = $derived(column.id);
+	const align = $derived(column.align);
+	const allowsSorting = $derived(column.allowsSorting === true);
+	const allowsResizing = $derived(column.allowsResizing === true);
 
 	// Anchor name used by the column-menu chevron's filter popover. Lives on
 	// the `<th>` so the popover positions relative to the header rather than
@@ -63,13 +29,12 @@
 	const filterAnchor = $derived(`--ssp-tableview-col-${id.replace(/[^a-zA-Z0-9_-]/g, '_')}`);
 
 	// Column-header element registry — drives 2D nav (ArrowDown into first
-	// row at this column, ArrowLeft/Right between headers). Kept separate from
-	// the descriptor registry above so the element is captured exactly when
-	// it's available in the DOM.
+	// row at this column, ArrowLeft/Right between headers).
 	$effect(() => {
 		const el = ref;
+		const owned = id;
 		if (!el) return;
-		return untrack(() => tableState.registerColumnHeader(id, el));
+		return untrack(() => tableState.registerColumnHeader(owned, el));
 	});
 
 	const sortDirection = $derived(tableState.sortDirectionFor(id));
@@ -84,20 +49,25 @@
 	);
 
 	const isHidden = $derived(tableState.isColumnHidden(id));
-	const isHeaderFocused = $derived(tableState.isColumnHeaderFocused(id));
-	// `aria-colindex` reflects the visible column set (RAC + W3C ARIA APG):
-	// hidden columns drop out of the index. The checkbox column, when present,
-	// is always col 1, so declared columns start at col 2 in that case.
-	const visibleIndex = $derived(tableState.visibleColumnIndex(id));
-	const ariaColIndex = $derived((tableState.selectionMode === 'none' ? 1 : 2) + visibleIndex);
-	const allowsFiltering = $derived(filterType !== undefined);
+	const keyboardTarget = $derived(tableState.keyboardTarget);
+	const isHeaderFocused = $derived(
+		keyboardTarget?.type === 'columnheader' && keyboardTarget.columnId === id
+	);
+	const ariaColIndex = $derived(tableState.navColumns.indexOf(id) + 1);
+	const allowsFiltering = $derived(column.filterType !== undefined);
 	const isFiltered = $derived(tableState.hasFilter(id));
 	// RS parity: sort alone doesn't justify a menu — the header click already
 	// toggles sort. The chevron only appears when there are menu-driven
 	// actions (hide / filter / resize) that have no other affordance.
 	// Sort items are still rendered *inside* the menu when both apply, so
 	// "Clear sort" stays reachable on a column that's also hideable/filterable.
-	const hasMenu = $derived(allowsHiding || allowsFiltering || allowsResizing);
+	// A hidden header has no visible affordances, so it renders none: an
+	// off-screen menu trigger or resize handle is a focus stop the user cannot
+	// see. Column names stay in the accessibility tree either way.
+	const isHeaderVisible = $derived(!tableState.hideHeader);
+	const hasMenu = $derived(
+		isHeaderVisible && (column.allowsHiding === true || allowsFiltering || allowsResizing)
+	);
 
 	function handleClick(e: MouseEvent) {
 		// Menu / filter popovers render in the top layer but are still DOM
@@ -113,7 +83,7 @@
 
 	function handleKeydown(e: KeyboardEvent) {
 		// Only react to keys aimed at the header itself; descendants (the
-		// future column-menu trigger) own their own behavior.
+		// column-menu trigger) own their own behavior.
 		if (e.target !== e.currentTarget) return;
 		tableState.handleColumnHeaderKeyDown(e, id);
 	}
@@ -122,19 +92,21 @@
 {#if !isHidden}
 	<th
 		bind:this={ref}
+		id={tableState.columnHeaderId(id)}
 		role="columnheader"
 		data-spectrum-table-view-column
 		data-align={align ?? undefined}
 		data-sortable={allowsSorting || undefined}
 		data-sort-direction={sortDirection || undefined}
-		data-show-divider={showDivider || undefined}
+		data-show-divider={column.showDivider || undefined}
 		data-focused={isHeaderFocused || undefined}
 		data-filtered={isFiltered || undefined}
 		aria-sort={ariaSort}
 		aria-colindex={ariaColIndex}
 		{...allowsSorting ? { 'aria-description': 'sortable column' } : {}}
 		tabindex={isHeaderFocused ? 0 : -1}
-		onclick={allowsSorting ? handleClick : undefined}
+		onfocus={() => tableState.setColumnHeaderFocus(id)}
+		onclick={allowsSorting && isHeaderVisible ? handleClick : undefined}
 		onkeydown={handleKeydown}
 		style="anchor-name: {filterAnchor};"
 	>
@@ -144,7 +116,9 @@
 			{:else if sortDirection === 'descending'}
 				<Icon icon={ArrowDownNarrowWide} size="s" class="spectrum-table-view-sort-icon" />
 			{/if}
-			<span data-spectrum-table-view-column-text>{@render children()}</span>
+			<span data-spectrum-table-view-column-text>
+				{#if content}{@render content(column)}{:else}{column.label}{/if}
+			</span>
 			{#if isFiltered}
 				<!-- Filter-active dot. Visible regardless of menu — when filtering is
 				     driven externally (controlled `columnFilters` without a column
@@ -155,7 +129,7 @@
 				<ColumnMenu columnId={id} {align} {filterAnchor} />
 			{/if}
 		</div>
-		{#if allowsResizing}
+		{#if allowsResizing && isHeaderVisible}
 			<ColumnResizer columnId={id} />
 		{/if}
 	</th>

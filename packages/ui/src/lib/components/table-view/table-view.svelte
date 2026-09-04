@@ -1,4 +1,5 @@
-<script lang="ts" generics="TData">
+<script lang="ts">
+	import { untrack } from 'svelte';
 	import type { ColumnFilter, SortDescriptor, TableViewRootProps } from './types.js';
 	import { TableState } from './state/table-state.svelte.js';
 	import { setTableContext } from './state/context.js';
@@ -13,6 +14,7 @@
 	let {
 		density = 'regular',
 		isQuiet = false,
+		hideHeader = false,
 		overflowMode = 'truncate',
 		isDisabled = false,
 		disabledKeys,
@@ -133,13 +135,20 @@
 	// ── Table width (drives column layout) ───────────────────────
 	let tableWidth = $state(0);
 
+	// Prefix for the ids TableState derives (column headers). From `$props.id()`
+	// so server and client agree on them.
+	const tableId = $props.id();
+
 	// ── TableState ───────────────────────────────────────────────
-	const tableState = new TableState<TData>({
+	const tableState = new TableState({
 		get density() {
 			return density;
 		},
 		get isQuiet() {
 			return isQuiet;
+		},
+		get hideHeader() {
+			return hideHeader;
 		},
 		get overflowMode() {
 			return overflowMode;
@@ -177,7 +186,8 @@
 		},
 		get tableWidth() {
 			return tableWidth;
-		}
+		},
+		tableId
 	});
 
 	// ── Live region announcements ────────────────────────────────
@@ -193,6 +203,10 @@
 		const prev = lastSelectedKeys;
 		lastSelectedKeys = next;
 		if (prev === next) return;
+		// Only for changes the user drove from inside the table. A consumer that
+		// rewrites `selectedKeys` from its own UI elsewhere on the page is not
+		// something this table's live region should narrate.
+		if (!tableState.hadDomFocus) return;
 		tableState.announceSelectionChange(prev, next);
 	});
 
@@ -219,42 +233,46 @@
 	// ── Focus integration ────────────────────────────────────────
 	// Keyboard handling lives on each `<tr>` (alongside its onclick / onfocus)
 	// so descendant keystrokes don't bubble into row navigation by accident.
-	// The table only owns the Tab-entry behavior: when focus first enters it,
-	// roll roving focus onto the first enabled row.
+	// The table only owns the Tab-entry behavior: when focus first lands on the
+	// `<table>` itself, place the identity on the first (or last) enabled row.
 	function handleFocusIn(e: FocusEvent) {
-		if (isDisabled || selectionMode === 'none') return;
-		// Only auto-focus when the focus came from outside the table — focus
-		// transitions between rows are handled by the row's own onfocus
-		// (`syncHighlight`).
+		// Only the table itself. Rows and cells report their own focus, and the
+		// `focus` event does not bubble, so nothing else arrives here anyway
+		// except the `focusin` of a descendant — which must not re-enter.
 		if (e.target !== e.currentTarget) return;
-		if (tableState.focusedKey === null) {
-			tableState.focusFirst({ focusVisible: true });
-			const k = tableState.focusedKey;
-			if (k) tableState.announceRowFocus(k);
-		}
+		tableState.enterFromTab(e.relatedTarget as Node | null);
 	}
 
-	const isInteractive = $derived(!isDisabled && selectionMode !== 'none');
-	const tableTabIndex = $derived(isInteractive && tableState.focusedKey === null ? 0 : -1);
+	// The whole table is one tab stop: the `<table>` owns it while nothing
+	// inside is aimed at, and hands it over as soon as something is. No
+	// `selectionMode` condition — WCAG 2.1.1 applies to a read-only grid too,
+	// and upstream does not gate keyboard entry on selection either.
+	const tableTabIndex = $derived(tableState.keyboardTarget === null ? 0 : -1);
 
-	// Cast at the boundary — context stores TableState<unknown>.
-	setTableContext(tableState as unknown as TableState<unknown>);
+	// The wrapper is measured for the PageUp / PageDown distance and read for the
+	// writing direction; the `<table>` is the reference point for deciding which
+	// way Tab arrived.
+	let wrapperEl: HTMLElement | null = $state(null);
+	let tableEl: HTMLElement | null = $state(null);
+	$effect(() => {
+		const el = wrapperEl;
+		if (!el) return;
+		return untrack(() => tableState.registerWrapper(el));
+	});
+	$effect(() => {
+		const el = tableEl;
+		if (!el) return;
+		return untrack(() => tableState.registerTable(el));
+	});
+
+	setTableContext(tableState);
 
 	// ── Empty state / loading: how many columns to colspan ───────
 	// Columns are markup-registered, so the count is read from state.
-	// S2 hardcodes selectionBehavior='toggle' → checkbox column always present
-	// when selection is enabled.
-	const showCheckboxColumn = $derived(selectionMode !== 'none');
-	const totalColumns = $derived(
-		tableState.collection.columns.length + (showCheckboxColumn ? 1 : 0)
-	);
-	const isEmpty = $derived(tableState.collection.size === 0);
-
-	// ARIA row / col counts. `aria-rowcount` includes the header row; AT
-	// implementations rely on the count for percentage announcements
-	// ("row 5 of 200"). Row virtualization is out of scope.
-	const ariaRowCount = $derived(1 + tableState.collection.size);
-	const ariaColCount = $derived(totalColumns);
+	// `navColumns` already carries the synthetic selection column when
+	// selection is on, so the count needs no mode arithmetic.
+	const totalColumns = $derived(tableState.navColumns.items.length);
+	const isEmpty = $derived(tableState.rows.items.length === 0);
 
 	// ── Scroll → onLoadMore ──────────────────────────────────────
 	function handleScroll(e: Event) {
@@ -268,16 +286,20 @@
 </script>
 
 <div
+	bind:this={wrapperEl}
 	bind:clientWidth={tableWidth}
 	data-spectrum-table-view-wrapper
 	data-density={density}
 	data-quiet={isQuiet || undefined}
 	onscroll={handleScroll}
+	onfocusin={() => tableState.noteDomFocus()}
 >
 	<table
+		bind:this={tableEl}
 		role="grid"
 		data-spectrum-table-view
 		data-density={density}
+		data-hide-header={hideHeader || undefined}
 		data-quiet={isQuiet || undefined}
 		data-disabled={isDisabled || undefined}
 		data-selection-mode={selectionMode}
@@ -285,17 +307,23 @@
 		class={className}
 		aria-multiselectable={selectionMode === 'multiple' || undefined}
 		aria-disabled={isDisabled || undefined}
-		aria-rowcount={ariaRowCount}
-		aria-colcount={ariaColCount}
 		tabindex={tableTabIndex}
 		onfocusin={handleFocusIn}
 		{...restProps}
 	>
 		<TableViewColgroup />
 		{@render children()}
+		<!-- Loader and empty-state rows are chrome, not data. `<tr>` maps to
+		     role=row natively, so an empty table would otherwise report one row
+		     and a loading table one row too many. `role="presentation"` on the
+		     row takes its `<td>` with it: a cell is a required owned element of a
+		     row, so it turns presentational too. The compiler's
+		     `a11y_no_interactive_element_to_noninteractive_role` reads `<tr>` as
+		     interactive, which it is not — a row is a structural container. -->
 		{#if loadingState === 'loading'}
 			<tbody>
-				<tr>
+				<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+				<tr role="presentation">
 					<td data-spectrum-table-view-loader colspan={totalColumns || 1}>
 						<ProgressCircle isIndeterminate={true} size="m" />
 					</td>
@@ -303,7 +331,8 @@
 			</tbody>
 		{:else if isEmpty && renderEmptyState}
 			<tbody>
-				<tr>
+				<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+				<tr role="presentation">
 					<td data-spectrum-table-view-empty-state colspan={totalColumns || 1}>
 						{@render renderEmptyState()}
 					</td>
@@ -312,7 +341,8 @@
 		{/if}
 		{#if loadingState === 'loadingMore'}
 			<tbody>
-				<tr>
+				<!-- svelte-ignore a11y_no_interactive_element_to_noninteractive_role -->
+				<tr role="presentation">
 					<td data-spectrum-table-view-loader data-loading-more colspan={totalColumns || 1}>
 						<ProgressCircle isIndeterminate={true} size="s" />
 					</td>
@@ -428,5 +458,35 @@
 		outline-offset: -2px;
 		border-radius: var(--corner-radius-300);
 		z-index: 2;
+	}
+
+	/* The selection column's real `<input type="checkbox">`. It carries the a11y
+	   semantics (role, accessible name, checked / mixed state) while the
+	   `<CheckboxBox>` beside it draws the control, the same split the resizer's
+	   range input uses. Visually hidden rather than removed so the state is
+	   there to be read. `:global` because the inputs are rendered by
+	   `<TableView.Row>` and `<TableView.Header>`, each under its own scope. */
+	[data-spectrum-table-view] :global([data-spectrum-table-view-selection-checkbox]) {
+		position: absolute;
+		width: 1px;
+		height: 1px;
+		padding: 0;
+		margin: -1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
+		border-width: 0;
+	}
+
+	/* `hideHeader` keeps the header row in the DOM — the column names are the
+	   grid's semantics — but takes it out of the visual layout. clip-path plus
+	   zero block-size, rather than `display: none`, so AT still reaches it. */
+	[data-spectrum-table-view][data-hide-header] :global([data-spectrum-table-view-header-row]) {
+		position: absolute;
+		block-size: 1px;
+		inline-size: 1px;
+		overflow: hidden;
+		clip-path: inset(50%);
+		white-space: nowrap;
 	}
 </style>

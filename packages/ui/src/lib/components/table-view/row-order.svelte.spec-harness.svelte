@@ -1,25 +1,34 @@
 <script lang="ts">
 	import * as TableView from './index.js';
 
-	type Row = { id: string; a: string; b: string };
+	type Row = { id: string; a: string; b: string; c: string };
 
 	let {
 		rows,
-		selectionMode = 'none' as 'none' | 'single' | 'multiple'
-	}: { rows: Row[]; selectionMode?: 'none' | 'single' | 'multiple' } = $props();
+		selectionMode = 'none' as 'none' | 'single' | 'multiple',
+		hiddenColumns
+	}: {
+		rows: Row[];
+		selectionMode?: 'none' | 'single' | 'multiple';
+		hiddenColumns?: string[];
+	} = $props();
+
+	const COLUMNS: TableView.TableViewColumn[] = [
+		{ id: 'a', label: 'A', isRowHeader: true, defaultWidth: 200 },
+		{ id: 'b', label: 'B' },
+		{ id: 'c', label: 'C' }
+	];
 </script>
 
-<TableView.Root {selectionMode}>
-	<TableView.Header>
-		<TableView.Column id="a" isRowHeader defaultWidth={200}>A</TableView.Column>
-		<TableView.Column id="b">B</TableView.Column>
-	</TableView.Header>
-	<TableView.Body>
-		{#each rows as row (row.id)}
-			<TableView.Row key={row.id}>
-				<TableView.Cell>{row.a}</TableView.Cell>
-				<TableView.Cell>{row.b}</TableView.Cell>
+<TableView.Root {selectionMode} {hiddenColumns}>
+	<TableView.Header columns={COLUMNS} />
+	<TableView.Body items={rows} getKey={(r) => r.id}>
+		{#snippet row(item)}
+			<TableView.Row>
+				<TableView.Cell column="a">{item.a}</TableView.Cell>
+				<TableView.Cell column="b">{item.b}</TableView.Cell>
+				<TableView.Cell column="c">{item.c}</TableView.Cell>
 			</TableView.Row>
-		{/each}
+		{/snippet}
 	</TableView.Body>
 </TableView.Root>

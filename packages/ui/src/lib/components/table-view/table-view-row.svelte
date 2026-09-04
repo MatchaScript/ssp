@@ -1,13 +1,11 @@
 <script lang="ts">
 	import { untrack } from 'svelte';
 	import type { TableViewRowProps } from './types.js';
-	import { getTableContext, setRowContext } from './state/context.js';
+	import { getTableContext, getRowScope, setRowContext } from './state/context.js';
 	import { SELECTION_COLUMN_ID } from './state/table-state.svelte.js';
 	import { CheckboxBox } from '../checkbox/index.js';
 
 	let {
-		key,
-		isDisabled: isDisabledProp,
 		textValue,
 		href,
 		target,
@@ -18,22 +16,27 @@
 	}: TableViewRowProps = $props();
 
 	const tableState = getTableContext();
+	const scope = getRowScope();
+	const key = $derived(scope.key);
 	const domId = $props.id();
 	let ref: HTMLTableRowElement | null = $state(null);
 
-	// Per-row cell index counter. Each <TableView.Cell> increments this on init,
-	// resolving its column by markup order. Closure captures `cellCounter` per
-	// row instance, so the count starts at 0 for every row.
-	let cellCounter = 0;
-	// `key` / `domId` are stable for the component instance (Svelte recreates the
-	// component when the `{#each (key)}` key changes), so they're stored by value.
-	// Link / a11y props (href / target / rel / download / textValue) use getters
-	// so descendant <TableView.Cell> sees the live value — without these, changing
-	// `href` after mount leaves the stretched <a> overlay (and aria-label) stale.
+	// All getters: identity comes from the row scope, and the link / a11y props
+	// must stay live for descendant <TableView.Cell> — a value copy would leave
+	// the stretched <a> overlay (and aria-label) stale when `href` changes.
+	// The keyboard target while it points at this row. One read of the
+	// table-wide state per row, from the row scope; the `<tr>`, its cells and
+	// its checkbox all answer "am I the target?" from this one value.
+	const rowFocus = $derived(scope.focus);
+
 	setRowContext({
-		rowKey: key,
+		get rowKey() {
+			return key;
+		},
 		rowDomId: domId,
-		getNextCellIndex: () => cellCounter++,
+		get focus() {
+			return rowFocus;
+		},
 		get href() {
 			return href;
 		},
@@ -52,32 +55,34 @@
 	});
 
 	const isSelected = $derived(tableState.isSelected(key));
-	const isDisabled = $derived(!!isDisabledProp || tableState.isRowDisabled(key));
-	const isFocused = $derived(tableState.isFocused(domId));
-	// Roving tabindex hands off to the cell / column-header when 2D nav is
-	// active. The row stays the *highlight* target (selection anchor, aria),
-	// but it surrenders the keyboard focus slot so Tab into the table lands
-	// on whatever the user last navigated to.
-	const isRowKeyboardTarget = $derived(isFocused && !tableState.isCellModeActive);
+	const isDisabled = $derived(tableState.isRowDisabled(key));
+	// The row is "focused" whenever the target names it, in either mode — that
+	// is what paints the row-level accent while a cell inside it owns the
+	// keyboard. It only owns the tab stop in row mode.
+	const isFocused = $derived(rowFocus !== null);
+	const isRowKeyboardTarget = $derived(rowFocus?.type === 'row');
+	// A disabled row (and its cells) gets no `tabindex` attribute at all rather
+	// than -1: -1 is still programmatically focusable, which would let
+	// `.focus()` land on a row the keyboard deliberately skips. Same rule the
+	// shared primitive's `itemTabIndex` applies, and upstream's
+	// `useSelectableItem`.
 	const showCheckbox = $derived(tableState.selectionMode !== 'none');
 	const resolvedTextValue = $derived(textValue ?? '');
 	const isLink = $derived(href !== undefined);
 
-	// `aria-labelledby` points at the rowheader cell. Cell ids follow the
-	// deterministic pattern `${rowDomId}-cell-${columnId}` (cells generate
-	// their own id from the row context using the same template), so the row
-	// can predict the id without the cell having to push it back. If no
-	// rowheader column is registered (e.g. transient state during column
-	// registration) `aria-labelledby` is omitted and SR falls back to the
-	// row's textual content.
-	const rowHeaderColumnId = $derived(tableState.collection.columns.find((c) => c.isRowHeader)?.id);
+	// `aria-labelledby` points at the rowheader cell. Cell ids come from one
+	// convention in TableState (`cellId`), which the cells themselves also use to
+	// write their own id, so the row can predict the id without the cell having
+	// to push it back. If no rowheader column is registered (e.g. transient state
+	// during column registration) `aria-labelledby` is omitted and SR falls back
+	// to the row's textual content.
+	// All rowheader cells, space-joined — a table may declare more than one, and
+	// naming the row from only the first splits its accessible name.
 	const ariaLabelledBy = $derived(
-		rowHeaderColumnId ? `${domId}-cell-${rowHeaderColumnId}` : undefined
+		tableState.rowHeaderColumnIds.length > 0
+			? tableState.rowHeaderColumnIds.map((id) => tableState.cellId(domId, id)).join(' ')
+			: undefined
 	);
-	// 1-based; the header row is always row 1, so body rows start at 2.
-	// Reads from the collection's row order so it tracks dynamic
-	// add/remove and any future sort/filter pipeline.
-	const ariaRowIndex = $derived(tableState.collection.rows.findIndex((r) => r.key === key) + 2);
 
 	$effect(() => {
 		const el = ref;
@@ -89,7 +94,6 @@
 				el,
 				disabled: isDisabled,
 				textValue: resolvedTextValue,
-				rowData: undefined as unknown,
 				href,
 				onAction: onRowAction
 			})
@@ -98,20 +102,21 @@
 	// Push reactive updates to the row's `textValue` so typeahead /
 	// announcement labels stay in sync. When the consumer omits
 	// `textValue`, scrape it from the rowheader cell's textContent — this
-	// makes `<TableView.Row key={u.id}>` "just work" for typeahead without
+	// makes a row "just work" for typeahead without
 	// requiring every consumer to mirror their data into a `textValue`
 	// prop. We only run the scrape lazily (when no explicit textValue is
 	// provided) and only post-mount, so child cells have already rendered.
+	// Label resolution, in the same order as upstream `getTextValue`: the row's
+	// own `textValue`, then its rowheader cells' `textValue`. Scraping the
+	// rendered `<th>` is the last resort, kept so a consumer who supplies
+	// neither still gets working typeahead and announcements.
 	$effect(() => {
-		let value = resolvedTextValue;
-		if (textValue === undefined && ref) {
-			const rowheader = ref.querySelector<HTMLElement>('th[scope="row"]');
-			const scraped = rowheader?.textContent?.trim();
-			if (scraped) value = scraped;
-		}
+		// Only the row's own `textValue` is stored. The rowheader-cell text and
+		// the DOM scrape are resolved on read (`#rowLabel`), so a cell whose text
+		// changes after mount is reflected without the row having to re-register.
 		tableState.updateRow(domId, {
 			disabled: isDisabled,
-			textValue: value
+			textValue: textValue ?? ''
 		});
 	});
 	// `href` and per-row `onAction` may change after mount (e.g. consumer
@@ -161,7 +166,7 @@
 
 	function handleFocus() {
 		if (isDisabled) return;
-		tableState.syncHighlight(domId);
+		tableState.setRowFocus(key);
 	}
 
 	// Keyboard nav lives at the row level so descendant keystrokes (Button /
@@ -174,11 +179,10 @@
 		tableState.handleRowKeyDown(e, key);
 	}
 
-	function handleCheckboxClick(e: MouseEvent) {
-		// The row's onclick handler also fires; for non-linked rows we'd toggle
-		// twice. Stop propagation so the cell click is the single source of
-		// truth for the checkbox column.
-		e.stopPropagation();
+	// One toggle for the whole selection cell. The `<td>` owns the click for the
+	// full 40px column, the `<input>` inside it is 14px of that, and both route
+	// here — so whichever of them is activated, the row is toggled exactly once.
+	function toggleSelection(e: MouseEvent) {
 		if (isDisabled) return;
 		tableState.selectFromInput(key, {
 			shiftKey: e.shiftKey,
@@ -186,6 +190,14 @@
 			metaKey: e.metaKey,
 			pointerType: 'mouse'
 		});
+	}
+
+	function handleCheckboxCellClick(e: MouseEvent) {
+		// The row's onclick handler also fires; for non-linked rows we'd toggle
+		// twice. Stop propagation so the cell click is the single source of
+		// truth for the checkbox column.
+		e.stopPropagation();
+		toggleSelection(e);
 	}
 
 	// Per-row checkbox cell — registered as a cell under SELECTION_COLUMN_ID so
@@ -199,7 +211,39 @@
 		return untrack(() => tableState.registerCell(key, SELECTION_COLUMN_ID, el));
 	});
 
-	const isCheckboxCellFocused = $derived(tableState.isCellFocused(key, SELECTION_COLUMN_ID));
+	const isCheckboxCellFocused = $derived(
+		rowFocus?.type === 'cell' && rowFocus.columnId === SELECTION_COLUMN_ID
+	);
+
+	// The checkbox names itself and then the row: "Select" from its own
+	// `aria-label` (reached because `aria-labelledby` is not followed
+	// recursively), then the rowheader cells that name the row. Naming it from
+	// the resolved row label instead would read a value sampled once, since the
+	// label registries are deliberately non-reactive.
+	const checkboxDomId = $derived(`${domId}-select`);
+	const checkboxLabelledBy = $derived(
+		ariaLabelledBy === undefined ? undefined : `${checkboxDomId} ${ariaLabelledBy}`
+	);
+
+	// The input's own activation is NOT cancelled. Cancelling a checkbox click
+	// makes the browser restore `checked` to its pre-click value after the
+	// handlers have run, and under a trusted activation — a real click, a screen
+	// reader's press — Svelte's template flush lands in between: it writes the
+	// new selection onto the control and the restore then overwrites it, leaving
+	// the checkbox reading the opposite of what is selected.
+	//
+	// So the click runs its course, and the two things the cancellation was
+	// protecting are kept directly: `stopPropagation` leaves the `<td>` out of
+	// this activation, so there is still one toggle per click; and the write
+	// below re-derives the checkedness from the selection, which is what a
+	// REFUSED toggle needs — the browser has already flipped the control, the
+	// projection did not change, and Svelte's `checked` write is memoized
+	// against that projection, so nothing else would put it back.
+	function handleCheckboxInputClick(e: MouseEvent & { currentTarget: HTMLInputElement }) {
+		e.stopPropagation();
+		toggleSelection(e);
+		e.currentTarget.checked = tableState.isSelected(key);
+	}
 
 	function handleCheckboxKeydown(e: KeyboardEvent) {
 		if (isDisabled) return;
@@ -223,8 +267,7 @@
 	aria-selected={tableState.selectionMode !== 'none' ? isSelected : undefined}
 	aria-disabled={isDisabled || undefined}
 	aria-labelledby={ariaLabelledBy}
-	aria-rowindex={ariaRowIndex}
-	tabindex={isRowKeyboardTarget ? 0 : -1}
+	tabindex={isDisabled ? undefined : isRowKeyboardTarget ? 0 : -1}
 	onclick={handleClick}
 	ondblclick={handleDoubleClick}
 	onfocus={handleFocus}
@@ -236,9 +279,9 @@
 			role="gridcell"
 			data-spectrum-table-view-checkbox-cell
 			data-focused={isCheckboxCellFocused || undefined}
-			aria-colindex={1}
-			tabindex={isCheckboxCellFocused ? 0 : -1}
-			onclick={handleCheckboxClick}
+			tabindex={isDisabled ? undefined : isCheckboxCellFocused ? 0 : -1}
+			onfocus={() => tableState.setCellFocus(key, SELECTION_COLUMN_ID)}
+			onclick={handleCheckboxCellClick}
 			onkeydown={handleCheckboxKeydown}
 		>
 			<!-- Row focus indicator. Rendered inside the leading cell rather
@@ -247,6 +290,17 @@
 			     case. Styles are `:global` because the matching element lives in
 			     two different components. -->
 			<span data-spectrum-table-view-row-focus-indicator aria-hidden="true"></span>
+			<input
+				id={checkboxDomId}
+				type="checkbox"
+				data-spectrum-table-view-selection-checkbox
+				checked={isSelected}
+				disabled={isDisabled}
+				tabindex={-1}
+				aria-label="Select"
+				aria-labelledby={checkboxLabelledBy}
+				onclick={handleCheckboxInputClick}
+			/>
 			<CheckboxBox checked={isSelected} {isDisabled} size="s" />
 		</td>
 	{/if}

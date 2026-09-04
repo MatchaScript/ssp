@@ -21,6 +21,10 @@
 	}: ActionButtonRenderProps = $props();
 </script>
 
+<!-- `tabindex` below honours an explicit value from the caller. Without that
+     branch the attribute discards it, even though every wrapper types its props
+     as `HTMLButtonAttributes` — a button inside a roving-tabindex parent
+     (TableView's column menu trigger) has to be able to park itself at -1. -->
 <svelte:element
 	this={href ? 'a' : 'button'}
 	{...restProps}
@@ -44,7 +48,11 @@
 	disabled={href ? undefined : disabled}
 	aria-disabled={href ? disabled : undefined}
 	role={href && disabled ? 'link' : undefined}
-	tabindex={href && disabled ? -1 : 0}
+	tabindex={typeof restProps?.tabindex === 'number'
+		? restProps.tabindex
+		: href && disabled
+			? -1
+			: 0}
 >
 	{@render children?.()}
 </svelte:element>
