@@ -6,6 +6,7 @@ Each component directory is a copyable unit. Keep its public API and required si
 - Use lowercase `xs`, `s`, `m`, `l`, and `xl` size values where applicable.
 - Type forwarded attributes with Svelte's element attribute types. Omit attributes the component owns, such as semantic roles and linked ARIA attributes.
 - Spread consumer attributes before owned attributes. Destructure and explicitly merge extensible `class`, `style`, and event handlers instead of silently replacing either side.
+- Call the consumer handler first, then stop the component's own behaviour when the consumer called `preventDefault()`. On a link `MenuItem` this means `preventDefault()` also suppresses selection, `onAction`, and menu close. Skip the consumer handler entirely while the element is disabled.
 - Expose a bindable `ref` when the component has one meaningful root element.
 - Render one semantic element for one component role. Styling wrappers must not duplicate accessibility semantics.
 - Keep `index.ts` limited to the public component and type exports. Internal state stays in the component directory.

@@ -8,7 +8,7 @@ export type { SelectionMode };
 
 export type MenuProps = Omit<
 	HTMLAttributes<HTMLDivElement>,
-	'children' | 'role' | 'style' | 'tabindex' | 'popover'
+	'children' | 'role' | 'tabindex' | 'popover'
 > & {
 	children: Snippet;
 	size?: MenuSize;
@@ -17,13 +17,12 @@ export type MenuProps = Omit<
 	onAction?: (id: string) => void;
 	onSelectionChange?: (keys: Set<string>) => void;
 	onClose?: () => void;
-	style?: string;
 	ref?: HTMLDivElement | null;
 };
 
 export type MenuItemProps = Omit<
 	HTMLAttributes<HTMLElement>,
-	'children' | 'id' | 'role' | 'style' | 'href' | 'target' | 'rel' | 'download'
+	'children' | 'id' | 'role'
 > & {
 	/** Semantic key for selection and action callbacks. */
 	id: string;
@@ -41,7 +40,6 @@ export type MenuItemProps = Omit<
 	download?: HTMLAnchorAttributes['download'];
 	/** Suppress the external-link icon on target="_blank" links. */
 	hideLinkOutIcon?: boolean;
-	style?: string;
 	ref?: HTMLElement | null;
 };
 

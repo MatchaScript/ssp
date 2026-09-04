@@ -136,7 +136,7 @@
 		popover={isTriggered ? 'auto' : undefined}
 		style={menuStyle || undefined}
 		onkeydown={handleKeyDown}
-		ontoggle={isTriggered || ontoggle ? handleToggle : undefined}
+		ontoggle={handleToggle}
 		onpointerenter={handlePointerEnter}
 		onpointerleave={handlePointerLeave}
 		{@attach (node) => {

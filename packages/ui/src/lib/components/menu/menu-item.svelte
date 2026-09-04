@@ -83,8 +83,8 @@
 	});
 
 	function handlePointerEnter(event: PointerEvent & { currentTarget: EventTarget & HTMLElement }) {
-		onpointerenter?.(event);
 		if (isDisabled) return;
+		onpointerenter?.(event);
 		menuState.highlight(domId, { focusVisible: false });
 		submenuCtx?.handleTriggerPointerEnter();
 	}
