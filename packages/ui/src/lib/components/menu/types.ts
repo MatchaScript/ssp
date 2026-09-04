@@ -20,10 +20,7 @@ export type MenuProps = Omit<
 	ref?: HTMLDivElement | null;
 };
 
-export type MenuItemProps = Omit<
-	HTMLAttributes<HTMLElement>,
-	'children' | 'id' | 'role'
-> & {
+export type MenuItemProps = Omit<HTMLAttributes<HTMLElement>, 'children' | 'id' | 'role'> & {
 	/** Semantic key for selection and action callbacks. */
 	id: string;
 	children?: Snippet;
