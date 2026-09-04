@@ -376,9 +376,6 @@
 			<Button variant="accent" href="https://github.com/MatchaScript/ssp" target="_blank">
 				GitHub Repository
 			</Button>
-			<Button variant="secondary" href="https://spectrum.adobe.com/" target="_blank">
-				Adobe Spectrum Docs
-			</Button>
 		</div>
 	</header>
 

@@ -13,7 +13,6 @@
 	:global(body) {
 		margin: 0;
 		font-family:
-			adobe-clean,
 			-apple-system,
 			BlinkMacSystemFont,
 			'Segoe UI',
