@@ -118,10 +118,11 @@
 	function handleInputChange(event: Event) {
 		// Handles the native range-input keys that attachPointerMove leaves alone
 		// (it preventDefaults only the arrows): PageUp/PageDown/Home/End change
-		// the input's value directly, and this snaps the column width to match.
+		// the input's value directly, and this steps the column width ±10px.
 		const next = parseInt((event.target as HTMLInputElement).value, 10);
 		if (!Number.isNaN(next) && next !== width) {
-			tableState.resizeColumn(columnId, next);
+			const delta = next > width ? 10 : -10;
+			tableState.resizeColumn(columnId, width + delta);
 		}
 	}
 </script>
