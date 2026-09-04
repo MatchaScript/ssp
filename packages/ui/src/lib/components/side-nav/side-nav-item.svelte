@@ -81,8 +81,13 @@
 	[data-spectrum-sidenav-item] :global([data-spectrum-icon]) {
 		grid-column: 2;
 	}
+	/*
+	 * Text and suffix are placed from the end of the subgrid, so they land on
+	 * the right tracks whether the section keeps the icon column (4 tracks) or
+	 * drops it (3 tracks).
+	 */
 	[data-spectrum-sidenav-item] :global([data-spectrum-text]) {
-		grid-column: 3;
+		grid-column: -3 / -2;
 		min-width: 0;
 		white-space: nowrap;
 		overflow: hidden;
@@ -90,7 +95,7 @@
 	}
 	/* Anything that's neither icon nor text is treated as suffix. */
 	[data-spectrum-sidenav-item] :global(> :not([data-spectrum-icon]):not([data-spectrum-text])) {
-		grid-column: 4;
+		grid-column: -2 / -1;
 		justify-self: end;
 		color: var(--neutral-subdued-content-color-default);
 	}
