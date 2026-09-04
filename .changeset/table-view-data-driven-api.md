@@ -6,14 +6,14 @@ TableView takes its columns and rows as data. This replaces the markup-only API 
 
 ```svelte
 <TableView.Root aria-label="Team" selectionMode="multiple">
-  <TableView.Header columns={COLUMNS} />
-  <TableView.Body items={rows} getKey={(u) => u.id}>
-    {#snippet row(user)}
-      <TableView.Row textValue={user.name}>
-        <TableView.Cell column="name">{user.name}</TableView.Cell>
-      </TableView.Row>
-    {/snippet}
-  </TableView.Body>
+	<TableView.Header columns={COLUMNS} />
+	<TableView.Body items={rows} getKey={(u) => u.id}>
+		{#snippet row(user)}
+			<TableView.Row textValue={user.name}>
+				<TableView.Cell column="name">{user.name}</TableView.Cell>
+			</TableView.Row>
+		{/snippet}
+	</TableView.Body>
 </TableView.Root>
 ```
 

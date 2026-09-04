@@ -30,7 +30,13 @@ describe('SelectableCollection.extendSelection', () => {
 			const el = document.createElement('div');
 			el.tabIndex = -1;
 			host.appendChild(el);
-			collection.registerItem({ domId: `id-${value}`, value, el, disabled: false, textValue: value });
+			collection.registerItem({
+				domId: `id-${value}`,
+				value,
+				el,
+				disabled: false,
+				textValue: value
+			});
 		}
 	});
 
