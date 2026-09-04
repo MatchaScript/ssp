@@ -44,7 +44,7 @@
 			},
 			size: {
 				control: { type: 'inline-radio' },
-				options: ['S', 'M', 'L', 'XL']
+				options: ['s', 'm', 'l', 'xl']
 			},
 			fillStyle: {
 				control: { type: 'inline-radio' },
@@ -53,7 +53,7 @@
 		},
 		args: {
 			variant: 'accent',
-			size: 'M',
+			size: 'm',
 			fillStyle: 'bold'
 		}
 	});
@@ -99,10 +99,10 @@
 
 <Story name="Sizes" asChild>
 	<div style="display: flex; gap: 8px; flex-wrap: wrap; align-items: center;">
-		<Badge variant="accent" size="S"><Text>Small</Text></Badge>
-		<Badge variant="accent" size="M"><Text>Medium</Text></Badge>
-		<Badge variant="accent" size="L"><Text>Large</Text></Badge>
-		<Badge variant="accent" size="XL"><Text>Extra large</Text></Badge>
+		<Badge variant="accent" size="s"><Text>Small</Text></Badge>
+		<Badge variant="accent" size="m"><Text>Medium</Text></Badge>
+		<Badge variant="accent" size="l"><Text>Large</Text></Badge>
+		<Badge variant="accent" size="xl"><Text>Extra large</Text></Badge>
 	</div>
 </Story>
 
@@ -148,11 +148,11 @@
 
 <Story name="Numeric counts" asChild>
 	<div style="display: flex; gap: 12px; flex-wrap: wrap; align-items: center;">
-		<Badge variant="negative" size="S"><Text>3</Text></Badge>
-		<Badge variant="informative" size="S"><Text>12</Text></Badge>
-		<Badge variant="neutral" size="S"><Text>99+</Text></Badge>
-		<Badge variant="accent" size="M"><Text>New</Text></Badge>
-		<Badge variant="positive" size="M">
+		<Badge variant="negative" size="s"><Text>3</Text></Badge>
+		<Badge variant="informative" size="s"><Text>12</Text></Badge>
+		<Badge variant="neutral" size="s"><Text>99+</Text></Badge>
+		<Badge variant="accent" size="m"><Text>New</Text></Badge>
+		<Badge variant="positive" size="m">
 			<Icon icon={Check} />
 			<Text>42</Text>
 		</Badge>
@@ -165,7 +165,7 @@
 	>
 		<div style="display: flex; justify-content: space-between; align-items: center; gap: 8px;">
 			<strong>Analytics dashboard</strong>
-			<Badge variant="accent" size="S" fillStyle="subtle">
+			<Badge variant="accent" size="s" fillStyle="subtle">
 				<Icon icon={Star} />
 				<Text>Pro</Text>
 			</Badge>

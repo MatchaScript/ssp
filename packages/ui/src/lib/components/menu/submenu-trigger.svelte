@@ -1,20 +1,9 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import type { SubmenuTriggerProps } from './types.js';
 	import { SubmenuTriggerState } from './submenu-trigger.svelte.js';
 	import { setMenuTriggerContext, setSubmenuTriggerContext } from './menu.svelte.js';
 
-	let {
-		children,
-		open = $bindable(false)
-	}: {
-		/**
-		 * Should contain a `<MenuItem>` (the trigger) and a `<Menu>` (the submenu).
-		 * The MenuItem auto-detects SubmenuTriggerContext to add chevron + hover handlers.
-		 * The Menu auto-detects MenuTriggerContext for popover rendering.
-		 */
-		children: Snippet;
-		open?: boolean;
-	} = $props();
+	let { children, open = $bindable(false) }: SubmenuTriggerProps = $props();
 
 	const id = $props.id();
 	const anchorId = `--spectrum-submenu-${id}`;

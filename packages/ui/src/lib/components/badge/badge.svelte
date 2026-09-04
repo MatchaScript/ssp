@@ -1,51 +1,25 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
-	import type { HTMLAttributes } from 'svelte/elements';
-
-	type SemanticVariant = 'accent' | 'informative' | 'neutral' | 'positive' | 'notice' | 'negative';
-	type ColorVariant =
-		| 'red'
-		| 'orange'
-		| 'yellow'
-		| 'chartreuse'
-		| 'celery'
-		| 'green'
-		| 'seafoam'
-		| 'cyan'
-		| 'blue'
-		| 'indigo'
-		| 'purple'
-		| 'fuchsia'
-		| 'magenta'
-		| 'gray';
-	type Variant = SemanticVariant | ColorVariant;
-	type Size = 'S' | 'M' | 'L' | 'XL';
-	type FillStyle = 'bold' | 'subtle' | 'outline';
-
-	type Props = HTMLAttributes<HTMLDivElement> & {
-		variant?: Variant;
-		size?: Size;
-		fillStyle?: FillStyle;
-		children?: Snippet;
-	};
+	import type { BadgeProps } from './types.js';
 
 	let {
 		variant = 'neutral',
-		size = 'S',
+		size = 'm',
 		fillStyle = 'bold',
 		children,
 		class: className,
+		ref = $bindable(null),
 		...restProps
-	}: Props = $props();
+	}: BadgeProps = $props();
 </script>
 
 <div
+	{...restProps}
+	bind:this={ref}
 	data-spectrum-badge
 	data-variant={variant}
 	data-size={size}
 	data-fill={fillStyle}
 	class={className}
-	{...restProps}
 >
 	{@render children?.()}
 </div>
@@ -101,7 +75,7 @@
 	/* ══════════════════════════════════════════════════
 	   Sizes
 	══════════════════════════════════════════════════ */
-	[data-spectrum-badge][data-size='S'] {
+	[data-spectrum-badge][data-size='s'] {
 		--_badge-min-height: 24px;
 		--_badge-font-size: var(--text-75);
 		--_badge-radius: var(--corner-radius-medium-size-small);
@@ -109,7 +83,7 @@
 		--_badge-gap: 5px;
 	}
 
-	[data-spectrum-badge][data-size='M'] {
+	[data-spectrum-badge][data-size='m'] {
 		--_badge-min-height: 32px;
 		--_badge-font-size: var(--text-100);
 		--_badge-radius: var(--corner-radius-medium-size-medium);
@@ -117,7 +91,7 @@
 		--_badge-gap: 6px;
 	}
 
-	[data-spectrum-badge][data-size='L'] {
+	[data-spectrum-badge][data-size='l'] {
 		--_badge-min-height: 40px;
 		--_badge-font-size: var(--text-200);
 		--_badge-radius: var(--corner-radius-medium-size-large);
@@ -125,7 +99,7 @@
 		--_badge-gap: 7px;
 	}
 
-	[data-spectrum-badge][data-size='XL'] {
+	[data-spectrum-badge][data-size='xl'] {
 		--_badge-min-height: 48px;
 		--_badge-font-size: var(--text-300);
 		--_badge-radius: var(--corner-radius-medium-size-extra-large);

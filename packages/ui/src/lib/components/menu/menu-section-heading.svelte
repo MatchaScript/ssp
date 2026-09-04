@@ -1,14 +1,8 @@
 <script lang="ts">
-	import type { Snippet } from 'svelte';
+	import type { MenuSectionHeadingProps } from './types.js';
 	import { getMenuContext, getMenuSectionContext } from './menu.svelte.js';
 
-	let {
-		children,
-		...restProps
-	}: {
-		children: Snippet;
-		[key: string]: unknown;
-	} = $props();
+	let { children, ...restProps }: MenuSectionHeadingProps = $props();
 
 	const menuState = getMenuContext();
 	const sectionCtx = getMenuSectionContext();
@@ -23,10 +17,10 @@
 -->
 <div data-spectrum-menu-section-header data-size={menuState.size}>
 	<h3
+		{...restProps}
 		id={sectionCtx.headingId}
 		data-spectrum-menu-section-heading
 		data-size={menuState.size}
-		{...restProps}
 	>
 		{@render children()}
 	</h3>
