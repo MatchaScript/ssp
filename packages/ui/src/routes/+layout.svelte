@@ -12,12 +12,7 @@
 <style>
 	:global(body) {
 		margin: 0;
-		font-family:
-			-apple-system,
-			BlinkMacSystemFont,
-			'Segoe UI',
-			Roboto,
-			sans-serif;
+		font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
 		background-color: var(--ssp-color-gray-100, #f8f8f8);
 		color: var(--ssp-color-gray-900, #222);
 	}
