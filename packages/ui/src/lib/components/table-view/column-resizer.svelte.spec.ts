@@ -154,4 +154,30 @@ describe('<ColumnResizer>', () => {
 		expect(resizer.hasAttribute('data-resizing')).toBe(false);
 		expect(host.querySelector(overlaySelector)).toBeNull();
 	});
+
+	it('steps column width by +10px when native range input change exceeds current width', () => {
+		const input = host.querySelector(
+			'[data-spectrum-table-view-resizer-input]'
+		) as HTMLInputElement;
+		expect(parseInt(input.value, 10)).toBe(200);
+
+		input.value = String(Number.MAX_SAFE_INTEGER);
+		input.dispatchEvent(new Event('change', { bubbles: true }));
+		flushSync();
+
+		expect(parseInt(input.value, 10)).toBe(210);
+	});
+
+	it('steps column width by -10px when native range input change is below current width', () => {
+		const input = host.querySelector(
+			'[data-spectrum-table-view-resizer-input]'
+		) as HTMLInputElement;
+		expect(parseInt(input.value, 10)).toBe(200);
+
+		input.value = '0';
+		input.dispatchEvent(new Event('change', { bubbles: true }));
+		flushSync();
+
+		expect(parseInt(input.value, 10)).toBe(190);
+	});
 });
