@@ -83,3 +83,56 @@ describe('SelectableCollection.extendSelection', () => {
 		expect([...selected].sort()).toEqual(['a', 'b', 'd']);
 	});
 });
+
+describe('SelectableCollection.handleKeyDown', () => {
+	let host: HTMLDivElement;
+	let selected: Set<string>;
+	let collection: SelectableCollection;
+
+	beforeEach(() => {
+		host = document.createElement('div');
+		document.body.appendChild(host);
+		selected = new Set<string>();
+		collection = new SelectableCollection({
+			selectionMode: 'multiple',
+			get selectedKeys() {
+				return selected;
+			},
+			shouldFocusWrap: false,
+			onSelectionChange: (keys) => {
+				selected = keys;
+			}
+		});
+		for (const value of ['b1', 'a1', 'a2']) {
+			const el = document.createElement('div');
+			el.tabIndex = -1;
+			host.appendChild(el);
+			collection.registerItem({
+				domId: `id-${value}`,
+				value,
+				el,
+				disabled: false,
+				textValue: value
+			});
+		}
+	});
+
+	afterEach(() => {
+		host.remove();
+	});
+
+	it('moves highlight via typeahead on bare "a" keypress', () => {
+		collection.highlight('id-b1');
+		expect(collection.highlightedId).toBe('id-b1');
+
+		collection.handleKeyDown(new KeyboardEvent('keydown', { key: 'a' }));
+
+		expect(collection.highlightedId).toBe('id-a1');
+	});
+
+	it('selects all on Ctrl+a keypress in multiple selection mode', () => {
+		collection.handleKeyDown(new KeyboardEvent('keydown', { key: 'a', ctrlKey: true }));
+
+		expect([...selected].sort()).toEqual(['a1', 'a2', 'b1']);
+	});
+});

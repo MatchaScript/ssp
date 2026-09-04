@@ -599,19 +599,6 @@ export class SelectableCollection {
 				this.#applyFocusSelection(target.value, event);
 				return null;
 			}
-			case 'a':
-			case 'A': {
-				const allowsSelectAll = this.#props.allowsSelectAll ?? true;
-				if (
-					(event.ctrlKey || event.metaKey) &&
-					allowsSelectAll &&
-					this.selectionMode === 'multiple'
-				) {
-					event.preventDefault();
-					this.selectAll();
-				}
-				return null;
-			}
 			case 'Escape': {
 				const behavior = this.#props.escapeKeyBehavior ?? 'clearSelection';
 				if (
@@ -632,6 +619,20 @@ export class SelectableCollection {
 				event.preventDefault();
 				return this.highlightedId;
 			}
+			case 'a':
+			case 'A': {
+				const allowsSelectAll = this.#props.allowsSelectAll ?? true;
+				if (
+					(event.ctrlKey || event.metaKey) &&
+					allowsSelectAll &&
+					this.selectionMode === 'multiple'
+				) {
+					event.preventDefault();
+					this.selectAll();
+					return null;
+				}
+			}
+			// falls through
 			default: {
 				if (isPrintable(event)) {
 					event.preventDefault();
