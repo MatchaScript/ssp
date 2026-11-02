@@ -9,12 +9,21 @@
   "changesets": [
     "card-s2-alignment",
     "clear-button-and-tag-keyboard",
+    "collection-ordering-and-tab-stops",
+    "color-editor-shared-palette",
+    "component-contracts",
     "list-view-quiet-dividers",
     "rename-core-to-theme",
     "select-box-spacing",
+    "selectable-collection-a-key-typeahead",
+    "side-nav-item-columns",
     "snippet-to-component",
+    "table-view-column-resizer-keyboard",
     "table-view-completion",
+    "table-view-data-driven-api",
     "table-view-s2",
+    "table-view-selection-and-labels",
+    "table-view-single-focus-identity",
     "wild-lands-rescue"
   ]
 }
